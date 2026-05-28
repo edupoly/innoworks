@@ -26,7 +26,7 @@ const ProjectDetails = () => {
   const queryClient = useQueryClient();
   
   const [selectedRepo, setSelectedRepo] = useState(null);
-  const [branchName, setBranchName] = useState("main");
+  const [branchName, setBranchName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -66,6 +66,23 @@ const ProjectDetails = () => {
 
     setIsSubmitting(true);
     setSubmitError("");
+
+    // Additional client-side validation
+    if (!branchName) {
+      setSubmitError("Please select a branch.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const projectOwner = project.repoUrl.split("/")[3]?.toLowerCase();
+    const isOwner = projectOwner === authUser?.username?.toLowerCase();
+    const isBaseBranch = branchName === (project.branchName || "main");
+
+    if (isOwner && isBaseBranch) {
+      setSubmitError("You are the project owner. To submit a solution and create a PR, please work on a different branch than the base branch.");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       await api.post("/submissions", {
@@ -174,6 +191,14 @@ const ProjectDetails = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-2">Ready to contribute?</h3>
                 <p className="text-sm text-muted-foreground mb-8">Accept this mission to start working on it and unlock the submission form.</p>
+                
+                {acceptMutation.isError && (
+                  <div className="mb-6 p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-center gap-2 text-xs font-medium">
+                    <AlertCircle size={14} />
+                    {acceptMutation.error?.response?.data?.message || "Failed to accept mission"}
+                  </div>
+                )}
+
                 <button
                   disabled={acceptMutation.isLoading}
                   onClick={() => acceptMutation.mutate()}
@@ -194,9 +219,17 @@ const ProjectDetails = () => {
                 <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                   <CheckCircle2 size={32} />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Solution Submitted!</h3>
-                <p className="text-sm text-muted-foreground mb-6">Our automated tests are now running. You can track the progress in your dashboard.</p>
-                <Link to="/dashboard" className="w-full btn-primary block py-3">Go to Dashboard</Link>
+                <h3 className="text-xl font-bold mb-2 text-emerald-600">Submission Successful!</h3>
+                <p className="text-sm text-muted-foreground mb-6 font-medium">Your solution has been submitted and tests are queued. A PR will be raised automatically.</p>
+                <div className="flex flex-col gap-3">
+                  <Link to="/dashboard" className="w-full btn-primary block py-3">Go to Dashboard</Link>
+                  <button 
+                    onClick={() => setSubmitSuccess(false)}
+                    className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors py-2"
+                  >
+                    Need to change something? Resubmit
+                  </button>
+                </div>
               </div>
             ) : (
               <>
@@ -217,6 +250,15 @@ const ProjectDetails = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Target Base Branch</label>
+                    <div className="p-3 bg-muted/50 border border-border rounded-xl flex items-center gap-3">
+                      <Layers size={16} className="text-primary" />
+                      <span className="text-xs font-bold">{project.branchName || 'main'}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Your solution must be compatible with this branch.</p>
+                  </div>
+
+                  <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Select Your Fork</label>
                     <RepoPicker onSelect={setSelectedRepo} selectedRepo={selectedRepo} />
                   </div>
@@ -232,9 +274,9 @@ const ProjectDetails = () => {
                   </div>
 
                   <button
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !selectedRepo || !branchName}
                     type="submit"
-                    className="w-full btn-primary py-4 text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 transition-all"
+                    className="w-full btn-primary py-4 text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     {isSubmitting ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

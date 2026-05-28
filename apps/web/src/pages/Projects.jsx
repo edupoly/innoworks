@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
 import api from "../lib/api.js";
 import { Link } from "react-router-dom";
-import { BadgeDollarSign, Layers, Users, Star, ArrowRight } from "lucide-react";
+import { BadgeDollarSign, Layers, Users, Star, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const container = {
@@ -18,6 +19,8 @@ const item = {
 };
 
 const Projects = () => {
+  const { user: authUser } = useSelector((state) => state.auth);
+
   const { data: projects, isLoading } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => {
@@ -25,6 +28,18 @@ const Projects = () => {
       return response.data;
     },
   });
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile", authUser?.username],
+    queryFn: async () => {
+      if (!authUser?.username) return null;
+      const response = await api.get(`/users/profile/${authUser.username}`);
+      return response.data;
+    },
+    enabled: !!authUser?.username,
+  });
+
+  const submittedProjectIds = new Set(profile?.submissions?.map(s => (s.project?._id || s.project)?.toString()));
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center py-32">
@@ -64,17 +79,25 @@ const Projects = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
               
               <div className="flex items-center justify-between mb-6 relative z-10">
-                <span
-                  className={`text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-full shadow-sm ${
-                    project.difficulty === "Easy"
-                      ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400"
-                      : project.difficulty === "Medium"
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
-                        : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                  }`}
-                >
-                  {project.difficulty}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-full shadow-sm ${
+                      project.difficulty === "Easy"
+                        ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                        : project.difficulty === "Medium"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                          : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                    }`}
+                  >
+                    {project.difficulty}
+                  </span>
+                  {submittedProjectIds.has((project._id || project.id).toString()) && (
+                    <span className="text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 flex items-center gap-1 shadow-sm">
+                      <CheckCircle2 size={10} />
+                      Submitted
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 font-bold bg-orange-50 dark:bg-orange-500/10 px-3 py-1.5 rounded-full shadow-sm">
                   <BadgeDollarSign size={16} />
                   <span>{project.bounty || 0}</span>

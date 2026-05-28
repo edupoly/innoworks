@@ -26,4 +26,17 @@ const userSchema = new mongoose.Schema({
 // Indices for performance
 userSchema.index({ xp: -1 });
 
+// Pre-save hook to cap scores at 100
+userSchema.pre('save', async function() {
+  const scores = [
+    'collaborationScore', 'innovationScore', 'consistencyScore', 
+    'communicationScore', 'perfectionScore', 'adaptabilityScore'
+  ];
+  
+  scores.forEach(score => {
+    if (this[score] > 100) this[score] = 100;
+    if (this[score] < 0) this[score] = 0;
+  });
+});
+
 export const User = mongoose.model('User', userSchema);

@@ -15,10 +15,14 @@ const BranchPicker = ({ owner, repo, onSelect, selectedBranch }) => {
       setError("");
       try {
         const response = await api.get(`/auth/repos/${owner}/${repo}/branches`);
-        setBranches(response.data);
-        // Default to main or master if available and no branch selected
-        if (!selectedBranch && response.data.length > 0) {
-          const defaultBranch = response.data.find(b => b.name === 'main' || b.name === 'master') || response.data[0];
+        const fetchedBranches = response.data;
+        setBranches(fetchedBranches);
+        
+        // If current selected branch is not in the list, or no branch selected, pick a default
+        const isCurrentBranchValid = fetchedBranches.some(b => b.name === selectedBranch);
+        
+        if (!isCurrentBranchValid && fetchedBranches.length > 0) {
+          const defaultBranch = fetchedBranches.find(b => b.name === 'main' || b.name === 'master') || fetchedBranches[0];
           onSelect(defaultBranch.name);
         }
       } catch (error) {

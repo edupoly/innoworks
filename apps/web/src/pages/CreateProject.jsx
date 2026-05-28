@@ -16,7 +16,7 @@ const CreateProject = () => {
     requiredSkills: "",
   });
   const [selectedRepo, setSelectedRepo] = useState(null);
-  const [branchName, setBranchName] = useState("main");
+  const [branchName, setBranchName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -170,7 +170,7 @@ const CreateProject = () => {
 
           <div className="pt-6 border-t border-border/50">
             <button
-              disabled={isLoading}
+              disabled={isLoading || !selectedRepo || !branchName}
               type="submit"
               className="w-full btn-primary py-4 text-lg flex items-center justify-center gap-3 shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >

@@ -81,6 +81,7 @@ router.get("/repos/:owner/:repo/branches", authenticate, async (req, res) => {
       protected: branch.protected,
     }));
 
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.json(branches);
   } catch (error) {
     console.error("❌ GitHub Branches Error:", error.response?.data || error.message);

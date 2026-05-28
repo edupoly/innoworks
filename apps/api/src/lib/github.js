@@ -55,8 +55,16 @@ export const createPullRequest = async (accessToken, owner, repo, title, body, h
     );
     return response.data;
   } catch (error) {
-    console.error("❌ GitHub PR Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || "Failed to create Pull Request");
+    const errorData = error.response?.data;
+    console.error("❌ GitHub PR Error:", errorData || error.message);
+    
+    let errorMessage = errorData?.message || "Failed to create Pull Request";
+    if (errorData?.errors) {
+      const details = errorData.errors.map(e => e.message).join(", ");
+      errorMessage += `: ${details}`;
+    }
+    
+    throw new Error(errorMessage);
   }
 };
 

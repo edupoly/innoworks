@@ -88,8 +88,8 @@ const Dashboard = () => {
     updateProfileMutation.mutate(editData);
   };
 
-  const submittedIds = new Set(profile?.submissions?.map(s => s.project?._id || s.project));
-  const acceptedCount = profile?.acceptedProjects?.filter(id => !submittedIds.has(id)).length || 0;
+  const submittedIds = new Set(profile?.submissions?.map(s => (s.project?._id || s.project)?.toString()) || []);
+  const acceptedCount = profile?.acceptedProjects?.length || 0;
   const pendingCount = profile?.submissions?.filter(s => s.status === 'PENDING' || s.status === 'TESTING').length || 0;
   const approvedCount = profile?.submissions?.filter(s => s.status === 'APPROVED').length || 0;
 

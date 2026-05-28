@@ -75,24 +75,34 @@ router.post("/:id/accept", authenticate, validateObjectId, async (req, res) => {
     if (!project) return res.status(404).json({ message: "Project not found" });
 
     const user = await User.findById(req.user.userId);
-    if (user.acceptedProjects.includes(project._id)) {
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isAlreadyAccepted = (user.acceptedProjects || []).some(id => id && id.toString() === project._id.toString());
+    
+    if (isAlreadyAccepted) {
       return res.status(400).json({ message: "You have already accepted this challenge" });
     }
 
     // Trigger fork on GitHub
     try {
       const { owner, repo } = parseRepoUrl(project.repoUrl);
-      await forkRepository(user.githubAccessToken, owner, repo);
+      if (user.githubAccessToken) {
+        await forkRepository(user.githubAccessToken, owner, repo);
+      } else {
+        console.warn(`⚠️ User @${user.username} has no GitHub token. Skipping auto-fork.`);
+      }
     } catch (forkError) {
       console.error("❌ Auto-fork failed:", forkError.message);
     }
 
+    if (!user.acceptedProjects) user.acceptedProjects = [];
     user.acceptedProjects.push(project._id);
     await user.save();
 
     res.json({ message: "Challenge accepted and fork initiated" });
   } catch (error) {
-    res.status(500).json({ message: "Error accepting challenge" });
+    console.error("❌ Project Acceptance Error:", error);
+    res.status(500).json({ message: "Error accepting challenge: " + error.message });
   }
 });
 

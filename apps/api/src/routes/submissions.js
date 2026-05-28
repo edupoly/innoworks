@@ -18,7 +18,8 @@ const parseRepoUrl = (url) => {
 
 // Submit work
 router.post("/", authenticate, validateObjectId, async (req, res) => {
-  const { projectId, forkUrl, branchName } = req.body;
+  const { projectId, forkUrl } = req.body;
+  const branchName = req.body.branchName?.trim();
   const userId = req.user.userId;
 
   if (!projectId || !forkUrl || !branchName) {
@@ -29,46 +30,89 @@ router.post("/", authenticate, validateObjectId, async (req, res) => {
     const project = await Project.findById(projectId);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    // Check for existing pending or approved submission
-    const existingSubmission = await Submission.findOne({
-      project: projectId,
-      user: userId,
-      status: { $in: ['PENDING', 'TESTING', 'APPROVED'] }
-    });
-
-    if (existingSubmission) {
-      return res.status(400).json({ message: "You have already submitted a solution for this project." });
-    }
-
     const user = await User.findById(userId);
     if (!user || !user.githubAccessToken) {
       return res.status(401).json({ message: "GitHub authentication required" });
     }
 
-    const submission = await Submission.create({
+    // Check for existing submission
+    let existingSubmission = await Submission.findOne({
       project: projectId,
       user: userId,
-      forkUrl,
-      branchName,
-      status: "PENDING",
     });
 
-    // Extract owner and repo from original repoUrl
-    try {
-      const { owner, repo } = parseRepoUrl(project.repoUrl);
-      const head = `${user.username}:${branchName}`;
+    let submission;
+    if (existingSubmission) {
+      if (['TESTING', 'APPROVED'].includes(existingSubmission.status)) {
+        return res.status(400).json({ message: "You have already submitted a solution that is currently being tested or has been approved." });
+      }
       
-      await createPullRequest(
-        user.githubAccessToken,
-        owner,
-        repo,
-        `Submission for: ${project.title}`,
-        `This is an automated submission for the mission "${project.title}" by @${user.username}.\n\nFork: ${forkUrl}\nBranch: ${branchName}`,
-        head,
-        project.branchName || 'main'
-      );
+      // If it's PENDING or REJECTED, allow updating it
+      existingSubmission.forkUrl = forkUrl;
+      existingSubmission.branchName = branchName;
+      existingSubmission.status = "PENDING"; // Reset to pending if it was rejected
+      await existingSubmission.save();
+      
+      console.log(`🔄 Submission updated for user ${user.username} on project ${projectId}`);
+      submission = existingSubmission;
+    } else {
+      submission = await Submission.create({
+        project: projectId,
+        user: userId,
+        forkUrl,
+        branchName,
+        status: "PENDING",
+      });
+      console.log(`✅ New submission created for user ${user.username} on project ${projectId}`);
+    }
+
+    // Extract owner and repo from original repoUrl and attempt PR creation
+    let baseOwner, baseRepo, baseBranch;
+    try {
+      ({ owner: baseOwner, repo: baseRepo } = parseRepoUrl(project.repoUrl));
+      const { owner: headOwner, repo: headRepo } = parseRepoUrl(forkUrl);
+      baseBranch = project.branchName || 'main';
+
+      // Determine if this is a submission to the same repository
+      const isSameRepo = baseOwner.toLowerCase() === headOwner.toLowerCase() && 
+                         baseRepo.toLowerCase() === headRepo.toLowerCase();
+      
+      const isSameBranch = isSameRepo && branchName === baseBranch;
+
+      // For same-repo PRs, head should just be the branch name. 
+      // For cross-repo (fork) PRs, it must be headOwner:branch
+      const head = isSameRepo ? branchName : `${headOwner}:${branchName}`;
+
+      if (isSameRepo && isSameBranch) {
+        console.log(`ℹ️ Skipping PR creation: User @${user.username} is the project owner and submitting the base branch.`);
+      } else {
+        await createPullRequest(
+          user.githubAccessToken,
+          baseOwner,
+          baseRepo,
+          `Submission for: ${project.title}`,
+          `This is an automated submission for the mission "${project.title}" by @${user.username}.\n\nFork: ${forkUrl}\nBranch: ${branchName}`,
+          head,
+          baseBranch
+        );
+        console.log(`✅ PR created for @${user.username} from ${headOwner}/${headRepo} to ${baseOwner}/${baseRepo}`);
+      }
     } catch (prError) {
-      console.error("❌ Failed to create PR:", prError.message);
+      const errorMsg = prError.message || "";
+      if (errorMsg.includes("No commits between")) {
+        console.log(`ℹ️ Skipping PR creation: ${errorMsg}`);
+      } else if (errorMsg.includes("A pull request already exists")) {
+        console.log(`ℹ️ PR already exists for @${user.username} on ${baseOwner}/${baseRepo}`);
+      } else if (errorMsg.includes("no history in common")) {
+        const enhancedError = `The submission branch "${branchName}" has no common history with the project's base branch "${baseBranch}". Please ensure you branched off from "${baseBranch}" when creating your solution.`;
+        console.error(`❌ PR History Error: ${enhancedError}`);
+        // We can throw this one as it's a clear user error that needs fixing
+        return res.status(400).json({ message: enhancedError });
+      } else {
+        console.error("❌ Failed to create PR:", errorMsg);
+      }
+      // We don't fail the whole submission for other PR errors, 
+      // as the test worker can still run on the forkUrl
     }
 
     // Add to test queue with error handling

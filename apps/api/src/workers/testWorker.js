@@ -30,37 +30,30 @@ export const testWorker = new Worker(
           testOutput,
         });
 
-        // Calculate metrics (simulated logic)
+        // Calculate metrics based on project difficulty
         const project = submission.project;
         const bounty = project.bounty || 100;
-
-        // Update User stats
-        await User.findByIdAndUpdate(submission.user, {
-          $inc: { 
-            xp: bounty,
-            consistencyScore: Math.floor(Math.random() * 5) + 1,
-            perfectionScore: Math.floor(Math.random() * 5) + 1,
-            collaborationScore: Math.floor(Math.random() * 5) + 1,
-            communicationScore: Math.floor(Math.random() * 5) + 1,
-            adaptabilityScore: Math.floor(Math.random() * 5) + 1,
-            innovationScore: Math.floor(Math.random() * 5) + 1,
-          }
-        });
-
-        // Cap scores at 100
-        const user = await User.findById(submission.user);
-        const scores = [
-          'consistencyScore', 'perfectionScore', 'collaborationScore', 
-          'communicationScore', 'adaptabilityScore', 'innovationScore'
-        ];
         
-        const updates = {};
-        scores.forEach(score => {
-          if (user[score] > 100) updates[score] = 100;
-        });
+        // Define score increments based on difficulty
+        const scoreMultiplier = 
+          project.difficulty === 'Hard' ? 5 : 
+          project.difficulty === 'Medium' ? 3 : 2;
 
-        if (Object.keys(updates).length > 0) {
-          await User.findByIdAndUpdate(submission.user, updates);
+        // Fetch user to update with proper validation (using .save() for pre-save hooks)
+        const user = await User.findById(submission.user);
+        if (user) {
+          user.xp += bounty;
+          
+          // Increment scores deterministically
+          user.consistencyScore += scoreMultiplier;
+          user.perfectionScore += scoreMultiplier;
+          user.collaborationScore += scoreMultiplier;
+          user.communicationScore += scoreMultiplier;
+          user.adaptabilityScore += scoreMultiplier;
+          user.innovationScore += scoreMultiplier;
+
+          await user.save(); // This triggers the pre-save hook to cap scores at 100
+          console.log(`✅ Scores updated for @${user.username}: +${bounty} XP, +${scoreMultiplier} performance points.`);
         }
 
       } else {
