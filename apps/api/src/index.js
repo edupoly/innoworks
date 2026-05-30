@@ -93,6 +93,14 @@ app.use(errorHandler);
 
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
+  
+  socket.on("join", (userId) => {
+    if (userId) {
+      socket.join(userId.toString());
+      console.log(`👤 User socket ${socket.id} joined room: ${userId}`);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });

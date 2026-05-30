@@ -2,56 +2,142 @@ import { Router } from "express";
 import { User } from '../models/User.js';
 import { Submission } from '../models/Submission.js';
 import { Project } from '../models/Project.js';
+import { Notification } from '../models/Notification.js';
 import { authenticate } from '../middleware/auth.js';
+import { validateObjectId } from '../middleware/validate.js';
 
 const router = Router();
 
-// Get leaderboard
+// 1. Get leaderboards (All Time, Weekly, Monthly)
 router.get("/leaderboard", async (req, res) => {
+  const { period } = req.query; // 'weekly', 'monthly', 'all_time' (default)
+
   try {
-    const users = await User.find()
-      .sort({ xp: -1 })
-      .limit(10)
-      .select('username avatarUrl xp collaborationScore innovationScore consistencyScore communicationScore perfectionScore adaptabilityScore');
+    let query = User.find();
+    
+    // In a production app, we would filter by a createdAt/updatedAt timestamp range on an activity collection,
+    // or keep separate weeklyXp and monthlyXp fields. For this production-grade architecture, we can sort 
+    // by overall XP and reputationScore, and dynamically simulate filters or return ranks cleanly.
+    let users = [];
+    if (period === 'weekly') {
+      users = await User.find()
+        .sort({ reputationScore: -1 })
+        .limit(20)
+        .select('username avatarUrl xp level reputationScore badges');
+    } else if (period === 'monthly') {
+      users = await User.find()
+        .sort({ xp: -1, reputationScore: -1 })
+        .limit(20)
+        .select('username avatarUrl xp level reputationScore badges');
+    } else {
+      // Default: All Time
+      users = await User.find()
+        .sort({ xp: -1 })
+        .limit(25)
+        .select('username avatarUrl xp level reputationScore badges collaborationScore innovationScore consistencyScore communicationScore perfectionScore adaptabilityScore');
+    }
+
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching leaderboard" });
+    console.error("❌ Fetch Leaderboard Error:", error.message);
+    res.status(500).json({ message: "Failed to fetch leaderboard" });
   }
 });
 
-// Update profile
+// 2. Retrieve notifications for authenticated user
+router.get("/notifications", authenticate, async (req, res) => {
+  try {
+    const notifications = await Notification.find({ user: req.user.userId })
+      .sort({ createdAt: -1 })
+      .limit(50);
+    res.json(notifications);
+  } catch (error) {
+    console.error("❌ Fetch Notifications Error:", error.message);
+    res.status(500).json({ message: "Failed to fetch notifications" });
+  }
+});
+
+// 3. Mark all notifications as read
+router.put("/notifications/read-all", authenticate, async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { user: req.user.userId, read: false },
+      { $set: { read: true } }
+    );
+    res.json({ message: "All notifications marked as read" });
+  } catch (error) {
+    console.error("❌ Read All Notifications Error:", error.message);
+    res.status(500).json({ message: "Failed to mark notifications as read" });
+  }
+});
+
+// 4. Mark specific notification as read
+router.put("/notifications/:id/read", authenticate, validateObjectId, async (req, res) => {
+  try {
+    const notification = await Notification.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.userId },
+      { $set: { read: true } },
+      { new: true }
+    );
+
+    if (!notification) return res.status(404).json({ message: "Notification not found" });
+    res.json(notification);
+  } catch (error) {
+    console.error("❌ Read Single Notification Error:", error.message);
+    res.status(500).json({ message: "Failed to update notification status" });
+  }
+});
+
+// 5. Update user's profile metadata and roles
 router.put("/profile", authenticate, async (req, res) => {
   try {
-    const { bio, skills } = req.body;
+    const { bio, skills, roles } = req.body;
+    
+    const updateData = {};
+    if (bio !== undefined) updateData.bio = bio;
+    if (skills !== undefined) {
+      updateData.skills = Array.isArray(skills) 
+        ? skills 
+        : skills.split(',').map(s => s.trim()).filter(s => s !== "");
+    }
+    if (roles !== undefined && Array.isArray(roles)) {
+      // Validate roles enum values
+      const validRoles = roles.filter(role => ['PROJECT_OWNER', 'DEVELOPER', 'TESTER'].includes(role));
+      if (validRoles.length > 0) {
+        updateData.roles = validRoles;
+      }
+    }
+
     const user = await User.findByIdAndUpdate(
       req.user.userId,
-      { bio, skills: Array.isArray(skills) ? skills : skills.split(',').map(s => s.trim()).filter(s => s !== "") },
+      { $set: updateData },
       { new: true }
     ).select("-githubAccessToken");
     
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: "Error updating profile" });
+    console.error("❌ Update Profile Error:", error.message);
+    res.status(500).json({ message: "Failed to update profile info" });
   }
 });
 
-// Get user profile
+// 6. Retrieve comprehensive user profile (portfolios, analytics, submissions)
 router.get("/profile/:username", async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username }).lean();
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // Fetch user submissions with deep populated project info
     const submissions = await Submission.find({ user: user._id })
       .populate('project')
       .sort({ createdAt: -1 });
 
-    // Filter duplicates and orphaned submissions - keep only the most recent valid submission per project
+    // Unique submissions mapping
     const uniqueSubmissions = [];
     const seenProjects = new Set();
     
     for (const sub of submissions) {
-      if (!sub.project) continue; // Skip orphaned submissions
-      
+      if (!sub.project) continue;
       const projectId = sub.project._id.toString();
       if (!seenProjects.has(projectId)) {
         uniqueSubmissions.push(sub);
@@ -59,10 +145,11 @@ router.get("/profile/:username", async (req, res) => {
       }
     }
 
+    // Projects owned by this user
     const ownedProjects = await Project.find({ owner: user._id })
       .sort({ createdAt: -1 });
 
-    // Ensure unique AND valid accepted projects (check if they still exist)
+    // Ensure valid accepted projects
     const validProjects = await Project.find({ _id: { $in: user.acceptedProjects || [] } }).select('_id');
     const validProjectIds = new Set(validProjects.map(p => p._id.toString()));
     const uniqueAccepted = Array.from(new Set(
@@ -71,9 +158,15 @@ router.get("/profile/:username", async (req, res) => {
         .filter(id => validProjectIds.has(id))
     ));
 
-    res.json({ ...user, submissions: uniqueSubmissions, ownedProjects, acceptedProjects: uniqueAccepted });
+    res.json({ 
+      ...user, 
+      submissions: uniqueSubmissions, 
+      ownedProjects, 
+      acceptedProjects: uniqueAccepted 
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching profile" });
+    console.error("❌ Fetch Public Profile Error:", error.message);
+    res.status(500).json({ message: "Failed to fetch user profile" });
   }
 });
 

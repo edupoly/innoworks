@@ -1,17 +1,15 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
+  mongodb:
+    image: mongo:6.0-jammy
     restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: platform
+      MONGO_INITDB_DATABASE: platform
     ports:
-      - '5432:5432'
+      - '27017:27017'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongodb_data:/data/db
 
   redis:
     image: redis:7-alpine
@@ -22,5 +20,6 @@ services:
       - redis_data:/data
 
 volumes:
-  postgres_data:
+  mongodb_data:
   redis_data:
+

@@ -164,6 +164,26 @@ router.get("/github/callback", async (req, res) => {
 
     const githubUser = userResponse.data;
 
+    // Fetch user repos to populate repositories list & contribution stats
+    let repos = [];
+    try {
+      const reposResponse = await axios.get("https://api.github.com/user/repos", {
+        headers: { Authorization: `token ${accessToken}` },
+        params: { sort: "updated", per_page: 50 }
+      });
+      repos = reposResponse.data.map(r => ({
+        id: r.id,
+        name: r.name,
+        full_name: r.full_name,
+        html_url: r.html_url,
+        description: r.description,
+        private: r.private,
+        language: r.language
+      }));
+    } catch (reposErr) {
+      console.warn("⚠️ Failed to pre-fetch repos on login:", reposErr.message);
+    }
+
     // Create or update user in database
     let user = await User.findOneAndUpdate(
       { githubId: githubUser.id.toString() },
@@ -172,6 +192,11 @@ router.get("/github/callback", async (req, res) => {
         avatarUrl: githubUser.avatar_url,
         email: githubUser.email,
         githubAccessToken: accessToken,
+        profileUrl: githubUser.html_url,
+        repositories: repos,
+        $set: {
+          "contributionStats.reposCount": repos.length
+        }
       },
       { upsert: true, returnDocument: 'after' }
     );
