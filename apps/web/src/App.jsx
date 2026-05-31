@@ -160,7 +160,7 @@ function App() {
             element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />}
           />
         </Route>
-        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/callback*" element={<AuthCallback />} />
       </Routes>
     </Router>
   );

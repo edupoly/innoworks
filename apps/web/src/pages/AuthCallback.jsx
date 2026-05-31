@@ -10,8 +10,22 @@ const AuthCallback = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const token = searchParams.get("token");
-    const refreshToken = searchParams.get("refreshToken");
+    let token = searchParams.get("token");
+    let refreshToken = searchParams.get("refreshToken");
+
+    // Fallback: If token is not in searchParams, try to parse it from the URL string
+    // This handles cases where the '?' might be missing or malformed
+    if (!token) {
+      const fullUrl = window.location.href;
+      if (fullUrl.includes("token=")) {
+        const tokenMatch = fullUrl.match(/token=([^&]+)/);
+        if (tokenMatch) token = tokenMatch[1];
+      }
+      if (fullUrl.includes("refreshToken=")) {
+        const refreshMatch = fullUrl.match(/refreshToken=([^&]+)/);
+        if (refreshMatch) refreshToken = refreshMatch[1];
+      }
+    }
 
     if (token) {
       // Store tokens
