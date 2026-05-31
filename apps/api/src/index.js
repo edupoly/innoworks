@@ -87,6 +87,14 @@ app.get("/health", (req, res) => {
   });
 });
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to Platform API",
+    status: "healthy",
+    docs: "https://github.com/edupoly/innoworks"
+  });
+});
+
 // 404 handler
 app.use(notFound);
 
