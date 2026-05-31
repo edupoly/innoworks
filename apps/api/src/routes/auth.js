@@ -133,8 +133,12 @@ const JWT_SECRET = process.env.JWT_SECRET || "secret";
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "refresh_secret";
 
 router.get("/github", (req, res) => {
-  const callbackUrl = process.env.GITHUB_CALLBACK_URL || "http://localhost:4000/auth/github/callback";
-  const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${callbackUrl}&scope=user,repo`;
+  const callbackUrl = process.env.GITHUB_CALLBACK_URL;
+  if (!callbackUrl) {
+    console.error("❌ GITHUB_CALLBACK_URL is not defined in environment variables!");
+    return res.status(500).json({ message: "OAuth configuration error" });
+  }
+  const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=user,repo`;
   res.redirect(url);
 });
 
