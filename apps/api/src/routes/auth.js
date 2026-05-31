@@ -55,7 +55,7 @@ router.get("/repos", authenticate, async (req, res) => {
 
     res.json(repos);
   } catch (error) {
-    console.error("âŒ GitHub Repos Error:", error.response?.data || error.message);
+    console.error("Ã¢Å’ GitHub Repos Error:", error.response?.data || error.message);
     res.status(500).json({ message: "Failed to fetch repositories" });
   }
 });
@@ -84,7 +84,7 @@ router.get("/repos/:owner/:repo/branches", authenticate, async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.json(branches);
   } catch (error) {
-    console.error("âŒ GitHub Branches Error:", error.response?.data || error.message);
+    console.error("Ã¢Å’ GitHub Branches Error:", error.response?.data || error.message);
     res.status(500).json({ message: "Failed to fetch branches" });
   }
 });
@@ -122,7 +122,7 @@ router.post("/fork/:projectId", authenticate, async (req, res) => {
       repoFullName: response.data.full_name,
     });
   } catch (error) {
-    console.error("âŒ GitHub Fork Error:", error.response?.data || error.message);
+    console.error("Ã¢Å’ GitHub Fork Error:", error.response?.data || error.message);
     res.status(500).json({ message: "Failed to fork repository" });
   }
 });
@@ -188,7 +188,7 @@ router.get("/github/callback", async (req, res) => {
         language: r.language
       }));
     } catch (reposErr) {
-      console.warn("âš ï¸ Failed to pre-fetch repos on login:", reposErr.message);
+      console.warn("Ã¢Å¡Â Ã¯Â¸ Failed to pre-fetch repos on login:", reposErr.message);
     }
 
     // Create or update user in database
@@ -217,12 +217,13 @@ router.get("/github/callback", async (req, res) => {
     });
 
     // Redirect to frontend with token
-    const frontendUrl = process.env.FRONTEND_URL || "https://innoworks.vercel.app";
+    let frontendUrl = process.env.FRONTEND_URL || "https://innoworks.vercel.app";
+    if (frontendUrl.endsWith("/")) frontendUrl = frontendUrl.slice(0, -1);
     res.redirect(
       `${frontendUrl}/auth/callback?token=${token}&refreshToken=${refreshToken}`,
     );
   } catch (error) {
-    console.error("âŒ GitHub Auth Error:", error.response?.data || error.message);
+    console.error("Ã¢Å’ GitHub Auth Error:", error.response?.data || error.message);
     res.status(500).json({
       message: "Authentication failed",
       error: process.env.NODE_ENV === 'development' ? (error.response?.data || error.message) : undefined 

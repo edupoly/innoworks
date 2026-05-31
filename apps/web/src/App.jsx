@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
   Link,
+  useNavigate,
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import AuthCallback from "./pages/AuthCallback";
@@ -18,7 +19,39 @@ import { setCredentials, setLoading } from "./store/slices/authSlice";
 import api from "./lib/api.js";
 import { Github, Rocket, Search, ShieldCheck, Zap } from "lucide-react";
 
+// Protected Route Component to prevent unauthorized access and handle loading
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const token = localStorage.getItem("token");
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center px-4">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h2 className="text-xl font-black tracking-tight mb-2">Restoring Your Session</h2>
+        <p className="text-muted-foreground text-sm font-medium">Please wait while we sync with the server...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && !token) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 const Home = () => {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // If already authenticated, go to dashboard
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleLogin = () => {
     const apiUrl = import.meta.env.VITE_API_URL || "https://innoworks.onrender.com";
     window.location.href = `${apiUrl}/auth/github`;
@@ -127,7 +160,6 @@ function App() {
           dispatch(setCredentials({ user: response.data, token }));
         } catch (error) {
           console.error("Failed to restore session", error);
-          // Only clear tokens if we are not currently in the middle of an auth callback
           if (!window.location.pathname.includes("/auth/callback")) {
             localStorage.removeItem("token");
             localStorage.removeItem("refreshToken");
@@ -140,16 +172,6 @@ function App() {
     }
   }, [dispatch, isAuthenticated]);
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center px-4">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"></div>
-        <h2 className="text-xl font-black tracking-tight mb-2">Restoring Your Session</h2>
-        <p className="text-muted-foreground text-sm font-medium">Please wait while we sync with the server...</p>
-      </div>
-    );
-  }
-
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
@@ -158,20 +180,34 @@ function App() {
           <Route path="/projects" element={<Projects />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/projects/:id" element={<ProjectDetails />} />
+          
           <Route
             path="/projects/new"
-            element={isAuthenticated ? <CreateProject /> : <Navigate to="/" />}
+            element={
+              <ProtectedRoute>
+                <CreateProject />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/dashboard"
-            element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />}
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
           />
         </Route>
+
+        {/* Auth Callback variants */}
         <Route path="/auth/callback/*" element={<AuthCallback />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="//auth/callback/*" element={<AuthCallback />} />
         <Route path="//auth/callback" element={<AuthCallback />} />
         <Route path="/auth/*" element={<AuthCallback />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
