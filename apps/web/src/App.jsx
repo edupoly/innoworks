@@ -114,6 +114,10 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    console.log("App: Component mounted, isAuthenticated:", isAuthenticated);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     const token = localStorage.getItem("token");
     if (token && !isAuthenticated) {
       const fetchUser = async () => {
@@ -160,10 +164,11 @@ function App() {
             element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />}
           />
         </Route>
-        {/* Handle both standard and malformed double-slash auth callbacks */}
         <Route path="/auth/callback/*" element={<AuthCallback />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="//auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/*" element={<AuthCallback />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
