@@ -20,7 +20,12 @@ import { Github, Rocket, Search, ShieldCheck, Zap } from "lucide-react";
 
 const Home = () => {
   const handleLogin = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (!apiUrl) {
+      console.error("VITE_API_URL is not defined!");
+      alert("Configuration error: API URL is missing. Please check your environment variables.");
+      return;
+    }
     window.location.href = `${apiUrl}/auth/github`;
   };
 
