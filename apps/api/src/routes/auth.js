@@ -11,12 +11,12 @@ router.get("/me", authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select("-githubAccessToken").lean();
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     // Ensure unique accepted projects
     if (user.acceptedProjects) {
-      user.acceptedProjects = Array.from(new Set(user.acceptedProjects.map(id => id.toString())));
+      user.acceptedProjects = Array.from(new Set(user.acceptedProjects.map(id => id.toString())));        
     }
-    
+
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -55,7 +55,7 @@ router.get("/repos", authenticate, async (req, res) => {
 
     res.json(repos);
   } catch (error) {
-    console.error("❌ GitHub Repos Error:", error.response?.data || error.message);
+    console.error("âŒ GitHub Repos Error:", error.response?.data || error.message);
     res.status(500).json({ message: "Failed to fetch repositories" });
   }
 });
@@ -84,7 +84,7 @@ router.get("/repos/:owner/:repo/branches", authenticate, async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.json(branches);
   } catch (error) {
-    console.error("❌ GitHub Branches Error:", error.response?.data || error.message);
+    console.error("âŒ GitHub Branches Error:", error.response?.data || error.message);
     res.status(500).json({ message: "Failed to fetch branches" });
   }
 });
@@ -122,7 +122,7 @@ router.post("/fork/:projectId", authenticate, async (req, res) => {
       repoFullName: response.data.full_name,
     });
   } catch (error) {
-    console.error("❌ GitHub Fork Error:", error.response?.data || error.message);
+    console.error("âŒ GitHub Fork Error:", error.response?.data || error.message);
     res.status(500).json({ message: "Failed to fork repository" });
   }
 });
@@ -133,20 +133,19 @@ const JWT_SECRET = process.env.JWT_SECRET || "secret";
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "refresh_secret";
 
 router.get("/github", (req, res) => {
-  const isProduction = process.env.NODE_ENV === 'production' || req.get('host').includes('render.com');
-  const callbackUrl = isProduction 
-    ? "https://innoworks.onrender.com/auth/github/callback" 
-    : (process.env.GITHUB_CALLBACK_URL || "http://localhost:4000/auth/github/callback");
-  const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=user,repo`;
+  const callbackUrl =
+    "https://innoworks.onrender.com/auth/github/callback";
+  const url =
+    `https://github.com/login/oauth/authorize?` +
+    `client_id=${GITHUB_CLIENT_ID}` +
+    `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+    `&scope=user,repo`;
   res.redirect(url);
 });
 
 router.get("/github/callback", async (req, res) => {
   const { code } = req.query;
-  const isProduction = process.env.NODE_ENV === 'production' || req.get('host').includes('render.com');
-  const callbackUrl = isProduction 
-    ? "https://innoworks.onrender.com/auth/github/callback" 
-    : (process.env.GITHUB_CALLBACK_URL || "http://localhost:4000/auth/github/callback");
+  const callbackUrl = "https://innoworks.onrender.com/auth/github/callback";
 
   try {
     // Exchange code for access token
@@ -189,7 +188,7 @@ router.get("/github/callback", async (req, res) => {
         language: r.language
       }));
     } catch (reposErr) {
-      console.warn("⚠️ Failed to pre-fetch repos on login:", reposErr.message);
+      console.warn("âš ï¸ Failed to pre-fetch repos on login:", reposErr.message);
     }
 
     // Create or update user in database
@@ -223,9 +222,9 @@ router.get("/github/callback", async (req, res) => {
       `${frontendUrl}/auth/callback?token=${token}&refreshToken=${refreshToken}`,
     );
   } catch (error) {
-    console.error("❌ GitHub Auth Error:", error.response?.data || error.message);
-    res.status(500).json({ 
-      message: "Authentication failed", 
+    console.error("âŒ GitHub Auth Error:", error.response?.data || error.message);
+    res.status(500).json({
+      message: "Authentication failed",
       error: process.env.NODE_ENV === 'development' ? (error.response?.data || error.message) : undefined 
     });
   }
