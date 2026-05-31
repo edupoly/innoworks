@@ -25,7 +25,18 @@ const submissionSchema = new mongoose.Schema({
   },
   testOutput: { type: String },
   timeline: [timelineEventSchema]
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Virtual for reviews
+submissionSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'submission'
+});
 
 submissionSchema.index({ project: 1 });
 submissionSchema.index({ user: 1 });

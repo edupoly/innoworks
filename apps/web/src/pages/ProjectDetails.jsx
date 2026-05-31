@@ -71,7 +71,8 @@ const ProjectDetails = () => {
     { item: "Code compiles successfully and has no build errors", checked: false },
     { item: "Features correctly solve the challenge requirements", checked: false },
     { item: "Tests added or modified correctly cover features", checked: false },
-    { item: "Code style matches guidelines (no hardcoded secrets)", checked: false }
+    { item: "Code style matches guidelines (no hardcoded secrets)", checked: false },
+    { item: "Documentation or README has been updated accordingly", checked: false }
   ]);
   const [testSuccess, setTestSuccess] = useState(false);
   const [testError, setTestError] = useState("");
@@ -104,6 +105,9 @@ const ProjectDetails = () => {
       return response.data;
     },
   });
+
+  const activeSubmissions = projectSubmissions?.filter(s => s.status !== 'MERGED' && s.status !== 'REJECTED') || [];
+  const submissionHistory = projectSubmissions?.filter(s => s.status === 'MERGED' || s.status === 'REJECTED') || [];
 
   const { data: userData } = useQuery({
     queryKey: ["me"],
@@ -256,6 +260,22 @@ const ProjectDetails = () => {
         suggestions: testSuggestions
       });
       setTestSuccess(true);
+      
+      // Clear form and sync data after successful submission
+      setTimeout(() => {
+        setTestSuccess(false);
+        setSelectedPR(null);
+        setTestFeedback("");
+        setTestRating(5);
+        setTestBugs("");
+        setTestSuggestions("");
+        setTestOutcome("APPROVED");
+        setChecklist(prev => prev.map(c => ({ ...c, checked: false })));
+        
+        // Refresh project data to show new reviews immediately
+        queryClient.invalidateQueries(["projectIntelligence", id]);
+        queryClient.invalidateQueries(["projectSubmissions", id]);
+      }, 3000);
     } catch (err) {
       setTestError(err.response?.data?.message || "Failed to submit reviewer report.");
     } finally {
@@ -312,49 +332,64 @@ const ProjectDetails = () => {
           </div>
         </div>
 
-        {/* ONLY TWO ACTION BUTTONS MUST EXIST */}
+        {/* ACTION BUTTONS BASED ON ROLE */}
         <div className="flex items-center gap-3">
-          {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
-            <button 
-              onClick={handleDelete}
-              disabled={deleteMutation.isLoading}
-              className="p-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all mr-2"
-              title="Delete Project"
-            >
-              {deleteMutation.isLoading ? (
-                <div className="w-4 h-4 border-2 border-destructive/30 border-t-destructive rounded-full animate-spin"></div>
-              ) : (
-                <Trash2 size={20} />
-              )}
-            </button>
+          {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? (
+            <>
+              <button 
+                onClick={handleDelete}
+                disabled={deleteMutation.isLoading}
+                className="p-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all mr-2"
+                title="Delete Project"
+              >
+                {deleteMutation.isLoading ? (
+                  <div className="w-4 h-4 border-2 border-destructive/30 border-t-destructive rounded-full animate-spin"></div>
+                ) : (
+                  <Trash2 size={20} />
+                )}
+              </button>
+              
+              <button 
+                onClick={() => setActiveTab("management")}
+                className={`px-6 py-3 font-black uppercase tracking-wider text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
+                  activeTab === "management" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-primary/10 text-primary hover:bg-primary/20"
+                }`}
+              >
+                <Layers size={14} /> Manage Mission
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => {
+                  if (!isAccepted) {
+                    acceptMutation.mutate();
+                  }
+                  setActiveTab("dev_flow");
+                }}
+                className={`px-6 py-3 font-black uppercase tracking-wider text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
+                  activeTab === "dev_flow" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20"
+                }`}
+              >
+                <Rocket size={14} /> Start Developing
+              </button>
+              
+              <button 
+                onClick={() => setActiveTab("test_flow")}
+                className={`px-6 py-3 font-black uppercase tracking-wider text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
+                  activeTab === "test_flow" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                }`}
+              >
+                <ShieldCheck size={14} /> Start Testing
+              </button>
+            </>
           )}
-
-          <button 
-            onClick={() => {
-              if (!isAccepted) {
-                acceptMutation.mutate();
-              }
-              setActiveTab("dev_flow");
-            }}
-            className={`px-6 py-3 font-black uppercase tracking-wider text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
-              activeTab === "dev_flow" 
-                ? "bg-primary text-white" 
-                : "bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20"
-            }`}
-          >
-            <Rocket size={14} /> Start Developing
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab("test_flow")}
-            className={`px-6 py-3 font-black uppercase tracking-wider text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
-              activeTab === "test_flow" 
-                ? "bg-primary text-white" 
-                : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-            }`}
-          >
-            <ShieldCheck size={14} /> Start Testing
-          </button>
         </div>
       </div>
 
@@ -376,6 +411,16 @@ const ProjectDetails = () => {
         >
           <Activity size={16} /> Repository Analytics
         </button>
+        {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
+          <button 
+            onClick={() => setActiveTab("management")}
+            className={`pb-4 border-b-2 flex items-center gap-2 px-1 ${
+              activeTab === "management" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Layers size={16} /> Management & Submissions
+          </button>
+        )}
         <button 
           onClick={() => setActiveTab("activity")}
           className={`pb-4 border-b-2 flex items-center gap-2 px-1 ${
@@ -401,11 +446,11 @@ const ProjectDetails = () => {
               {/* Description */}
               <div className="bg-card border border-border/50 rounded-3xl p-8 space-y-4 shadow-sm">
                 <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mission Briefing</h3>
-                <p className="text-base text-slate-300 leading-relaxed leading-relaxed">{project?.description}</p>
+                <p className="text-base text-foreground leading-relaxed leading-relaxed">{project?.description}</p>
                 
                 <div className="flex flex-wrap gap-2 pt-4">
                   {intelligence?.overview?.topics?.map((topic, i) => (
-                    <span key={i} className="px-2.5 py-1 bg-muted rounded-lg text-xs font-semibold text-slate-400">
+                    <span key={i} className="px-2.5 py-1 bg-muted rounded-lg text-xs font-semibold text-muted-foreground">
                       #{topic}
                     </span>
                   ))}
@@ -417,7 +462,7 @@ const ProjectDetails = () => {
                 <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                   <FileCode2 size={16} className="text-primary" /> README.md Preview
                 </h3>
-                <div className="p-6 bg-slate-950 rounded-2xl max-h-[400px] overflow-y-auto font-mono text-xs leading-relaxed text-slate-400 select-text">
+                <div className="p-6 bg-slate-950 rounded-2xl max-h-[400px] overflow-y-auto font-mono text-xs leading-relaxed text-muted-foreground select-text">
                   <pre className="whitespace-pre-wrap">{intelligence?.overview?.readmePreview}</pre>
                 </div>
               </div>
@@ -436,7 +481,7 @@ const ProjectDetails = () => {
                   <div className="flex items-center gap-3">
                     <Github size={22} className="group-hover:text-primary" />
                     <div>
-                      <p className="text-xs font-bold text-slate-200">{intelligence?.overview?.owner}</p>
+                      <p className="text-xs font-bold text-foreground">{intelligence?.overview?.owner}</p>
                       <p className="text-[10px] text-muted-foreground font-black uppercase">View Source</p>
                     </div>
                   </div>
@@ -462,7 +507,7 @@ const ProjectDetails = () => {
                     {intelligence?.overview?.languagesBreakdown?.slice(0, 4).map((lang, idx) => (
                       <div key={idx} className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: lang.color || '#6366f1' }} />
-                        <span className="text-slate-400">{lang.name}</span>
+                        <span className="text-muted-foreground">{lang.name}</span>
                       </div>
                     ))}
                   </div>
@@ -490,7 +535,7 @@ const ProjectDetails = () => {
                 { label: "Watchers", value: intelligence?.statistics?.watchers, icon: Eye, color: "text-emerald-500" },
               ].map((m, idx) => (
                 <div key={idx} className="bg-card p-5 border border-border/50 rounded-2xl flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0 border border-slate-800 ${m.color}`}>
+                  <div className={`w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 border border ${m.color}`}>
                     <m.icon size={20} />
                   </div>
                   <div>
@@ -519,7 +564,7 @@ const ProjectDetails = () => {
                         )}
                       </div>
                       <div className="flex-1 space-y-0.5 min-w-0">
-                        <p className="font-bold text-slate-200 truncate">{act.title}</p>
+                        <p className="font-bold text-foreground truncate">{act.title}</p>
                         <p className="text-[10px] text-muted-foreground">{act.actor || "GitHub user"} • {new Date(act.date).toLocaleDateString()}</p>
                       </div>
                     </div>
@@ -534,16 +579,380 @@ const ProjectDetails = () => {
                   {intelligence?.commitAnalytics?.topContributors?.slice(0, 5).map((c, idx) => (
                     <div key={idx} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden shrink-0 border">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 border">
                           <img src={c.avatarUrl} alt={c.username} className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-xs font-bold text-slate-300">@{c.username}</span>
+                        <span className="text-xs font-bold text-foreground">@{c.username}</span>
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
                         {c.commitCount} commits
                       </span>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* TAB: MANAGEMENT (Project Owner Only) */}
+        {activeTab === "management" && (project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
+          <motion.div
+            key="management"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="space-y-8"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Side: Submissions Management */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-6">
+                  <div className="flex items-center justify-between border-b border-border/30 pb-4">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <ClipboardList size={18} className="text-primary" /> Submissions Management
+                    </h3>
+                    <div className="flex gap-2">
+                      <span className="text-[10px] font-black bg-emerald-500/10 text-emerald-500 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                        {activeSubmissions.length} Active
+                      </span>
+                      <span className="text-[10px] font-black bg-muted text-muted-foreground px-2.5 py-0.5 rounded-full">
+                        {submissionHistory.length} Total History
+                      </span>
+                    </div>
+                  </div>
+
+                  {projectSubmissions?.length > 0 ? (
+                    <div className="space-y-8">
+                      {/* Active Submissions Section */}
+                      {activeSubmissions.length > 0 && (
+                        <div className="space-y-4">
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Active Contributions</h4>
+                          {activeSubmissions.map((sub) => (
+                            <div key={sub._id} className={`p-5 border transition-all rounded-2xl space-y-4 ${
+                              selectedPR?._id === sub._id ? "bg-primary/5 border-primary/50" : "bg-muted/5 border-border/50"
+                            }`}>
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <img src={sub.user?.avatarUrl} alt={sub.user?.username} className="w-10 h-10 rounded-full border border-border" />
+                                  <div>
+                                    <p className="text-sm font-bold text-foreground">@{sub.user?.username}</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                        sub.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                                        'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                                      }`}>
+                                        {sub.status}
+                                      </span>
+                                      <span className="text-[10px] text-muted-foreground font-semibold">Branch: {sub.branchName}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                  {sub.prUrl && (
+                                    <a 
+                                      href={sub.prUrl} 
+                                      target="_blank" 
+                                      rel="noreferrer" 
+                                      className="p-2.5 bg-muted border border-border/50 text-muted-foreground hover:text-foreground rounded-xl transition-all"
+                                      title="View PR on GitHub"
+                                    >
+                                      <Github size={16} />
+                                    </a>
+                                  )}
+
+                                  <button
+                                    onClick={() => setSelectedPR(sub)}
+                                    className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all ${
+                                      selectedPR?._id === sub._id
+                                        ? "bg-primary text-white"
+                                        : "bg-primary/10 text-primary hover:bg-primary/20"
+                                    }`}
+                                  >
+                                    {selectedPR?._id === sub._id ? "Reviewing" : "Review"}
+                                  </button>
+                                  
+                                  {sub.status === 'APPROVED' && (
+                                    <button
+                                      onClick={() => handleMerge(sub._id)}
+                                      disabled={mergeMutation.isLoading}
+                                      className="bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-lg shadow-indigo-500/20"
+                                    >
+                                      {mergeMutation.isLoading ? (
+                                        <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                      ) : (
+                                        <><GitPullRequest size={12} /> Merge</>
+                                      )}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Rich Reviews for this submission */}
+                              <div className="mt-4 pl-4 border-l-2 border-border/30 space-y-3">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                                  <ShieldCheck size={12} /> Peer Review Reports
+                                </h4>
+                                {sub.reviews?.length > 0 ? (
+                                  <div className="space-y-3">
+                                    {sub.reviews.map((review, ridx) => (
+                                      <div key={ridx} className="bg-muted/10 p-3 rounded-xl border border-border/20 text-xs">
+                                        <div className="flex justify-between items-start mb-2">
+                                          <div>
+                                            <span className="font-bold text-foreground">@{review.reviewer?.username || 'Tester'}</span>
+                                            <div className="flex items-center gap-1 mt-0.5">
+                                              <div className="flex items-center gap-0.5 text-yellow-500">
+                                                {[...Array(5)].map((_, i) => (
+                                                  <Star key={i} size={8} fill={i < (review.rating || 5) ? "currentColor" : "none"} />
+                                                ))}
+                                              </div>
+                                              {review.bugsFound?.length > 0 && (
+                                                <span className="text-[8px] text-red-400 font-bold uppercase ml-2">{review.bugsFound.length} Bugs Found</span>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                            review.outcome === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-500' :
+                                            review.outcome === 'NEEDS_CHANGES' ? 'bg-orange-500/10 text-orange-500' :
+                                            'bg-red-500/10 text-red-500'
+                                          }`}>
+                                            {review.outcome}
+                                          </span>
+                                        </div>
+                                        <p className="text-muted-foreground italic leading-relaxed">"{review.feedback}"</p>
+                                        {review.checklist?.some(c => c.checked) && (
+                                          <div className="mt-2 flex gap-1 flex-wrap">
+                                            {review.checklist.filter(c => c.checked).map((c, ci) => (
+                                              <span key={ci} className="text-[8px] bg-emerald-500/5 text-emerald-500/70 border border-emerald-500/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                                <CheckCircle2 size={8} /> {c.item.substring(0, 20)}...
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-[10px] text-muted-foreground italic">No reviews submitted yet.</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Submission History Section */}
+                      {submissionHistory.length > 0 && (
+                        <div className="space-y-4">
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Submission History</h4>
+                          {submissionHistory.map((sub) => (
+                            <div key={sub._id} className="p-4 border border-border/30 bg-muted/5 rounded-2xl flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <img src={sub.user?.avatarUrl} alt={sub.user?.username} className="w-8 h-8 rounded-full border border-border" />
+                                <div>
+                                  <p className="text-xs font-bold text-foreground">@{sub.user?.username}</p>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">Branch: {sub.branchName}</p>
+                                </div>
+                              </div>
+                              <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                sub.status === 'MERGED' ? 'bg-indigo-500 text-white' : 'bg-red-500/10 text-red-500'
+                              }`}>
+                                {sub.status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center text-muted-foreground text-sm font-semibold italic">
+                      No student submissions yet for this mission.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Side: Quick Actions & Settings */}
+              <div className="space-y-6">
+                {(selectedPR && activeTab === 'management') ? (
+                  <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-6 shadow-xl sticky top-6">
+                    <div className="flex items-center justify-between border-b border-border/30 pb-3">
+                      <div className="flex items-center gap-2">
+                        <ClipboardList className="text-primary" size={18} />
+                        <h3 className="font-bold text-sm">Submission Review</h3>
+                      </div>
+                      <button 
+                        onClick={() => setSelectedPR(null)}
+                        className="text-[10px] font-black uppercase text-muted-foreground hover:text-foreground"
+                      >
+                        Close
+                      </button>
+                    </div>
+
+                    {testError && (
+                      <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 text-xs rounded-xl flex items-center gap-2">
+                        <AlertCircle size={14} />
+                        <p className="font-semibold leading-relaxed">{testError}</p>
+                      </div>
+                    )}
+
+                    {testSuccess ? (
+                      <div className="text-center py-6 space-y-4">
+                        <div className="w-14 h-14 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto animate-bounce">
+                          <Sparkles size={26} />
+                        </div>
+                        <h3 className="font-bold text-emerald-500">Review Submitted!</h3>
+                        <p className="text-xs text-muted-foreground font-semibold">The student has been notified of your decision.</p>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleTestSubmit} className="space-y-5">
+                        <div className="p-3.5 bg-muted/30 border border-border/50 rounded-xl space-y-1 text-xs">
+                          <p className="text-muted-foreground text-[10px] uppercase">Reviewing Target</p>
+                          <p className="font-bold text-foreground">
+                            {selectedPR.number ? `PR #${selectedPR.number}: ${selectedPR.title}` : `Submission by @${selectedPR.user?.username}: ${selectedPR.branchName}`}
+                          </p>
+                        </div>
+
+                        {/* Rating select */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quality Score (1-5)</label>
+                          <select 
+                            value={testRating}
+                            onChange={(e)=>setTestRating(parseInt(e.target.value))}
+                            className="w-full text-xs bg-background border border-border rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-primary font-semibold text-foreground"
+                          >
+                            <option value="5">5 - Perfect Implementation</option>
+                            <option value="4">4 - Good Work</option>
+                            <option value="3">3 - Meets Requirements</option>
+                            <option value="2">2 - Needs Improvement</option>
+                            <option value="1">1 - Does not meet standards</option>
+                          </select>
+                        </div>
+
+                        {/* Bugs found */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Issues & Bugs</label>
+                          <textarea
+                            rows={2}
+                            placeholder="List any blockers or bugs..."
+                            value={testBugs}
+                            onChange={(e)=>setTestBugs(e.target.value)}
+                            className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary resize-none font-semibold text-foreground"
+                          />
+                        </div>
+
+                        {/* Checklist toggle buttons */}
+                        <div className="space-y-2">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Owner Checklist</p>
+                          {checklist.map((item, idx) => (
+                            <button
+                              type="button"
+                              key={idx}
+                              onClick={() => toggleChecklist(idx)}
+                              className="w-full flex items-start gap-2 p-2 rounded-lg border border-border/40 text-left text-[11px] font-semibold"
+                            >
+                              <input 
+                                type="checkbox"
+                                checked={item.checked}
+                                onChange={() => {}}
+                                className="mt-0.5 rounded text-primary"
+                              />
+                              <span className={item.checked ? "text-muted-foreground line-through" : "text-foreground"}>{item.item}</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Feedback comments */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Reviewer Feedback</label>
+                          <textarea
+                            required
+                            rows={3}
+                            placeholder="Provide detailed feedback for the student..."
+                            value={testFeedback}
+                            onChange={(e)=>setTestFeedback(e.target.value)}
+                            className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary resize-none font-semibold text-foreground"
+                          />
+                        </div>
+
+                        {/* Outcome select */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Final Decision</label>
+                          <div className="grid grid-cols-3 gap-2 text-[10px] font-black uppercase">
+                            {[
+                              { val: "APPROVED", label: "Approve", color: "border-emerald-500/20 text-emerald-500 bg-emerald-500/5", sel: "bg-emerald-500 text-white" },
+                              { val: "NEEDS_CHANGES", label: "Changes", color: "border-orange-500/20 text-orange-500 bg-orange-500/5", sel: "bg-orange-500 text-white" },
+                              { val: "REJECTED", label: "Reject", color: "border-red-500/20 text-red-500 bg-red-500/5", sel: "bg-red-500 text-white" }
+                            ].map((btn) => {
+                              const isSel = testOutcome === btn.val;
+                              return (
+                                <button
+                                  type="button"
+                                  key={btn.val}
+                                  onClick={()=>setTestOutcome(btn.val)}
+                                  className={`py-2 rounded-lg border text-center transition-all ${isSel ? btn.sel : btn.color}`}
+                                >
+                                  {btn.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <button
+                          disabled={submittingTest}
+                          type="submit"
+                          className="w-full btn-primary py-3.5 text-xs font-black uppercase tracking-widest shadow-md flex items-center justify-center gap-1.5"
+                        >
+                          {submittingTest ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          ) : (
+                            "Submit Decision"
+                          )}
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-6">
+                    <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Owner Controls</h4>
+                    
+                    <div className="space-y-3">
+                      <button className="w-full p-4 bg-muted/20 border border-border/50 rounded-2xl text-left hover:border-primary/50 transition-all group">
+                        <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">Edit Mission Briefing</p>
+                        <p className="text-[10px] text-muted-foreground font-semibold mt-1">Update title, description, and bounty</p>
+                      </button>
+                      
+                      <button className="w-full p-4 bg-muted/20 border border-border/50 rounded-2xl text-left hover:border-primary/50 transition-all group">
+                        <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">Manage Contributors</p>
+                        <p className="text-[10px] text-muted-foreground font-semibold mt-1">Add or remove direct collaborators</p>
+                      </button>
+
+                      <button 
+                        onClick={handleDelete}
+                        className="w-full p-4 bg-red-500/5 border border-red-500/20 rounded-2xl text-left hover:bg-red-500/10 transition-all group"
+                      >
+                        <p className="text-xs font-bold text-red-500">Archive Mission</p>
+                        <p className="text-[10px] text-red-500/60 font-semibold mt-1">Permanently remove from marketplace</p>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Mission Stats Recap */}
+                <div className="bg-card border border-border/50 rounded-3xl p-6 space-y-4">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mission Performance</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-muted/20 rounded-xl">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase">Accepted</p>
+                      <p className="text-lg font-black">{project?.contributors?.length || 0}</p>
+                    </div>
+                    <div className="p-3 bg-muted/20 rounded-xl">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase">Tested</p>
+                      <p className="text-lg font-black">{projectSubmissions?.filter(s=>s.status==='APPROVED'||s.status==='MERGED').length || 0}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -588,15 +997,15 @@ const ProjectDetails = () => {
                   <div className="p-4 bg-muted/20 border border-border/50 rounded-2xl space-y-2 text-xs font-bold leading-relaxed">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Fork Owner</span>
-                      <span className="text-slate-300">@{authUser?.username}</span>
+                      <span className="text-foreground">@{authUser?.username}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Default Branch</span>
-                      <span className="text-slate-300">{forkStatus?.defaultBranch || 'main'}</span>
+                      <span className="text-foreground">{forkStatus?.defaultBranch || 'main'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Upstream Branch</span>
-                      <span className="text-slate-300">{intelligence?.overview?.defaultBranch}</span>
+                      <span className="text-foreground">{intelligence?.overview?.defaultBranch}</span>
                     </div>
                     {forkStatus?.forkUrl && (
                       <div className="flex justify-between pt-2 border-t border-border/20 mt-2">
@@ -626,7 +1035,7 @@ const ProjectDetails = () => {
                     {mySubmissions.map((sub, idx) => (
                       <div key={idx} className="p-4 bg-muted/10 border border-border/50 rounded-2xl flex items-center justify-between">
                         <div>
-                          <p className="text-xs font-bold text-slate-200">PR #{sub.prNumber || 'Pending'}: Branch "{sub.branchName}"</p>
+                          <p className="text-xs font-bold text-foreground">PR #{sub.prNumber || 'Pending'}: Branch "{sub.branchName}"</p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">Submitted on {new Date(sub.createdAt).toLocaleDateString()}</p>
                         </div>
                         <span className={`text-[9px] font-black uppercase px-2 py-1 rounded ${
@@ -667,7 +1076,7 @@ const ProjectDetails = () => {
                         placeholder="Bug: broken links or documentation typos..."
                         value={newIssueTitle}
                         onChange={(e)=>setNewIssueTitle(e.target.value)}
-                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-semibold text-slate-200"
+                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-semibold text-foreground"
                       />
                     </div>
                     <div className="space-y-1">
@@ -677,7 +1086,7 @@ const ProjectDetails = () => {
                         placeholder="Provide detailed reproduction steps or context..."
                         value={newIssueBody}
                         onChange={(e)=>setNewIssueBody(e.target.value)}
-                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary focus:outline-none resize-none font-semibold text-slate-200"
+                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary focus:outline-none resize-none font-semibold text-foreground"
                       />
                     </div>
                     <button 
@@ -695,11 +1104,11 @@ const ProjectDetails = () => {
                   <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between text-xs font-bold leading-relaxed">
                     <div>
                       <p className="text-primary text-[9px] uppercase tracking-wider">Linked Issue</p>
-                      <p className="text-slate-200 mt-0.5">#{selectedIssue.number}: {selectedIssue.title}</p>
+                      <p className="text-foreground mt-0.5">#{selectedIssue.number}: {selectedIssue.title}</p>
                     </div>
                     <button 
                       onClick={()=>setSelectedIssue(null)}
-                      className="text-muted-foreground hover:text-white"
+                      className="text-muted-foreground hover:text-foreground"
                     >
                       Change
                     </button>
@@ -716,7 +1125,7 @@ const ProjectDetails = () => {
                         })}
                         className="w-full p-3.5 bg-muted/10 hover:bg-muted/30 border border-border/50 rounded-xl text-left text-xs font-semibold leading-relaxed flex items-center justify-between group"
                       >
-                        <span className="text-slate-300 group-hover:text-primary transition-colors truncate max-w-[280px]">{issue.title}</span>
+                        <span className="text-foreground group-hover:text-primary transition-colors truncate max-w-[280px]">{issue.title}</span>
                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Select</span>
                       </button>
                     ))}
@@ -840,7 +1249,7 @@ const ProjectDetails = () => {
                             <img src={pr.authorAvatar} alt={pr.author} className="w-8 h-8 rounded-full border border-border" />
                             <div>
                               <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold text-slate-200">#{pr.number}: {pr.title}</p>
+                                <p className="text-sm font-bold text-foreground">#{pr.number}: {pr.title}</p>
                                 <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${
                                   pr.state === 'OPEN' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
                                   pr.state === 'MERGED' ? 'bg-indigo-500 text-white' :
@@ -908,7 +1317,7 @@ const ProjectDetails = () => {
                         {pr.state === 'OPEN' && pr.checks?.length > 0 && (
                           <div className="mt-3 pt-3 border-t border-border/30 flex flex-wrap gap-2">
                             {pr.checks.slice(0, 3).map((check, cidx) => (
-                              <div key={cidx} className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground bg-slate-900/50 px-2 py-1 rounded">
+                              <div key={cidx} className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground bg-muted/50 px-2 py-1 rounded">
                                 <div className={`w-1.5 h-1.5 rounded-full ${
                                   check.conclusion === 'SUCCESS' ? 'bg-emerald-500' : 
                                   check.conclusion === 'FAILURE' ? 'bg-red-500' : 'bg-amber-500'
@@ -957,11 +1366,11 @@ const ProjectDetails = () => {
                     ?.map((pr, idx) => (
                       <div key={idx} className="p-4 bg-muted/5 border border-border/30 rounded-2xl flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-800 border border-border/50 overflow-hidden">
+                          <div className="w-8 h-8 rounded-full bg-muted border border-border/50 overflow-hidden">
                             <img src={pr.authorAvatar} alt={pr.author} className="w-full h-full object-cover" />
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-slate-300 truncate max-w-[200px]">PR #{pr.number}: {pr.title}</p>
+                            <p className="text-xs font-bold text-foreground truncate max-w-[200px]">PR #{pr.number}: {pr.title}</p>
                             <p className="text-[10px] text-muted-foreground">by @{pr.author} • {pr.state === 'MERGED' ? 'Accepted' : 'Closed'}</p>
                           </div>
                         </div>
@@ -1008,7 +1417,9 @@ const ProjectDetails = () => {
                   <form onSubmit={handleTestSubmit} className="space-y-5">
                     <div className="p-3.5 bg-muted/30 border border-border/50 rounded-xl space-y-1 text-xs">
                       <p className="text-muted-foreground text-[10px] uppercase">Testing Target</p>
-                      <p className="font-bold text-slate-200">PR #{selectedPR.number}: {selectedPR.title}</p>
+                      <p className="font-bold text-foreground">
+                        {selectedPR.number ? `PR #${selectedPR.number}: ${selectedPR.title}` : `Submission by @${selectedPR.user?.username}: ${selectedPR.branchName}`}
+                      </p>
                     </div>
 
                     {/* Rating select */}
@@ -1017,7 +1428,7 @@ const ProjectDetails = () => {
                       <select 
                         value={testRating}
                         onChange={(e)=>setTestRating(parseInt(e.target.value))}
-                        className="w-full text-xs bg-background border border-border rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-primary font-semibold text-slate-300"
+                        className="w-full text-xs bg-background border border-border rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-primary font-semibold text-foreground"
                       >
                         <option value="5">5 - Excellent Quality</option>
                         <option value="4">4 - Good Features</option>
@@ -1035,7 +1446,7 @@ const ProjectDetails = () => {
                         placeholder="List any bugs or edge case crashes (one per line)..."
                         value={testBugs}
                         onChange={(e)=>setTestBugs(e.target.value)}
-                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary resize-none font-semibold text-slate-200"
+                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary resize-none font-semibold text-foreground"
                       />
                     </div>
 
@@ -1047,7 +1458,7 @@ const ProjectDetails = () => {
                         placeholder="List performance recommendations..."
                         value={testSuggestions}
                         onChange={(e)=>setTestSuggestions(e.target.value)}
-                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary resize-none font-semibold text-slate-200"
+                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary resize-none font-semibold text-foreground"
                       />
                     </div>
 
@@ -1067,7 +1478,7 @@ const ProjectDetails = () => {
                             onChange={() => {}}
                             className="mt-0.5 rounded text-primary"
                           />
-                          <span className={item.checked ? "text-slate-400 line-through" : "text-slate-200"}>{item.item}</span>
+                          <span className={item.checked ? "text-muted-foreground line-through" : "text-foreground"}>{item.item}</span>
                         </button>
                       ))}
                     </div>
@@ -1081,7 +1492,7 @@ const ProjectDetails = () => {
                         placeholder="Describe compile state and checklist tests report..."
                         value={testFeedback}
                         onChange={(e)=>setTestFeedback(e.target.value)}
-                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary resize-none font-semibold text-slate-200"
+                        className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary resize-none font-semibold text-foreground"
                       />
                     </div>
 
@@ -1154,8 +1565,8 @@ const ProjectDetails = () => {
                 {intelligence?.commitAnalytics?.recentCommits?.map((commit, idx) => (
                   <div key={idx} className="p-4 bg-muted/10 border border-border/30 rounded-2xl space-y-2">
                     <div className="flex justify-between items-start">
-                      <p className="text-xs font-bold text-slate-200 line-clamp-2">{commit.message}</p>
-                      <span className="text-[9px] font-mono text-muted-foreground bg-slate-900 px-1.5 py-0.5 rounded">
+                      <p className="text-xs font-bold text-foreground line-clamp-2">{commit.message}</p>
+                      <span className="text-[9px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                         {commit.sha.substring(0, 7)}
                       </span>
                     </div>
@@ -1203,7 +1614,7 @@ const ProjectDetails = () => {
                       placeholder="Title of the bug or feature request..."
                       value={newIssueTitle}
                       onChange={(e)=>setNewIssueTitle(e.target.value)}
-                      className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-semibold text-slate-200"
+                      className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-semibold text-foreground"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1213,7 +1624,7 @@ const ProjectDetails = () => {
                       placeholder="Describe the issue, steps to reproduce, or expected behavior..."
                       value={newIssueBody}
                       onChange={(e)=>setNewIssueBody(e.target.value)}
-                      className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary focus:outline-none resize-none font-semibold text-slate-200"
+                      className="w-full text-xs p-3 bg-background border border-border rounded-xl focus:ring-1 focus:ring-primary focus:outline-none resize-none font-semibold text-foreground"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -1236,11 +1647,11 @@ const ProjectDetails = () => {
               )}
 
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                {(intelligence?.issueAnalytics?.openIssuesList || intelligence?.recentActivityFeed?.filter(a => a.type === "issue")).map((issue, idx) => (
+                {((intelligence?.issueAnalytics?.openIssuesList || intelligence?.recentActivityFeed?.filter(a => a.type === "issue")) || []).map((issue, idx) => (
                   <div key={idx} className="p-4 bg-muted/10 border border-border/30 rounded-2xl space-y-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="text-xs font-bold text-slate-200">
+                        <p className="text-xs font-bold text-foreground">
                           {issue.number ? `#${issue.number}: ` : ""}{issue.title}
                         </p>
                         <div className="flex flex-wrap gap-1 mt-1.5">

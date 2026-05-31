@@ -63,10 +63,10 @@ const CommandPalette = ({ isOpen, onClose }) => {
         dispatch(logout());
         localStorage.removeItem("token");
         navigate("/");
-      }, shortcut: isMac ? "⌥ Q" : "Alt Q" }
+      }, shortcut: isMac ? "⇧ Q" : "Shift Q" }
     ] : []),
-    { name: "Switch to Dark Mode", icon: Moon, action: () => setTheme("dark"), shortcut: isMac ? "⌥ D" : "Alt D" },
-    { name: "Switch to Light Mode", icon: Sun, action: () => setTheme("light"), shortcut: isMac ? "⌥ L" : "Alt L" }
+    { name: "Switch to Dark Mode", icon: Moon, action: () => setTheme("dark"), shortcut: isMac ? "⇧ D" : "Shift D" },
+    { name: "Switch to Light Mode", icon: Sun, action: () => setTheme("light"), shortcut: isMac ? "⇧ L" : "Shift L" }
   ];
 
   const filteredNavigation = navigationItems.filter(item => 
@@ -129,15 +129,15 @@ const CommandPalette = ({ isOpen, onClose }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: -10 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="relative w-full max-w-2xl bg-slate-900/95 dark:bg-slate-950/95 border border-slate-800 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden flex flex-col"
+            className="relative w-full max-w-2xl bg-popover/95 border border-border rounded-2xl shadow-2xl shadow-black/80 overflow-hidden flex flex-col"
           >
             {/* Search Input bar */}
-            <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-800">
-              <Search className="text-slate-400 shrink-0" size={20} />
+            <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
+              <Search className="text-muted-foreground shrink-0" size={20} />
               <input 
                 ref={inputRef}
                 type="text" 
-                className="w-full bg-transparent border-0 text-white placeholder-slate-500 focus:outline-none focus:ring-0 text-base font-medium"
+                className="w-full bg-transparent border-0 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-0 text-base font-medium"
                 placeholder="Type a command or search active missions..."
                 value={query}
                 onChange={(e) => {
@@ -145,13 +145,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
                   setSelectedIndex(0);
                 }}
               />
-              <span className="text-[10px] font-black uppercase text-slate-500 bg-slate-800/50 px-2 py-1 rounded border border-slate-700 select-none">ESC</span>
+              <span className="text-[10px] font-black uppercase text-muted-foreground bg-muted px-2 py-1 rounded border border-border select-none">ESC</span>
             </div>
 
             {/* Scrollable list */}
             <div className="max-h-[350px] overflow-y-auto p-2 space-y-1 select-none">
               {totalItems === 0 && !isLoading && (
-                <div className="py-8 text-center text-slate-500 text-sm font-medium">
+                <div className="py-8 text-center text-muted-foreground text-sm font-medium">
                   No matching results found.
                 </div>
               )}
@@ -159,7 +159,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
               {/* Dynamic Project Query results */}
               {projects.length > 0 && (
                 <div className="space-y-1">
-                  <div className="px-3 py-1 text-[10px] font-black text-slate-500 uppercase tracking-widest">Challenges</div>
+                  <div className="px-3 py-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Challenges</div>
                   {projects.map((project, idx) => {
                     const actualIdx = filteredNavigation.length + idx;
                     const isSelected = actualIdx === selectedIndex;
@@ -172,14 +172,14 @@ const CommandPalette = ({ isOpen, onClose }) => {
                         }}
                         onMouseEnter={() => setSelectedIndex(actualIdx)}
                         className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-150 text-left ${
-                          isSelected ? "bg-primary text-white" : "text-slate-300 hover:bg-slate-800/40"
+                          isSelected ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent"
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <Code2 size={16} className={isSelected ? "text-white" : "text-primary"} />
+                          <Code2 size={16} className={isSelected ? "text-primary-foreground" : "text-primary"} />
                           <span className="font-bold text-sm truncate">{project.title}</span>
                           <span className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                            isSelected ? "bg-white/20 text-white" : "bg-primary/10 text-primary border border-primary/20"
+                            isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary border border-primary/20"
                           }`}>{project.difficulty}</span>
                         </div>
                         <span className="text-[10px] font-bold opacity-60">Open Mission</span>
@@ -192,7 +192,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
               {/* Basic Navigation Commands */}
               {filteredNavigation.length > 0 && (
                 <div className="space-y-1 pt-1.5">
-                  <div className="px-3 py-1 text-[10px] font-black text-slate-500 uppercase tracking-widest">Navigation & Actions</div>
+                  <div className="px-3 py-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Navigation & Actions</div>
                   {filteredNavigation.map((item, idx) => {
                     const isSelected = idx === selectedIndex;
                     return (
@@ -204,16 +204,16 @@ const CommandPalette = ({ isOpen, onClose }) => {
                         }}
                         onMouseEnter={() => setSelectedIndex(idx)}
                         className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-150 text-left ${
-                          isSelected ? "bg-primary text-white" : "text-slate-300 hover:bg-slate-800/40"
+                          isSelected ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <item.icon size={16} className={isSelected ? "text-white" : "text-slate-400"} />
+                          <item.icon size={16} className={isSelected ? "text-primary-foreground" : "text-muted-foreground"} />
                           <span className="font-bold text-sm">{item.name}</span>
                         </div>
                         {item.shortcut && (
                           <span className={`text-[10px] font-black tracking-widest px-2 py-0.5 rounded select-none ${
-                            isSelected ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400 border border-slate-700"
+                            isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground border border-border"
                           }`}>
                             {item.shortcut}
                           </span>
@@ -226,7 +226,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
             </div>
 
             {/* Footer */}
-            <div className="px-4 py-3 bg-slate-950 border-t border-slate-850 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+            <div className="px-4 py-3 bg-muted/50 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground font-medium">
               <div className="flex items-center gap-4">
                 <span>↑↓ to navigate</span>
                 <span>↵ to select</span>

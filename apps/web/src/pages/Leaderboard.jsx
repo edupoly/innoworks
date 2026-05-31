@@ -91,7 +91,7 @@ const Leaderboard = () => {
                     {isGold ? (
                       <Crown className="text-yellow-500 mx-auto fill-yellow-500/20" size={24} />
                     ) : isSilver ? (
-                      <Medal className="text-slate-400 mx-auto fill-slate-400/10" size={22} />
+                      <Medal className="text-muted-foreground mx-auto fill-slate-400/10" size={22} />
                     ) : isBronze ? (
                       <Medal className="text-amber-600 mx-auto fill-amber-600/10" size={22} />
                     ) : (

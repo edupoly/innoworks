@@ -71,7 +71,7 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="w-full py-32 px-4 bg-white dark:bg-slate-950">
+      <section className="w-full py-32 px-4 bg-background">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-3xl lg:text-5xl font-black tracking-tight mb-4">Everything you need to ship.</h2>
@@ -79,7 +79,7 @@ const Home = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex flex-col p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-border/50 hover:border-primary/30 transition-colors group">
+            <div className="flex flex-col p-8 rounded-3xl bg-card border border-border/50 hover:border-primary/30 transition-colors group">
               <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform">
                 <Rocket size={28} />
               </div>
@@ -87,7 +87,7 @@ const Home = () => {
               <p className="text-muted-foreground leading-relaxed">Accelerate your career by contributing to production-ready projects and earning verified XP that companies trust.</p>
             </div>
             
-            <div className="flex flex-col p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-border/50 hover:border-primary/30 transition-colors group text-white bg-gradient-to-br from-primary to-blue-700">
+            <div className="flex flex-col p-8 rounded-3xl bg-card border border-border/50 hover:border-primary/30 transition-colors group text-primary-foreground bg-gradient-to-br from-primary to-blue-700">
               <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
                 <ShieldCheck size={28} />
               </div>
@@ -95,7 +95,7 @@ const Home = () => {
               <p className="text-white/80 leading-relaxed">Our automated testing engine ensures your code meets the highest standards before it even reaches a human reviewer.</p>
             </div>
             
-            <div className="flex flex-col p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-border/50 hover:border-primary/30 transition-colors group">
+            <div className="flex flex-col p-8 rounded-3xl bg-card border border-border/50 hover:border-primary/30 transition-colors group">
               <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 mb-6 group-hover:scale-110 transition-transform">
                 <Zap size={28} />
               </div>

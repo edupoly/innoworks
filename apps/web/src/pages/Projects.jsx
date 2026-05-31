@@ -87,7 +87,7 @@ const Projects = () => {
               placeholder="Search challenges by title..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 text-sm font-semibold leading-relaxed text-slate-200"
+              className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 text-sm font-semibold leading-relaxed text-foreground"
             />
           </div>
 
@@ -96,7 +96,7 @@ const Projects = () => {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="w-full text-sm bg-background border border-border rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:focus:ring-primary/20 font-semibold text-slate-300"
+              className="w-full text-sm bg-background border border-border rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:focus:ring-primary/20 font-semibold text-foreground"
             >
               <option value="">All Difficulties</option>
               <option value="Easy">Easy Level</option>
@@ -110,7 +110,7 @@ const Projects = () => {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="w-full text-sm bg-background border border-border rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:focus:ring-primary/20 font-semibold text-slate-300"
+              className="w-full text-sm bg-background border border-border rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:focus:ring-primary/20 font-semibold text-foreground"
             >
               <option value="recent">Latest Challenges</option>
               <option value="trending">Trending (Stars & Forks)</option>
@@ -127,7 +127,7 @@ const Projects = () => {
             onClick={() => setSkill("")}
             className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${
               !skill 
-                ? "bg-primary text-white border-primary" 
+                ? "bg-primary text-primary-foreground border-primary" 
                 : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/50"
             }`}
           >
@@ -142,7 +142,7 @@ const Projects = () => {
                 onClick={() => setSkill(s)}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${
                   isSel 
-                    ? "bg-primary text-white border-primary" 
+                    ? "bg-primary text-primary-foreground border-primary" 
                     : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/50"
                 }`}
               >

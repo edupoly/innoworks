@@ -2,8 +2,10 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { PageTransition } from "./PageTransition";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useTheme } from "./ThemeProvider";
+import { logout } from "../store/slices/authSlice";
 import CommandPalette from "./CommandPalette";
 import { initiateSocket, disconnectSocket, subscribeToNotifications } from "../lib/socket";
 import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers } from "lucide-react";
@@ -11,6 +13,8 @@ import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers } f
 const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { setTheme } = useTheme();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -19,6 +23,7 @@ const Layout = () => {
   const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
   const [lastKeyPressed, setLastKeyPressed] = useState("");
+  const timeoutRef = useRef(null);
 
   // Keyboard shortcut listener for Ctrl+K / Cmd+K and sequential shortcuts
   useEffect(() => {
@@ -28,43 +33,87 @@ const Layout = () => {
         return;
       }
 
-      // Open palette: Ctrl+K or Cmd+K
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      // 1. Meta Combinations (Ctrl/Cmd + Key)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
         return;
       }
 
-      // Sequential shortcuts (G then P, G then L, etc)
+      // 2. Shift Combinations (Shift + Key)
+      if (e.shiftKey && !e.metaKey && !e.ctrlKey) {
+        const key = e.key.toUpperCase();
+        if (key === "Q" && isAuthenticated) {
+          e.preventDefault();
+          dispatch(logout());
+          localStorage.removeItem("token");
+          navigate("/");
+          return;
+        }
+        if (key === "D") {
+          e.preventDefault();
+          setTheme("dark");
+          return;
+        }
+        if (key === "L") {
+          e.preventDefault();
+          setTheme("light");
+          return;
+        }
+      }
+
+      // 3. Sequential shortcuts (G then P, G then L, etc)
       const key = e.key.toLowerCase();
+      
       if (lastKeyPressed === "g") {
+        let matched = false;
         if (key === "p") {
           e.preventDefault();
           navigate("/projects");
+          matched = true;
         } else if (key === "l") {
           e.preventDefault();
           navigate("/leaderboard");
+          matched = true;
         } else if (key === "d" && isAuthenticated) {
           e.preventDefault();
           navigate("/dashboard");
+          matched = true;
         }
-        setLastKeyPressed("");
-      } else if (key === "g") {
-        setLastKeyPressed("g");
-        // Clear 'g' after 1 second if no follow-up
-        setTimeout(() => setLastKeyPressed(""), 1000);
-      } else if (lastKeyPressed === "c" && key === "p" && isAuthenticated) {
-        e.preventDefault();
-        navigate("/projects/new");
-        setLastKeyPressed("");
-      } else if (key === "c") {
-        setLastKeyPressed("c");
-        setTimeout(() => setLastKeyPressed(""), 1000);
+        
+        if (matched) {
+          setLastKeyPressed("");
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          return;
+        }
+      } 
+      
+      if (lastKeyPressed === "c") {
+        if (key === "p" && isAuthenticated) {
+          e.preventDefault();
+          navigate("/projects/new");
+          setLastKeyPressed("");
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          return;
+        }
+      }
+
+      // Detect start of sequence
+      if (key === "g" || key === "c") {
+        setLastKeyPressed(key);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+          setLastKeyPressed("");
+        }, 1000);
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [navigate, lastKeyPressed, isAuthenticated]);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [navigate, lastKeyPressed, isAuthenticated, dispatch, setTheme]);
 
   // WebSockets setup for real-time notifications on auth change
   useEffect(() => {
@@ -159,19 +208,19 @@ const Layout = () => {
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-              className="w-full bg-slate-900/90 dark:bg-slate-950/95 border border-slate-800 rounded-2xl p-4 shadow-2xl shadow-black/50 backdrop-blur-xl flex gap-3.5 relative overflow-hidden"
+              className="w-full bg-popover/90 border border-border rounded-2xl p-4 shadow-2xl shadow-black/50 backdrop-blur-xl flex gap-3.5 relative overflow-hidden"
             >
               <div className="w-1.5 h-full absolute left-0 top-0 bg-primary" />
-              <div className="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center shrink-0 border border-slate-700">
+              <div className="w-10 h-10 rounded-xl bg-muted/80 flex items-center justify-center shrink-0 border border-border">
                 {getNotificationIcon(toast.type)}
               </div>
               <div className="flex-grow min-w-0 pr-4">
                 <p className="text-xs font-black uppercase tracking-wider text-primary mb-0.5">Real-time Alert</p>
-                <p className="text-xs font-semibold leading-relaxed text-slate-200">{toast.message}</p>
+                <p className="text-xs font-semibold leading-relaxed text-foreground">{toast.message}</p>
               </div>
               <button 
                 onClick={() => dismissToast(toast.id)}
-                className="text-slate-500 hover:text-white shrink-0 hover:bg-slate-800 p-1.5 rounded-lg h-fit transition-colors"
+                className="text-muted-foreground hover:text-foreground shrink-0 hover:bg-muted p-1.5 rounded-lg h-fit transition-colors"
               >
                 <X size={14} />
               </button>

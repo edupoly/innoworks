@@ -102,7 +102,7 @@ const EngineeringRadarChart = ({ stats }) => {
             key={idx}
             points={points}
             fill="none"
-            className="stroke-slate-800 dark:stroke-slate-900"
+            className="stroke-border"
             strokeWidth={1}
           />
         ))}
@@ -117,7 +117,7 @@ const EngineeringRadarChart = ({ stats }) => {
               y1={center}
               x2={outer.x}
               y2={outer.y}
-              className="stroke-slate-800 dark:stroke-slate-900"
+              className="stroke-border"
               strokeWidth={1}
             />
           );
@@ -141,7 +141,7 @@ const EngineeringRadarChart = ({ stats }) => {
               cx={coord.x}
               cy={coord.y}
               r={4}
-              className="fill-primary stroke-white dark:stroke-slate-950"
+              className="fill-primary stroke-background"
               strokeWidth={1.5}
             />
           );
@@ -161,7 +161,7 @@ const EngineeringRadarChart = ({ stats }) => {
               x={textCoord.x}
               y={textCoord.y + 4}
               textAnchor={textAnchor}
-              className="text-[10px] font-black uppercase fill-slate-400 select-none"
+              className="text-[10px] font-black uppercase fill-muted-foreground select-none"
             >
               {m.label} ({m.value})
             </text>
@@ -456,7 +456,15 @@ const Dashboard = () => {
             activeTab === "kanban" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Kanban size={16} /> Kanban Contribution Board
+          <Kanban size={16} /> My Contributions
+        </button>
+        <button 
+          onClick={() => setActiveTab("management")}
+          className={`pb-4 border-b-2 flex items-center gap-2 px-1 ${
+            activeTab === "management" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Layers size={16} /> Managed Projects
         </button>
         <button 
           onClick={() => setActiveTab("timeline")}
@@ -476,49 +484,13 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           >
-            {/* Column 0: My Managed Projects */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                <span className="text-xs font-black uppercase tracking-widest text-primary">My Challenges</span>
-                <span className="text-[10px] font-black bg-primary/10 text-primary px-2 py-0.5 rounded-full">{ownedProjects.length}</span>
-              </div>
-              <div className="space-y-3.5">
-                {ownedProjects.length > 0 ? (
-                  ownedProjects.map((project) => (
-                    <div key={project._id} className="bg-card p-5 border border-primary/20 rounded-2xl space-y-4 group">
-                      <div className="flex justify-between items-start">
-                        <Link to={`/projects/${project._id}`} className="font-bold text-sm leading-relaxed hover:text-primary transition-colors line-clamp-2">{project.title}</Link>
-                        <button 
-                          onClick={() => handleDeleteProject(project._id)}
-                          className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                          title="Delete Project"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground font-bold uppercase">{project.difficulty}</span>
-                        <div className="flex items-center gap-2">
-                           <Link to={`/projects/${project._id}`} className="text-primary font-black uppercase tracking-wider hover:underline">Manage</Link>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="py-8 text-center text-muted-foreground text-xs border-2 border-dashed border-border rounded-2xl bg-muted/10 font-semibold">
-                    No challenges posted.
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Column 1: Planned / Accepted */}
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                <span className="text-xs font-black uppercase tracking-widest text-slate-400">Accepted Challenge</span>
-                <span className="text-[10px] font-black bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">{acceptedProjectsDetails.length}</span>
+                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Accepted Challenge</span>
+                <span className="text-[10px] font-black bg-muted text-foreground px-2 py-0.5 rounded-full">{acceptedProjectsDetails.length}</span>
               </div>
               <div className="space-y-3.5">
                 {acceptedProjectsDetails.length > 0 ? (
@@ -558,7 +530,7 @@ const Dashboard = () => {
                       <p className="font-bold text-sm leading-relaxed">{sub.project?.title || "Project Solution"}</p>
                       <div className="flex items-center gap-2">
                         {sub.prNumber && (
-                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[10px] font-black text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-2.5 py-1 rounded border border-slate-700">
+                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[10px] font-black text-muted-foreground hover:text-foreground flex items-center gap-1 bg-muted px-2.5 py-1 rounded border border-border">
                             <Github size={12} /> PR #{sub.prNumber}
                           </a>
                         )}
@@ -592,7 +564,7 @@ const Dashboard = () => {
                         <a href={sub.prUrl} target="_blank" rel="noreferrer" className="font-black text-primary hover:underline flex items-center gap-0.5">
                           View Feedback <ExternalLink size={10} />
                         </a>
-                        <Link to={`/projects/${sub.project?._id}`} className="text-slate-400 hover:text-white font-bold">Resubmit</Link>
+                        <Link to={`/projects/${sub.project?._id}`} className="text-muted-foreground hover:text-foreground font-bold">Resubmit</Link>
                       </div>
                     </div>
                   ))
@@ -622,7 +594,7 @@ const Dashboard = () => {
                       <div className="flex items-center justify-between text-[11px] pt-1">
                         <span className="text-emerald-600 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">+200 XP Bounty</span>
                         {sub.prNumber && (
-                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white">
+                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground">
                             <Github size={14} />
                           </a>
                         )}
@@ -635,6 +607,47 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === "management" && (
+          <motion.div
+            key="management"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="space-y-4 max-w-2xl"
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-border/50">
+              <span className="text-xs font-black uppercase tracking-widest text-primary">Managed Challenges</span>
+              <span className="text-[10px] font-black bg-primary/10 text-primary px-2 py-0.5 rounded-full">{ownedProjects.length}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {ownedProjects.length > 0 ? (
+                ownedProjects.map((project) => (
+                  <div key={project._id} className="bg-card p-6 border border-primary/20 rounded-2xl space-y-4 group relative">
+                    <div className="flex justify-between items-start">
+                      <Link to={`/projects/${project._id}`} className="font-bold text-base leading-relaxed hover:text-primary transition-colors line-clamp-2">{project.title}</Link>
+                      <button 
+                        onClick={() => handleDeleteProject(project._id)}
+                        className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                        title="Delete Project"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between text-xs pt-2">
+                      <span className="text-muted-foreground font-black uppercase tracking-widest">{project.difficulty}</span>
+                      <Link to={`/projects/${project._id}`} className="btn-primary py-2 px-4 text-[10px] font-black uppercase tracking-wider">Manage Submissions</Link>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-12 text-center text-muted-foreground text-sm border-2 border-dashed border-border rounded-2xl bg-muted/10 font-semibold">
+                  No challenges posted yet.
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -661,7 +674,7 @@ const Dashboard = () => {
                     
                     <div className="space-y-2">
                       <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-300">{sub.project?.title || "Open Source Solution"}</span>
+                        <span className="text-xs font-bold text-foreground">{sub.project?.title || "Open Source Solution"}</span>
                         <span className="w-1.5 h-1.5 rounded-full bg-border" />
                         <span className="text-[10px] font-bold text-muted-foreground">{new Date(sub.createdAt).toLocaleString()}</span>
                       </div>
@@ -670,7 +683,7 @@ const Dashboard = () => {
                         <span className="font-bold text-primary">{sub.status}</span>.
                       </p>
                       {sub.testOutput && (
-                        <pre className="mt-3 p-4 bg-muted/50 border border-border/50 text-[10px] font-mono leading-relaxed text-slate-400 rounded-xl max-w-xl max-h-[100px] overflow-y-auto">
+                        <pre className="mt-3 p-4 bg-muted/50 border border-border/50 text-[10px] font-mono leading-relaxed text-muted-foreground rounded-xl max-w-xl max-h-[100px] overflow-y-auto">
                           {sub.testOutput}
                         </pre>
                       )}

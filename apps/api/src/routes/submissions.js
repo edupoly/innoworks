@@ -9,6 +9,7 @@ import { createPullRequest, createPullRequestReview, mergePullRequest } from '..
 import { validateObjectId } from '../middleware/validate.js';
 import { awardXP, XP_VALUES } from '../lib/gamification.js';
 import { sendNotification } from '../lib/notifications.js';
+import axios from 'axios';
 
 const router = Router();
 
@@ -106,33 +107,40 @@ router.post("/", authenticate, validateObjectId, async (req, res) => {
 
       console.log(`🔍 Executing Critical PR Creation Validations for @${user.username}: base=${baseOwner}/${baseRepo}:${baseBranch}, head=${head}`);
 
-      // 1. Verify Fork Repository Exists and User has Access
+      // 1. Verify Repository Exists and User has Access
       try {
         await axios.get(`https://api.github.com/repos/${headOwner}/${headRepo}`, {
           headers: { Authorization: `token ${user.githubAccessToken}` }
         });
       } catch (err) {
-        throw new Error(`Fork repository "${headOwner}/${headRepo}" not found. Please verify you accepted the challenge and the fork was created.`);
+        if (err.response?.status === 404) {
+          throw new Error(`Repository "${headOwner}/${headRepo}" not found. If this is a fork, please ensure it was created correctly on GitHub.`);
+        }
+        throw new Error(`Failed to access repository "${headOwner}/${headRepo}": ${err.message}`);
       }
 
-      // 2. Verify Working Branch Exists in the Fork
+      // 2. Verify Working Branch Exists
       try {
         await axios.get(`https://api.github.com/repos/${headOwner}/${headRepo}/branches/${branchName}`, {
           headers: { Authorization: `token ${user.githubAccessToken}` }
         });
       } catch (err) {
-        throw new Error(`Working branch "${branchName}" not found in your fork. Please create this branch and push your code before submitting.`);
+        throw new Error(`Working branch "${branchName}" not found in repository "${headOwner}/${headRepo}". Please push your code before submitting.`);
       }
 
-      // 3. Verify Branch Has Commits (Compare base branch with fork branch)
+      // 3. Verify Branch Has Commits (Compare base branch with head branch)
       try {
-        const compareResponse = await axios.get(
-          `https://api.github.com/repos/${baseOwner}/${baseRepo}/compare/${baseBranch}...${headOwner}:${branchName}`,
-          { headers: { Authorization: `token ${user.githubAccessToken}` } }
-        );
+        // Use the appropriate compare URL based on whether it's a fork or same repo
+        const compareUrl = isSameRepo 
+          ? `https://api.github.com/repos/${baseOwner}/${baseRepo}/compare/${baseBranch}...${branchName}`
+          : `https://api.github.com/repos/${baseOwner}/${baseRepo}/compare/${baseBranch}...${headOwner}:${branchName}`;
+
+        const compareResponse = await axios.get(compareUrl, { 
+          headers: { Authorization: `token ${user.githubAccessToken}` } 
+        });
         
         const totalCommits = compareResponse.data.total_commits || 0;
-        if (totalCommits === 0) {
+        if (totalCommits === 0 && !isSameRepo) {
           throw new Error(`Your working branch "${branchName}" has no commits compared to the project's base branch "${baseBranch}". Please make commits and push before submitting.`);
         }
       } catch (err) {
@@ -203,6 +211,13 @@ router.get("/project/:projectId", validateObjectId, async (req, res) => {
   try {
     const submissions = await Submission.find({ project: req.params.projectId })
       .populate('user', 'username avatarUrl')
+      .populate({
+        path: 'reviews',
+        populate: {
+          path: 'reviewer',
+          select: 'username avatarUrl'
+        }
+      })
       .sort({ createdAt: -1 });
     res.json(submissions);
   } catch (error) {
@@ -366,6 +381,11 @@ router.post("/:id/reviews", authenticate, async (req, res) => {
     });
     await submission.save();
 
+    // Award XP to the developer if approved
+    if (outcome === 'APPROVED') {
+      await awardXP(submission.user, XP_VALUES.PR_APPROVED, 'PR_APPROVED');
+    }
+
     // Award XP to reviewer for testing contribution! (30 XP)
     if (!reviewerUser.roles.includes('TESTER')) {
       reviewerUser.roles.push('TESTER');
@@ -441,8 +461,8 @@ router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
     });
     await submission.save();
 
-    // Award XP to contributor (100 XP for merged contribution)
-    await awardXP(submission.user, XP_VALUES.SUBMISSION_MERGED || 100, 'SUBMISSION_MERGED');
+    // Award XP to contributor (200 XP for merged contribution)
+    await awardXP(submission.user, XP_VALUES.PR_MERGED, 'PR_MERGED');
 
     // Notify developer
     await sendNotification(

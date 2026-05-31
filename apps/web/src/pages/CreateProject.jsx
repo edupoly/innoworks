@@ -14,6 +14,7 @@ const CreateProject = () => {
     difficulty: "Medium",
     bounty: 0,
     requiredSkills: "",
+    techStack: "",
   });
   const [selectedRepo, setSelectedRepo] = useState(null);
   const [branchName, setBranchName] = useState("");
@@ -37,6 +38,7 @@ const CreateProject = () => {
         repoUrl: selectedRepo.html_url,
         branchName: branchName,
         requiredSkills: formData.requiredSkills.split(",").map(s => s.trim()).filter(s => s !== ""),
+        techStack: formData.techStack.split(",").map(s => s.trim()).filter(s => s !== ""),
         bounty: Number(formData.bounty),
       });
       setSuccess(true);
@@ -131,6 +133,18 @@ const CreateProject = () => {
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-medium"
                   value={formData.requiredSkills}
                   onChange={(e) => setFormData({ ...formData, requiredSkills: e.target.value })}
+                />
+                <p className="text-[10px] text-muted-foreground font-bold uppercase mt-1">Separate with commas</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Tech Stack</label>
+                <input
+                  type="text"
+                  placeholder="Tailwind, TypeScript, Docker"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                  value={formData.techStack}
+                  onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
                 />
                 <p className="text-[10px] text-muted-foreground font-bold uppercase mt-1">Separate with commas</p>
               </div>
