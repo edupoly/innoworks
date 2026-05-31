@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Redis } from 'ioredis';
 
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+const REDIS_URL = process.env.REDIS_URL || "redis://red-d8dv0d7avr4c7385q3fg:6379";
 
 let redisConfig = {
   maxRetriesPerRequest: null, // Required for BullMQ
