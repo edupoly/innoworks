@@ -26,9 +26,11 @@ connectDB().catch(err => {
   console.log("⚠️ Server starting without DB - check your MONGODB_URI");
 });
 
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://innoworks.vercel.app";
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: FRONTEND_URL,
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -36,7 +38,7 @@ const io = new Server(httpServer, {
 
 // Relaxed CORS for development and OAuth
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: FRONTEND_URL,
   credentials: true
 }));
 
