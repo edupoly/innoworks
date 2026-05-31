@@ -133,13 +133,20 @@ const JWT_SECRET = process.env.JWT_SECRET || "secret";
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "refresh_secret";
 
 router.get("/github", (req, res) => {
-  const callbackUrl = process.env.GITHUB_CALLBACK_URL || "https://innoworks.onrender.com/auth/github/callback";
+  const isProduction = process.env.NODE_ENV === 'production' || req.get('host').includes('render.com');
+  const callbackUrl = isProduction 
+    ? "https://innoworks.onrender.com/auth/github/callback" 
+    : (process.env.GITHUB_CALLBACK_URL || "http://localhost:4000/auth/github/callback");
   const url = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=user,repo`;
   res.redirect(url);
 });
 
 router.get("/github/callback", async (req, res) => {
   const { code } = req.query;
+  const isProduction = process.env.NODE_ENV === 'production' || req.get('host').includes('render.com');
+  const callbackUrl = isProduction 
+    ? "https://innoworks.onrender.com/auth/github/callback" 
+    : (process.env.GITHUB_CALLBACK_URL || "http://localhost:4000/auth/github/callback");
 
   try {
     // Exchange code for access token
@@ -149,6 +156,7 @@ router.get("/github/callback", async (req, res) => {
         client_id: GITHUB_CLIENT_ID,
         client_secret: GITHUB_CLIENT_SECRET,
         code,
+        redirect_uri: callbackUrl,
       },
       {
         headers: { Accept: "application/json" },
