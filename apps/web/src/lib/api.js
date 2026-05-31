@@ -27,9 +27,12 @@ api.interceptors.response.use(
       const isAuthPath = window.location.pathname === '/' || window.location.pathname.includes('/auth/callback');
       
       if (!isAuthPath) {
+        console.warn("API 401: Clearing tokens and redirecting to home. Path:", window.location.pathname);
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         window.location.href = '/';
+      } else {
+        console.log("API 401 on auth path: Not clearing tokens. Path:", window.location.pathname);
       }
     }
     return Promise.reject(error);

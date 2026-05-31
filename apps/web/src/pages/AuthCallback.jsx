@@ -19,17 +19,38 @@ const AuthCallback = () => {
 
         if (!token) {
           const fullUrl = window.location.href;
-          setDebugInfo(`No token in params. Checking URL: ${fullUrl}`);
-          const tokenMatch = fullUrl.match(/token=([^&]+)/);
-          if (tokenMatch) token = tokenMatch[1];
-          const refreshMatch = fullUrl.match(/refreshToken=([^&]+)/);
-          if (refreshMatch) refreshToken = refreshMatch[1];
+          setDebugInfo(`No token in params. Parsing raw URL...`);
+          // Support both ?token= and callbacktoken= (malformed)
+          const tokenMatch = fullUrl.match(/[?&]token=([^&]+)/) || fullUrl.match(/token=([^&]+)/);
+          if (tokenMatch) {
+            token = decodeURIComponent(tokenMatch[1]);
+            setDebugInfo("Token extracted from raw URL");
+          }
+          
+          const refreshMatch = fullUrl.match(/[?&]refreshToken=([^&]+)/) || fullUrl.match(/refreshToken=([^&]+)/);
+          if (refreshMatch) {
+            refreshToken = decodeURIComponent(refreshMatch[1]);
+          }
         }
 
         if (token) {
-          setDebugInfo("Token found, storing and fetching user...");
-          localStorage.setItem("token", token);
-          localStorage.setItem("refreshToken", refreshToken || "");
+          setDebugInfo("Storing tokens in localStorage...");
+          try {
+            localStorage.setItem("token", token);
+            localStorage.setItem("refreshToken", refreshToken || "");
+            
+            // VERIFICATION
+            const savedToken = localStorage.getItem("token");
+            if (savedToken === token) {
+              setDebugInfo("Tokens VERIFIED in localStorage. Fetching user...");
+            } else {
+              setDebugInfo("CRITICAL: localStorage.setItem failed to persist data!");
+              throw new Error("localStorage verification failed");
+            }
+          } catch (storageErr) {
+            setDebugInfo(`Storage Error: ${storageErr.message}`);
+            throw storageErr;
+          }
 
           try {
             const response = await api.get('/auth/me');

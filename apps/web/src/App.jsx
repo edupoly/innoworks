@@ -127,8 +127,11 @@ function App() {
           dispatch(setCredentials({ user: response.data, token }));
         } catch (error) {
           console.error("Failed to restore session", error);
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
+          // Only clear tokens if we are not currently in the middle of an auth callback
+          if (!window.location.pathname.includes("/auth/callback")) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+          }
         } finally {
           dispatch(setLoading(false));
         }
