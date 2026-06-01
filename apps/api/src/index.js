@@ -16,9 +16,33 @@ import connectDB from "./lib/mongodb.js";
 import mongoose from "mongoose";
 
 import { errorHandler, notFound } from './middleware/errorHandler.js';
+import rateLimit from 'express-rate-limit';
 
 const app = express();
 const httpServer = createServer(app);
+
+// Trust proxy if behind Render or similar load balancer
+app.set('trust proxy', 1);
+
+// Global Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests from this IP, please try again after 15 minutes" }
+});
+
+// Apply rate limiter to all requests
+app.use(limiter);
+
+// Specific rate limit for Auth
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20, // Limit each IP to 20 auth requests per hour
+  message: { message: "Too many login attempts, please try again after an hour" }
+});
+app.use("/auth/github", authLimiter);
 
 // Connect to MongoDB with error handling
 connectDB().catch(err => {
@@ -26,11 +50,12 @@ connectDB().catch(err => {
   console.log("⚠️ Server starting without DB - check your MONGODB_URI");
 });
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://innoworks.vercel.app";
+let FRONTEND_URL = process.env.FRONTEND_URL || "https://innoworks.vercel.app";
+if (FRONTEND_URL.endsWith("/")) FRONTEND_URL = FRONTEND_URL.slice(0, -1);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: FRONTEND_URL,
+    origin: [FRONTEND_URL, "https://innoworkss.netlify.app"],
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -38,8 +63,22 @@ const io = new Server(httpServer, {
 
 // Relaxed CORS for development and OAuth
 app.use(cors({
-  origin: FRONTEND_URL,
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [FRONTEND_URL, "https://innoworkss.netlify.app", "http://localhost:5173", "http://localhost:3000"];
+    const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+    
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 }));
 
 // Relaxed Helmet for OAuth redirects and development
@@ -73,9 +112,29 @@ app.use("/users", userRoutes);
 
 const PORT = process.env.PORT || 4000;
 
-if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'secret')) {
-  console.error("❌ FATAL: JWT_SECRET must be set to a secure value in production!");
-  process.exit(1);
+const requiredEnvVars = [
+  'MONGODB_URI',
+  'REDIS_URL',
+  'GITHUB_CLIENT_ID',
+  'GITHUB_CLIENT_SECRET',
+  'JWT_SECRET',
+  'FRONTEND_URL'
+];
+
+requiredEnvVars.forEach(envVar => {
+  if (!process.env[envVar]) {
+    console.warn(`⚠️ WARNING: Environment variable "${envVar}" is missing!`);
+  }
+});
+
+if (process.env.NODE_ENV === 'production') {
+  const criticalVars = ['MONGODB_URI', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'JWT_SECRET'];
+  criticalVars.forEach(v => {
+    if (!process.env[v] || process.env[v] === 'secret') {
+      console.error(`❌ FATAL: Critical environment variable "${v}" is missing or insecure in production!`);
+      process.exit(1);
+    }
+  });
 }
 
 app.get("/health", (req, res) => {

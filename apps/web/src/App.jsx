@@ -197,6 +197,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/profile/:username" element={<Profile />} />
         </Route>
 
         {/* Auth Callback variants */}

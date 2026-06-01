@@ -4,7 +4,7 @@ import { User } from '../models/User.js';
 import { Submission } from '../models/Submission.js';
 import { authenticate } from '../middleware/auth.js';
 import { forkRepository, fetchGraphQLRepositoryIntelligence } from '../lib/github.js';
-import { validateObjectId } from '../middleware/validate.js';
+import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';
 import axios from 'axios';
 
@@ -355,7 +355,7 @@ router.get("/:id", validateObjectId, async (req, res) => {
 });
 
 // 11. Owner Permissions: Edit & Archive Project
-router.put("/:id", authenticate, validateObjectId, verifyOwnership, async (req, res) => {
+router.put("/:id", authenticate, validateObjectId, verifyOwnership, validateProject, async (req, res) => {
   const { title, description, difficulty, status, requiredSkills, techStack } = req.body;
   try {
     const updateFields = {};

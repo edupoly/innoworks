@@ -34,7 +34,7 @@ async function connectDB() {
       
       // Fix for duplicate index issues if they exist
       try {
-        const admin = mongoose.connection.db.admin();
+        await mongoose.connection.db.admin();
         const collections = await mongoose.connection.db.listCollections({ name: 'users' }).toArray();
         if (collections.length > 0) {
           await mongoose.connection.db.collection('users').dropIndex('email_1').catch(() => {});

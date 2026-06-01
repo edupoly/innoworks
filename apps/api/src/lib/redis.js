@@ -21,9 +21,7 @@ export const getRedisConnection = () => {
   if (!sharedConnection) {
     try {
       // Force TCP connection by parsing the URL if it's the Render internal one
-      // to avoid 'ENOENT' which happens when ioredis misinterprets the host as a socket path
       if (REDIS_URL.includes('red-') && !REDIS_URL.startsWith('redis://')) {
-        // Fix potential missing protocol
         const fixedUrl = `redis://${REDIS_URL.replace(/^\/\//, '')}`;
         sharedConnection = new Redis(fixedUrl, redisOptions);
       } else {
@@ -31,21 +29,52 @@ export const getRedisConnection = () => {
       }
       
       sharedConnection.on('error', (err) => {
-        // Silently handle common connection issues to prevent process-crashing AggregateErrors
         const quietErrors = ['ECONNREFUSED', 'ETIMEDOUT', 'ENOENT', 'ENOTFOUND'];
         if (!quietErrors.includes(err.code)) {
           console.error('❌ Redis Connection Error:', err.message);
         }
       });
 
-      sharedConnection.on('connect', () => {
+      sharedConnection.on('connect', async () => {
         console.log('✅ Connected to Redis');
+        
+        // Audit: Check eviction policy
+        try {
+          const maxmemoryPolicy = await sharedConnection.config('GET', 'maxmemory-policy');
+          if (maxmemoryPolicy && maxmemoryPolicy[1] !== 'noeviction') {
+            console.warn(`⚠️ IMPORTANT: Redis eviction policy is "${maxmemoryPolicy[1]}". For BullMQ stability, it SHOULD be "noeviction".`);
+            console.warn(`💡 Instruction: Set 'maxmemory-policy noeviction' in your Render Redis configuration.`);
+          }
+        } catch (configErr) {
+          // Some managed Redis providers disable CONFIG command
+          console.log('ℹ️ Redis config check skipped (CONFIG command might be disabled)');
+        }
       });
+
+      sharedConnection.on('ready', () => {
+        console.log('🚀 Redis client is ready');
+      });
+
+      sharedConnection.on('reconnecting', () => {
+        // Only log if not in test environment to avoid spam
+        if (process.env.NODE_ENV !== 'test') {
+          console.log('🔄 Redis client is reconnecting...');
+        }
+      });
+
     } catch (err) {
       console.error('❌ Failed to initialize Redis connection:', err.message);
     }
   }
   return sharedConnection;
+};
+
+export const closeRedisConnection = async () => {
+  if (sharedConnection) {
+    await sharedConnection.quit();
+    sharedConnection = null;
+    console.log('🛑 Redis connection closed');
+  }
 };
 
 export default redisOptions;

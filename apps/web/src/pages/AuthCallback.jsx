@@ -59,9 +59,11 @@ const AuthCallback = () => {
             navigate("/dashboard");
           } catch (error) {
             console.error("AuthCallback: Profile fetch failed", error);
-            setDebugInfo("Profile fetch failed, using fallback...");
-            dispatch(setCredentials({ user: { username: "Developer" }, token }));
-            navigate("/dashboard");
+            setDebugInfo(`Profile fetch failed: ${error.response?.data?.message || error.message}. Redirecting home...`);
+            // Remove tokens since they are invalid or profile fetch failed
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            setTimeout(() => navigate("/"), 4000);
           }
         } else {
           setDebugInfo("No token found in URL. Redirecting home in 3s...");

@@ -1,7 +1,6 @@
 import { Worker } from "bullmq";
 import { Submission } from '../models/Submission.js';
 import { User } from '../models/User.js';
-import { Project } from '../models/Project.js';
 import { getRedisConnection } from '../lib/redis.js';
 
 const connection = getRedisConnection();

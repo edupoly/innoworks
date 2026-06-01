@@ -13,7 +13,25 @@ export const validateObjectId = (req, res, next) => {
   next();
 };
 
-export const validate = (schema) => (req, res, next) => {
+export const validateProject = (req, res, next) => {
+  const { title, repoUrl, difficulty } = req.body;
+  
+  if (req.method === 'POST' || req.method === 'PUT') {
+    if (!title && req.method === 'POST') return res.status(400).json({ message: "Project title is required" });
+    if (!repoUrl && req.method === 'POST') return res.status(400).json({ message: "Repository URL is required" });
+    
+    if (repoUrl && !repoUrl.startsWith('https://github.com/')) {
+      return res.status(400).json({ message: "Only GitHub repositories are supported" });
+    }
+    
+    if (difficulty && !['Easy', 'Medium', 'Hard'].includes(difficulty)) {
+      return res.status(400).json({ message: "Invalid difficulty level" });
+    }
+  }
+  next();
+};
+
+export const validate = () => (req, res, next) => {
   // Simple validation logic or use a library like Joi/Zod
   // For now, we'll just check for required fields if needed
   next();

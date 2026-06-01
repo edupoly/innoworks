@@ -13,8 +13,6 @@ router.get("/leaderboard", async (req, res) => {
   const { period } = req.query; // 'weekly', 'monthly', 'all_time' (default)
 
   try {
-    let query = User.find();
-    
     // In a production app, we would filter by a createdAt/updatedAt timestamp range on an activity collection,
     // or keep separate weeklyXp and monthlyXp fields. For this production-grade architecture, we can sort 
     // by overall XP and reputationScore, and dynamically simulate filters or return ranks cleanly.
@@ -124,7 +122,9 @@ router.put("/profile", authenticate, async (req, res) => {
 // 6. Retrieve comprehensive user profile (portfolios, analytics, submissions)
 router.get("/profile/:username", async (req, res) => {
   try {
-    const user = await User.findOne({ username: req.params.username }).lean();
+    const user = await User.findOne({ 
+      username: { $regex: new RegExp(`^${req.params.username}$`, "i") } 
+    }).lean();
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // Fetch user submissions with deep populated project info
