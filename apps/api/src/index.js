@@ -71,7 +71,8 @@ app.use(cors({
     const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
     
     if (allowedOrigins.includes(normalizedOrigin)) {
-      callback(null, true);
+      // Return the NORMALIZED origin (no trailing slash) to avoid browser mismatches
+      callback(null, normalizedOrigin);
     } else {
       callback(new Error('Not allowed by CORS'));
     }

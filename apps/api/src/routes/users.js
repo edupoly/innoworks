@@ -45,13 +45,19 @@ router.get("/leaderboard", async (req, res) => {
 // 2. Retrieve notifications for authenticated user
 router.get("/notifications", authenticate, async (req, res) => {
   try {
+    if (!req.user || !req.user.userId) {
+      console.warn("⚠️ Notifications request with missing user context in token");
+      return res.status(401).json({ message: "Invalid user context" });
+    }
+
     const notifications = await Notification.find({ user: req.user.userId })
       .sort({ createdAt: -1 })
       .limit(50);
+
     res.json(notifications);
   } catch (error) {
     console.error("❌ Fetch Notifications Error:", error.message);
-    res.status(500).json({ message: "Failed to fetch notifications" });
+    res.status(500).json({ message: "Failed to load notifications" });
   }
 });
 

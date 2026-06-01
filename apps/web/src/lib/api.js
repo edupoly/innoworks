@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+let BASE_URL = import.meta.env.VITE_API_URL || "https://innoworks.onrender.com";
+if (BASE_URL.endsWith("/")) BASE_URL = BASE_URL.slice(0, -1);
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://innoworks.onrender.com",
+  baseURL: BASE_URL,
 });
 
 // Add a request interceptor to include the auth token

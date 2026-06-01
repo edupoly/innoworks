@@ -81,11 +81,16 @@ const NotificationDropdown = () => {
   const navigate = useNavigate();
 
   const fetchNotifications = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return; // Don't fetch if token is missing
+    
     try {
       const response = await api.get("/users/notifications");
       setNotifications(response.data);
     } catch (err) {
-      console.error("Failed to load notifications:", err.message);
+      if (err.response?.status !== 401) {
+        console.error("Failed to load notifications:", err.message);
+      }
     }
   };
 
