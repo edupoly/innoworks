@@ -11,6 +11,8 @@ import { useSelector, useDispatch } from "react-redux";
 import AuthCallback from "./pages/AuthCallback";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
+import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
 import Projects from "./pages/Projects";
 import Leaderboard from "./pages/Leaderboard";
 import ProjectDetails from "./pages/ProjectDetails";
