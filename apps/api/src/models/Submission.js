@@ -38,8 +38,7 @@ submissionSchema.virtual('reviews', {
   foreignField: 'submission'
 });
 
-submissionSchema.index({ project: 1 });
-submissionSchema.index({ user: 1 });
+submissionSchema.index({ project: 1, user: 1 }, { unique: true });
 submissionSchema.index({ status: 1 });
 submissionSchema.index({ prNumber: 1 });
 

@@ -112,8 +112,8 @@ const Dashboard = () => {
   ];
 
   // Organize Kanban Columns
-  const submittedProjectIds = new Set(submissions.map(s => (s.project?._id || s.project)?.toString()));
-  const acceptedProjectsDetails = (profile?.acceptedProjects || []).filter(p => p && !submittedProjectIds.has(p._id || p));
+  const submittedProjectIds = new Set(submissions.map(s => (s.project?._id || s.project)?.toString()).filter(Boolean));
+  const acceptedProjectsDetails = (profile?.acceptedProjects || []).filter(p => p && p._id && !submittedProjectIds.has(p._id.toString()));
 
   const reviewingSubmissions = submissions.filter(s => ['PENDING', 'TESTING', 'UNDER_REVIEW'].includes(s.status));
   const changesRequiredSubmissions = submissions.filter(s => s.status === 'CHANGES_REQUESTED');

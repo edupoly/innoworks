@@ -3,11 +3,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../store/slices/authSlice";
 import api from "../lib/api.js";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AuthCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const [debugInfo, setDebugInfo] = useState("Initializing...");
 
   useEffect(() => {
@@ -55,19 +57,20 @@ const AuthCallback = () => {
           try {
             const response = await api.get('/auth/me');
             setDebugInfo("User fetched, updating store and navigating...");
+            queryClient.setQueryData(["me"], response.data);
             dispatch(setCredentials({ user: response.data, token }));
-            navigate("/dashboard");
+            navigate("/dashboard", { replace: true });
           } catch (error) {
             console.error("AuthCallback: Profile fetch failed", error);
             setDebugInfo(`Profile fetch failed: ${error.response?.data?.message || error.message}. Redirecting home...`);
             // Remove tokens since they are invalid or profile fetch failed
             localStorage.removeItem("token");
             localStorage.removeItem("refreshToken");
-            setTimeout(() => navigate("/"), 4000);
+            setTimeout(() => navigate("/", { replace: true }), 4000);
           }
         } else {
           setDebugInfo("No token found in URL. Redirecting home in 3s...");
-          setTimeout(() => navigate("/"), 3000);
+          setTimeout(() => navigate("/", { replace: true }), 3000);
         }
       } catch (err) {
         setDebugInfo(`CRITICAL ERROR: ${err.message}`);
@@ -76,7 +79,7 @@ const AuthCallback = () => {
     };
 
     runAuth();
-  }, [searchParams, navigate, dispatch]);
+  }, [searchParams, navigate, dispatch, queryClient]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">

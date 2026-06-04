@@ -128,6 +128,18 @@ const Layout = () => {
         // Refetch notifications in the background to sync the badge/dropdown
         queryClient.invalidateQueries({ queryKey: ["notifications"] });
 
+        // INTELLIGENCE SYNC: Automatically invalidate related data based on notification type
+        if (newNotification.type.includes('PR') || newNotification.type.includes('REVIEW') || newNotification.type.includes('ISSUE') || newNotification.type.includes('COMMENT')) {
+           queryClient.invalidateQueries({ queryKey: ["me"] });
+           queryClient.invalidateQueries({ queryKey: ["projectIntelligence"] });
+           queryClient.invalidateQueries({ queryKey: ["projectSubmissions"] });
+           queryClient.invalidateQueries({ queryKey: ["profile"] });
+        }
+
+        if (newNotification.type === 'CHALLENGE_ACCEPTED') {
+          queryClient.invalidateQueries({ queryKey: ["me"] });
+        }
+
         // Auto-dismiss after 6 seconds
         setTimeout(() => {
           dismissToast(toastId);

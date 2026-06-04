@@ -471,4 +471,62 @@ router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
   }
 });
 
+// 8. Reject a submission (Project Owner only)
+router.post("/:id/reject", authenticate, validateObjectId, async (req, res) => {
+  try {
+    const submission = await Submission.findById(req.params.id).populate('project');
+    if (!submission) return res.status(404).json({ message: "Submission not found" });
+
+    // Verify project ownership
+    if (submission.project.owner.toString() !== req.user.userId) {
+      return res.status(403).json({ message: "Only the project owner can reject submissions" });
+    }
+
+    if (!submission.prNumber) {
+      return res.status(400).json({ message: "This submission does not have an associated GitHub PR." });
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user || !user.githubAccessToken) {
+      return res.status(401).json({ message: "GitHub authentication required" });
+    }
+
+    const { owner, repo } = parseRepoUrl(submission.project.repoUrl);
+    
+    // Close on GitHub
+    await axios.patch(
+      `https://api.github.com/repos/${owner}/${repo}/pulls/${submission.prNumber}`,
+      { state: 'closed' },
+      {
+        headers: {
+          Authorization: `token ${user.githubAccessToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+
+    // Update local status
+    submission.status = 'REJECTED';
+    submission.timeline.push({
+      action: 'REJECTED',
+      description: 'Submission rejected and PR closed.',
+      actor: req.user.userId
+    });
+    await submission.save();
+
+    // Notify developer
+    await sendNotification(
+      submission.user,
+      'REVIEW_REJECTED',
+      `❌ Your contribution for "${submission.project.title}" has been closed/rejected by the maintainer.`,
+      `/dashboard`
+    );
+
+    res.json({ message: "Submission rejected and closed successfully." });
+  } catch (error) {
+    console.error("❌ Reject Error:", error.message);
+    res.status(500).json({ message: "Failed to reject contribution: " + error.message });
+  }
+});
+
 export default router;

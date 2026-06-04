@@ -259,9 +259,23 @@ const ProjectDetails = () => {
     },
   });
 
+  const rejectMutation = useMutation({
+    mutationFn: (submissionId) => api.post(`/submissions/${submissionId}/reject`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
+      queryClient.invalidateQueries({ queryKey: ["projectSubmissions", id] });
+    },
+  });
+
   const handleMerge = (submissionId) => {
     if (window.confirm("Are you sure you want to merge this?")) {
       mergeMutation.mutate(submissionId);
+    }
+  };
+
+  const handleReject = (submissionId) => {
+    if (window.confirm("Are you sure you want to reject this submission? This will close the PR.")) {
+      rejectMutation.mutate(submissionId);
     }
   };
 
@@ -272,10 +286,29 @@ const ProjectDetails = () => {
     },
   });
 
+  const createIssueMutation = useMutation({
+    mutationFn: (issueData) => api.post(`/projects/${id}/issues`, issueData),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["projectIntelligence", id]);
+      setIsAddingIssue(false);
+      setIssueTitle("");
+      setIssueBody("");
+    },
+  });
+
   const handleCloseIssue = (issueNumber) => {
     if (window.confirm(`Are you sure you want to close issue #${issueNumber}?`)) {
       closeIssueMutation.mutate(issueNumber);
     }
+  };
+
+  const [isAddingIssue, setIsAddingIssue] = useState(false);
+  const [issueTitle, setIssueTitle] = useState("");
+  const [issueBody, setIssueBody] = useState("");
+
+  const handleCreateIssue = (e) => {
+    e.preventDefault();
+    createIssueMutation.mutate({ title: issueTitle, body: issueBody });
   };
 
   if (loadingProject || loadingIntel) return (
@@ -369,6 +402,7 @@ const ProjectDetails = () => {
         {[
           { id: "overview", label: "Overview", icon: Target },
           { id: "stats", label: "Analytics", icon: Activity },
+          { id: "issues", label: "Issues", icon: AlertCircle },
           ...((project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? 
             [{ id: "management", label: "Submissions", icon: Layers }] : 
             [{ id: "dev_flow", label: "Develop", icon: Terminal }, { id: "test_flow", label: "QA & Test", icon: Cpu }]
@@ -490,6 +524,72 @@ const ProjectDetails = () => {
               ))}
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+               <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full"></div>
+                  <div className="flex items-center gap-3 mb-10">
+                     <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><History size={18} /></div>
+                     <h3 className="text-sm font-black uppercase tracking-[0.3em]">Commit Analytics</h3>
+                  </div>
+                  <div className="space-y-6">
+                    {intelligence?.commitAnalytics?.recentCommits?.slice(0, 5).map((commit, i) => (
+                      <div key={i} className="flex items-start gap-4 p-4 bg-muted/20 border border-border/50 rounded-2xl">
+                        <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center font-mono text-[10px] font-bold text-primary border border-border/50 shrink-0">
+                          {commit.sha.substring(0, 7)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate">{commit.message}</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">@{commit.author} • {new Date(commit.date).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+
+               <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full"></div>
+                  <div className="flex items-center gap-3 mb-10">
+                     <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500"><GitPullRequest size={18} /></div>
+                     <h3 className="text-sm font-black uppercase tracking-[0.3em]">Pull Request Activity</h3>
+                  </div>
+                  <div className="space-y-6">
+                    {intelligence?.prAnalytics?.recentPRActivity?.slice(0, 5).map((pr, i) => (
+                      <div key={i} className="flex items-start justify-between gap-4 p-4 bg-muted/20 border border-border/50 rounded-2xl">
+                        <div className="flex items-start gap-4 min-w-0">
+                          <img src={pr.authorAvatar} alt={pr.author} className="w-10 h-10 rounded-xl border border-border/50 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-foreground truncate">#{pr.number}: {pr.title}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">@{pr.author} • {pr.state}</p>
+                          </div>
+                        </div>
+                        <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${pr.state === 'MERGED' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'}`}>
+                          {pr.state}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+            </div>
+
+            <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full"></div>
+               <div className="flex items-center gap-3 mb-10">
+                 <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500"><Users size={18} /></div>
+                 <h3 className="text-sm font-black uppercase tracking-[0.3em]">Engineering Productivity Metrics</h3>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {intelligence?.commitAnalytics?.topContributors?.slice(0, 6).map((contributor, i) => (
+                    <div key={i} className="flex items-center gap-4 p-5 bg-muted/20 border border-border/50 rounded-2xl hover:border-primary/30 transition-all">
+                       <img src={contributor.avatarUrl} alt={contributor.username} className="w-12 h-12 rounded-2xl border border-border/50 shadow-sm" />
+                       <div>
+                         <p className="text-sm font-black tracking-tight">@{contributor.username}</p>
+                         <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{contributor.commitCount} Commits Verified</p>
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+
             <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm overflow-hidden relative">
                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full"></div>
                <div className="flex items-center gap-3 mb-10">
@@ -513,6 +613,211 @@ const ProjectDetails = () => {
                <div className="flex justify-between mt-6 px-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                  <span>May 2026</span>
                  <span>June 2026</span>
+               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === "issues" && (
+          <motion.div key="issues" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+             <div className="lg:col-span-2 space-y-8">
+                <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm">
+                   <div className="flex items-center justify-between mb-10">
+                     <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20"><AlertCircle size={20} /></div>
+                       <h3 className="text-sm font-black uppercase tracking-[0.3em]">Open Issues</h3>
+                     </div>
+                     <button 
+                       onClick={() => setIsAddingIssue(!isAddingIssue)}
+                       className="px-6 py-3 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center gap-2"
+                     >
+                       {isAddingIssue ? <X size={14} /> : <Plus size={14} />} New Issue
+                     </button>
+                   </div>
+
+                   <AnimatePresence>
+                     {isAddingIssue && (
+                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mb-10 overflow-hidden">
+                         <form onSubmit={handleCreateIssue} className="p-8 bg-muted/20 border border-border/50 rounded-[2rem] space-y-6">
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Issue Title</label>
+                              <input required type="text" value={issueTitle} onChange={(e)=>setIssueTitle(e.target.value)} className="w-full p-4 bg-background border border-border/50 rounded-xl font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Brief summary of the issue" />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Description</label>
+                              <textarea required rows={4} value={issueBody} onChange={(e)=>setIssueBody(e.target.value)} className="w-full p-5 bg-background border border-border/50 rounded-2xl font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Provide details, logs, or reproduction steps..." />
+                            </div>
+                            <button type="submit" disabled={createIssueMutation.isLoading} className="w-full btn-primary py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl">
+                              {createIssueMutation.isLoading ? <RefreshCcw size={16} className="animate-spin" /> : 'Create GitHub Issue'}
+                            </button>
+                         </form>
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
+                   
+                   <div className="space-y-6">
+                     {intelligence?.issueAnalytics?.openIssuesList?.length > 0 ? (
+                       intelligence.issueAnalytics.openIssuesList.map(issue => (
+                         <div key={issue.number} className="p-6 bg-muted/20 border border-border/50 rounded-[1.5rem] flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-red-500/30 transition-all group">
+                           <div className="flex items-start gap-4">
+                             <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center font-black text-xs text-muted-foreground border border-border/50 shrink-0">
+                               #{issue.number}
+                             </div>
+                             <div>
+                               <p className="text-sm font-bold text-foreground leading-tight mb-2">{issue.title}</p>
+                               <div className="flex flex-wrap gap-2">
+                                 {issue.labels.map((label, idx) => (
+                                   <span key={idx} className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-border" style={{ backgroundColor: `#${label.color}20`, color: `#${label.color}` }}>
+                                     {label.name}
+                                   </span>
+                                 ))}
+                                 <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-wider ml-1">Opened {new Date(issue.createdAt).toLocaleDateString()}</span>
+                               </div>
+                             </div>
+                           </div>
+                           
+                           {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
+                             <button 
+                               onClick={() => handleCloseIssue(issue.number)}
+                               disabled={closeIssueMutation.isLoading}
+                               className="px-4 py-2 text-red-500 hover:bg-red-500/10 border border-red-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all opacity-0 group-hover:opacity-100"
+                             >
+                               Close Issue
+                             </button>
+                           )}
+                         </div>
+                       ))
+                     ) : (
+                       <div className="py-20 text-center bg-muted/5 border border-dashed border-border/50 rounded-[2rem] space-y-4">
+                         <CheckCircle2 size={48} className="mx-auto text-emerald-500 opacity-20" />
+                         <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Zero known discrepancies. Master node stable.</p>
+                       </div>
+                     )}
+                   </div>
+                </div>
+             </div>
+             
+             <div className="space-y-8">
+                <div className="bg-card border border-border/50 rounded-[2.5rem] p-8 space-y-6 shadow-sm">
+                   <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Issue Statistics</h4>
+                   <div className="space-y-4">
+                     {[
+                       { label: "Bug Reports", value: intelligence?.issueAnalytics?.bugIssues, color: "text-red-500" },
+                       { label: "Feature Requests", value: intelligence?.issueAnalytics?.featureRequests, color: "text-primary" },
+                       { label: "Good First Issues", value: intelligence?.issueAnalytics?.goodFirstIssues, color: "text-emerald-500" },
+                       { label: "Documentation", value: intelligence?.issueAnalytics?.documentationIssues, color: "text-indigo-500" }
+                     ].map((s, i) => (
+                       <div key={i} className="flex items-center justify-between p-4 bg-muted/20 border border-border/50 rounded-2xl transition-all hover:border-primary/20">
+                         <span className="text-[10px] font-bold text-muted-foreground uppercase">{s.label}</span>
+                         <span className={`text-sm font-black ${s.color}`}>{s.value || 0}</span>
+                       </div>
+                     ))}
+                   </div>
+                </div>
+             </div>
+          </motion.div>
+        )}
+
+        {activeTab === "management" && (
+          <motion.div key="management" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-8">
+            <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+               <div className="flex items-center gap-3 mb-10">
+                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20"><Layers size={20} /></div>
+                 <h3 className="text-sm font-black uppercase tracking-[0.3em]">Protocol Submissions</h3>
+               </div>
+               
+               <div className="space-y-8">
+                 {projectSubmissions && projectSubmissions.length > 0 ? (
+                   projectSubmissions.map(sub => (
+                     <div key={sub._id} className="p-8 bg-muted/20 border border-border/50 rounded-[2rem] space-y-6 hover:border-primary/30 transition-all">
+                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border/30">
+                         <div className="flex items-center gap-4">
+                           <img src={sub.user?.avatarUrl} alt={sub.user?.username} className="w-14 h-14 rounded-2xl border border-border/50" />
+                           <div>
+                             <p className="text-sm font-black tracking-tight">@{sub.user?.username}</p>
+                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                               <GitBranch size={10} /> {sub.branchName}
+                             </p>
+                           </div>
+                         </div>
+                         
+                         <div className="flex items-center gap-4 flex-wrap">
+                           <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${sub.status === 'MERGED' ? 'bg-emerald-500/10 text-emerald-500' : sub.status === 'REJECTED' ? 'bg-destructive/10 text-destructive' : 'bg-orange-500/10 text-orange-500'}`}>
+                             {sub.status}
+                           </span>
+                           
+                           {sub.prNumber && (
+                             <a href={sub.prUrl} target="_blank" rel="noreferrer" className="px-5 py-2.5 bg-muted/50 border border-border/50 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-primary transition-all flex items-center gap-2">
+                               <Github size={14} /> PR #{sub.prNumber}
+                             </a>
+                           )}
+                           
+                           {sub.status === 'APPROVED' && (
+                             <>
+                               <button onClick={() => handleMerge(sub._id)} disabled={mergeMutation.isLoading} className="px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all">
+                                 {mergeMutation.isLoading ? 'Merging...' : 'Merge PR'}
+                               </button>
+                               <button onClick={() => handleReject(sub._id)} disabled={rejectMutation.isLoading} className="px-6 py-2.5 bg-destructive text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-destructive/20 hover:scale-105 active:scale-95 transition-all">
+                                 {rejectMutation.isLoading ? 'Rejecting...' : 'Reject PR'}
+                               </button>
+                             </>
+                           )}
+                         </div>
+                       </div>
+
+                       {/* Review Summary */}
+                       {sub.reviews && sub.reviews.length > 0 && (
+                         <div className="space-y-4">
+                           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Peer Review Intelligence</p>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             {sub.reviews.map((review, rIdx) => (
+                               <div key={rIdx} className="p-5 bg-background border border-border/50 rounded-2xl space-y-3">
+                                 <div className="flex items-center justify-between">
+                                   <div className="flex items-center gap-2">
+                                     <img src={review.reviewer?.avatarUrl} className="w-5 h-5 rounded-full" alt="Reviewer" />
+                                     <span className="text-[10px] font-black uppercase tracking-widest text-primary">@{review.reviewer?.username}</span>
+                                   </div>
+                                   <span className={`text-[9px] font-black uppercase tracking-widest ${review.outcome === 'APPROVED' ? 'text-emerald-500' : 'text-orange-500'}`}>{review.outcome}</span>
+                                 </div>
+                                 <p className="text-xs font-medium text-foreground/70 leading-relaxed italic">"{review.feedback}"</p>
+                                 <div className="flex items-center gap-1">
+                                   {[...Array(5)].map((_, i) => (
+                                      <Star key={i} size={10} className={i < review.rating ? "text-yellow-500 fill-current" : "text-muted-foreground"} />
+                                   ))}
+                                 </div>
+                               </div>
+                             ))}
+                           </div>
+                         </div>
+                       )}
+
+                       {/* Timeline History */}
+                       <div className="p-6 bg-background/50 border border-border/30 rounded-2xl">
+                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-6">Transmission Log</p>
+                          <div className="space-y-6">
+                             {sub.timeline?.slice().reverse().map((event, tIdx) => (
+                               <div key={tIdx} className="flex gap-4 relative group">
+                                 {tIdx < sub.timeline.length - 1 && <div className="absolute left-[7px] top-[14px] bottom-[-24px] w-px bg-border/50 group-hover:bg-primary/20 transition-colors"></div>}
+                                 <div className="w-4 h-4 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center shrink-0 relative z-10 mt-0.5">
+                                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                                 </div>
+                                 <div>
+                                   <p className="text-[11px] font-black uppercase tracking-widest text-foreground">{event.action}</p>
+                                   <p className="text-xs font-medium text-muted-foreground leading-relaxed">{event.description}</p>
+                                   <p className="text-[9px] font-bold text-muted-foreground/40 mt-1 uppercase">{new Date(event.createdAt).toLocaleString()}</p>
+                                 </div>
+                               </div>
+                             ))}
+                          </div>
+                       </div>
+                     </div>
+                   ))
+                 ) : (
+                   <div className="py-20 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-2 border-dashed border-border rounded-3xl opacity-30">
+                     No_Submissions_Yet
+                   </div>
+                 )}
                </div>
             </div>
           </motion.div>
