@@ -2,7 +2,7 @@ import { Router } from "express";
 import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { Submission } from '../models/Submission.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, verifyProjectOwnership } from '../middleware/auth.js';
 import { forkRepository, fetchGraphQLRepositoryIntelligence } from '../lib/github.js';
 import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';
@@ -16,22 +16,8 @@ const parseRepoUrl = (url) => {
   return { owner: parts[0], repo: parts[1] };
 };
 
-// Middleware to verify Project Ownership
-const verifyOwnership = async (req, res, next) => {
-  try {
-    const project = await Project.findById(req.params.id);
-    if (!project) return res.status(404).json({ message: "Project not found" });
-
-    if (project.owner.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Access denied. Only the Project Owner can perform this action." });
-    }
-
-    req.project = project;
-    next();
-  } catch (error) {
-    res.status(500).json({ message: "Ownership validation failed" });
-  }
-};
+// Middleware instance for project routes
+const verifyOwnership = verifyProjectOwnership(Project);
 
 // 1. Get all projects (Marketplace) with comprehensive search, filters, and sorting
 router.get("/", async (req, res) => {
@@ -145,7 +131,7 @@ router.get("/:id/fork-status", authenticate, validateObjectId, async (req, res) 
   }
 });
 
-// 4. Create Issue directly on the Upstream GitHub repository from Platform
+// 4. Create Issue directly on the Upstream GitHub repository from Innoworks
 router.post("/:id/issues", authenticate, validateObjectId, async (req, res) => {
   const { title, body, labels } = req.body;
   if (!title) return res.status(400).json({ message: "Issue title is required" });

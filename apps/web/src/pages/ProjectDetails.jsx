@@ -35,9 +35,11 @@ import api from "../lib/api";
 import RepoPicker from "../components/RepoPicker";
 import BranchPicker from "../components/BranchPicker";
 
+import { useMe } from "../hooks/useAuth";
+
 const ProjectDetails = () => {
   const { id } = useParams();
-  const { user: authUser } = useSelector((state) => state.auth);
+  const { user: authUser } = useMe();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
@@ -78,6 +80,45 @@ const ProjectDetails = () => {
   const [testError, setTestError] = useState("");
   const [submittingTest, setSubmittingTest] = useState(false);
 
+  // Edit Project states
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editBounty, setEditBounty] = useState(100);
+  const [isUpdatingProject, setIsUpdatingProject] = useState(false);
+
+  useEffect(() => {
+    if (project) {
+      setEditTitle(project.title);
+      setEditDescription(project.description);
+      setEditBounty(project.bounty || 100);
+    }
+  }, [project]);
+
+  const updateProjectMutation = useMutation({
+    mutationFn: (data) => api.put(`/projects/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["project", id]);
+      setIsEditing(false);
+    },
+  });
+
+  const handleUpdateProject = async (e) => {
+    e.preventDefault();
+    setIsUpdatingProject(true);
+    try {
+      await updateProjectMutation.mutateAsync({
+        title: editTitle,
+        description: editDescription,
+        bounty: editBounty
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUpdatingProject(false);
+    }
+  };
+
   // 1. Fetch live repository intelligence using high-performance GraphQL endpoint
   const { data: intelligence, isLoading: loadingIntel, error: intelError } = useQuery({
     queryKey: ["projectIntelligence", id],
@@ -109,14 +150,7 @@ const ProjectDetails = () => {
   const activeSubmissions = projectSubmissions?.filter(s => s.status !== 'MERGED' && s.status !== 'REJECTED') || [];
   const submissionHistory = projectSubmissions?.filter(s => s.status === 'MERGED' || s.status === 'REJECTED') || [];
 
-  const { data: userData } = useQuery({
-    queryKey: ["me"],
-    queryFn: async () => {
-      const response = await api.get("/auth/me");
-      return response.data;
-    },
-    enabled: !!authUser,
-  });
+  const userData = authUser;
 
   const mySubmissions = projectSubmissions?.filter(s => s.user?._id === authUser?._id || s.user === authUser?._id) || [];
 
@@ -919,7 +953,10 @@ const ProjectDetails = () => {
                     <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Owner Controls</h4>
                     
                     <div className="space-y-3">
-                      <button className="w-full p-4 bg-muted/20 border border-border/50 rounded-2xl text-left hover:border-primary/50 transition-all group">
+                      <button 
+                        onClick={() => setIsEditing(true)}
+                        className="w-full p-4 bg-muted/20 border border-border/50 rounded-2xl text-left hover:border-primary/50 transition-all group"
+                      >
                         <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">Edit Mission Briefing</p>
                         <p className="text-[10px] text-muted-foreground font-semibold mt-1">Update title, description, and bounty</p>
                       </button>
@@ -1294,8 +1331,8 @@ const ProjectDetails = () => {
                                       if (internalSub) {
                                         handleMerge(internalSub._id);
                                       } else {
-                                        // Handle external PR merge if needed, but for now we focus on platform-tracked ones
-                                        alert("Can only merge submissions tracked on Platform. Submit a review first to sync.");
+                                        // Handle external PR merge if needed, but for now we focus on Innoworks-tracked ones
+                                        alert("Can only merge submissions tracked on Innoworks. Submit a review first to sync.");
                                       }
                                     }}
                                     className="bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-50"
@@ -1693,6 +1730,97 @@ const ProjectDetails = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Edit Project Modal */}
+      <AnimatePresence>
+        {isEditing && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsEditing(false)}
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg bg-card border border-border/50 rounded-[32px] p-8 shadow-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-xl font-black tracking-tight">Edit Mission Briefing</h2>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Refine your challenge parameters</p>
+                </div>
+                <button 
+                  onClick={() => setIsEditing(false)}
+                  className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateProject} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Challenge Title</label>
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    required
+                    className="w-full p-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none font-bold"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Description / Requirements</label>
+                  <textarea
+                    rows={6}
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    required
+                    className="w-full p-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none font-medium text-sm leading-relaxed"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">XP Bounty Allocation</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={editBounty}
+                      onChange={(e) => setEditBounty(parseInt(e.target.value))}
+                      required
+                      className="w-full p-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/50 outline-none font-black text-xl text-primary"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-end">
+                      <span className="text-[10px] font-black text-primary uppercase">XP Reward</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="submit"
+                    disabled={isUpdatingProject}
+                    className="flex-1 btn-primary py-4 text-sm font-black uppercase shadow-xl shadow-primary/20"
+                  >
+                    {isUpdatingProject ? "Synchronizing Changes..." : "Save Briefing"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="flex-1 btn-secondary py-4 text-sm font-black uppercase border border-border/50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

@@ -40,7 +40,7 @@ const Profile = () => {
   if (error || !profile) return (
     <div className="py-20 text-center">
       <h2 className="text-3xl font-black mb-4 tracking-tight">Developer Not Found</h2>
-      <p className="text-muted-foreground mb-8">The engineer you are looking for has not joined the platform yet.</p>
+      <p className="text-muted-foreground mb-8">The engineer you are looking for has not joined the Innoworks yet.</p>
       <button onClick={() => navigate("/leaderboard")} className="btn-primary px-8">Back to Leaderboard</button>
     </div>
   );
@@ -71,7 +71,7 @@ const Profile = () => {
             <div>
               <h1 className="text-2xl font-black tracking-tight">{profile.username}</h1>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                {profile.roles?.join(" / ") || "Platform Contributor"}
+                {profile.roles?.join(" / ") || "Innoworks Contributor"}
               </p>
             </div>
 
@@ -192,7 +192,7 @@ const Profile = () => {
                 ))
               ) : (
                 <div className="p-8 text-center bg-muted/10 border border-dashed border-border rounded-2xl text-xs font-bold text-muted-foreground">
-                  No submissions published to the platform yet.
+                  No submissions published to the Innoworks yet.
                 </div>
               )}
             </div>

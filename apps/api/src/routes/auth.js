@@ -4,8 +4,30 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
 import { Project } from '../models/Project.js';
 import { authenticate } from '../middleware/auth.js';
+import { getRedisConnection } from '../lib/redis.js';
 
 const router = Router();
+
+router.post("/logout", authenticate, async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    const token = authHeader.split(" ")[1];
+    
+    // Decode to get expiry
+    const decoded = jwt.decode(token);
+    const ttl = decoded.exp ? Math.max(0, decoded.exp - Math.floor(Date.now() / 1000)) : 86400;
+
+    const redis = getRedisConnection();
+    if (redis) {
+      await redis.set(`blocklist:${token}`, "true", "EX", ttl);
+    }
+
+    res.json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("❌ Logout Error:", error.message);
+    res.status(500).json({ message: "Failed to logout" });
+  }
+});
 
 router.get("/me", authenticate, async (req, res) => {
   try {

@@ -19,8 +19,10 @@ const item = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 350, damping: 25 } }
 };
 
+import { useMe } from "../hooks/useAuth";
+
 const Projects = () => {
-  const { user: authUser } = useSelector((state) => state.auth);
+  const { user: authUser } = useMe();
 
   // Reactive filters states
   const [search, setSearch] = useState("");

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../store/slices/authSlice";
+import { logoutUser } from "../store/slices/authSlice";
 import { Github, LogOut, LayoutDashboard, Code2, User, Moon, Sun, Monitor, Bell, Check, Sparkles, Trophy } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useState, useRef, useEffect } from "react";
@@ -219,16 +219,16 @@ const NotificationDropdown = () => {
   );
 };
 
+import { useMe } from "../hooks/useAuth";
+
 const Navbar = () => {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useMe();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
-    dispatch(logout());
-    localStorage.removeItem("token");
-    navigate("/");
+    dispatch(logoutUser());
   };
 
   const navLinks = [
@@ -244,7 +244,7 @@ const Navbar = () => {
             <Code2 size={22} strokeWidth={2.5} />
           </div>
           <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-            OPENSOURCE
+            INNOWORKS
           </span>
         </Link>
 

@@ -172,8 +172,10 @@ const EngineeringRadarChart = ({ stats }) => {
   );
 };
 
+import { useMe } from "../hooks/useAuth";
+
 const Dashboard = () => {
-  const { user: authUser } = useSelector((state) => state.auth);
+  const { user: authUser } = useMe();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("kanban"); // 'kanban', 'timeline', 'badges'

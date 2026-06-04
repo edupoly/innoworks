@@ -149,7 +149,7 @@ app.get("/health", (req, res) => {
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Welcome to Platform API",
+    message: "Welcome to Innoworks API",
     status: "healthy",
     docs: "https://github.com/edupoly/innoworks"
   });

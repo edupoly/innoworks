@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTheme } from "./ThemeProvider";
-import { logout } from "../store/slices/authSlice";
+import { logoutUser } from "../store/slices/authSlice";
 import CommandPalette from "./CommandPalette";
 import { initiateSocket, disconnectSocket, subscribeToNotifications } from "../lib/socket";
 import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers } from "lucide-react";
@@ -45,9 +45,7 @@ const Layout = () => {
         const key = e.key.toUpperCase();
         if (key === "Q" && isAuthenticated) {
           e.preventDefault();
-          dispatch(logout());
-          localStorage.removeItem("token");
-          navigate("/");
+          dispatch(logoutUser());
           return;
         }
         if (key === "D") {
@@ -177,7 +175,7 @@ const Layout = () => {
       {/* Footer */}
       <footer className="py-8 text-center text-sm font-medium text-muted-foreground border-t border-border/50 bg-card/50 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} Open Source Contribution Platform. Powered by Student Developers.</p>
+          <p>© {new Date().getFullYear()} Innoworks. Powered by Student Developers.</p>
           <div className="flex items-center gap-6">
             <button 
               onClick={() => setIsCommandPaletteOpen(true)}

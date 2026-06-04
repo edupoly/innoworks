@@ -4,7 +4,7 @@ import { Search, Code2, Trophy, LayoutDashboard, Moon, Sun, Terminal, LogOut } f
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "./ThemeProvider";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../store/slices/authSlice";
+import { logoutUser } from "../store/slices/authSlice";
 import api from "../lib/api";
 
 const CommandPalette = ({ isOpen, onClose }) => {
@@ -60,9 +60,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
       { name: "My Developer Dashboard", icon: LayoutDashboard, action: () => navigate("/dashboard"), shortcut: "G D" },
       { name: "Post a Challenge", icon: Terminal, action: () => navigate("/projects/new"), shortcut: "C P" },
       { name: "Sign Out", icon: LogOut, action: () => {
-        dispatch(logout());
-        localStorage.removeItem("token");
-        navigate("/");
+        dispatch(logoutUser());
       }, shortcut: isMac ? "⇧ Q" : "Shift Q" }
     ] : []),
     { name: "Switch to Dark Mode", icon: Moon, action: () => setTheme("dark"), shortcut: isMac ? "⇧ D" : "Shift D" },

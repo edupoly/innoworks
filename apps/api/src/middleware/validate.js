@@ -31,6 +31,20 @@ export const validateProject = (req, res, next) => {
   next();
 };
 
+export const validateSubmission = (req, res, next) => {
+  const { projectId, forkUrl, branchName } = req.body;
+  
+  if (!projectId) return res.status(400).json({ message: "Project ID is required" });
+  if (!forkUrl) return res.status(400).json({ message: "Fork Repository URL is required" });
+  if (!branchName) return res.status(400).json({ message: "Branch name is required" });
+  
+  if (!forkUrl.startsWith('https://github.com/')) {
+    return res.status(400).json({ message: "Only GitHub forks are supported" });
+  }
+  
+  next();
+};
+
 export const validate = () => (req, res, next) => {
   // Simple validation logic or use a library like Joi/Zod
   // For now, we'll just check for required fields if needed

@@ -71,7 +71,7 @@ const Notifications = () => {
                 </span>
               )}
             </h1>
-            <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1">Platform Activity & Updates</p>
+            <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1">Innoworks Activity & Updates</p>
           </div>
         </div>
         

@@ -6,7 +6,7 @@ import { Review } from '../models/Review.js';
 import { authenticate } from '../middleware/auth.js';
 import { testQueue } from '../lib/queue.js';
 import { createPullRequest, createPullRequestReview, mergePullRequest } from '../lib/github.js';
-import { validateObjectId } from '../middleware/validate.js';
+import { validateObjectId, validateSubmission } from '../middleware/validate.js';
 import { awardXP, XP_VALUES } from '../lib/gamification.js';
 import { sendNotification } from '../lib/notifications.js';
 import axios from 'axios';
@@ -38,14 +38,9 @@ router.get("/testing/open", authenticate, async (req, res) => {
 });
 
 // 2. Solve a challenge (Submit solution)
-router.post("/", authenticate, validateObjectId, async (req, res) => {
-  const { projectId, forkUrl } = req.body;
-  const branchName = req.body.branchName?.trim();
+router.post("/", authenticate, validateObjectId, validateSubmission, async (req, res) => {
+  const { projectId, forkUrl, branchName } = req.body;
   const userId = req.user.userId;
-
-  if (!projectId || !forkUrl || !branchName) {
-    return res.status(400).json({ message: "Missing required fields" });
-  }
 
   try {
     const project = await Project.findById(projectId);
@@ -309,7 +304,7 @@ router.post("/:id/reviews", authenticate, async (req, res) => {
       }
     }
 
-    if (!submission) return res.status(404).json({ message: "Submission not found or could not be synced from GitHub. Please ensure the PR author is registered on the platform." });
+    if (!submission) return res.status(404).json({ message: "Submission not found or could not be synced from GitHub. Please ensure the PR author is registered on the Innoworks." });
 
     if (submission.user.toString() === reviewerId) {
       return res.status(400).json({ message: "You cannot review your own submission" });
@@ -336,7 +331,7 @@ router.post("/:id/reviews", authenticate, async (req, res) => {
         const { owner, repo } = parseRepoUrl(submission.project.repoUrl);
         const githubEvent = outcome === 'APPROVED' ? 'APPROVE' : (outcome === 'NEEDS_CHANGES' ? 'REQUEST_CHANGES' : 'COMMENT');
         
-        let githubBody = `### Peer Review from Platform\n\n**Outcome:** ${outcome}\n**Rating:** ${rating || 'N/A'}/5\n\n${feedback}`;
+        let githubBody = `### Peer Review from Innoworks\n\n**Outcome:** ${outcome}\n**Rating:** ${rating || 'N/A'}/5\n\n${feedback}`;
         
         if (bugsFound && bugsFound.length > 0) {
           githubBody += `\n\n**Bugs Found:**\n${bugsFound.map(b => `- ${b}`).join('\n')}`;
@@ -449,7 +444,7 @@ router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
       repo,
       submission.prNumber,
       `Merge contribution from @${submission.user.username}`,
-      `Merged via Platform: ${submission.project.title}`
+      `Merged via Innoworks: ${submission.project.title}`
     );
 
     // Update local status
