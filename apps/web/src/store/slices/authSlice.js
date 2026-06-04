@@ -22,7 +22,7 @@ const initialState = {
   user: null,
   token: null,
   isAuthenticated: !!localStorage.getItem("token"),
-  loading: false,
+  loading: !!localStorage.getItem("token"),
 };
 
 const authSlice = createSlice({

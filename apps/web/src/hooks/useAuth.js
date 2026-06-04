@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
-import { setCredentials } from "../store/slices/authSlice";
+import { setCredentials, logout, setLoading } from "../store/slices/authSlice";
 import { useGetMeQuery } from "../store/api/authApiSlice";
 
 export const useMe = () => {
@@ -8,16 +8,29 @@ export const useMe = () => {
   const token = localStorage.getItem("token");
   const dispatch = useDispatch();
 
-  const { data, isLoading, error, refetch } = useGetMeQuery(undefined, {
+  const { data, isLoading, isSuccess, isError, error, refetch } = useGetMeQuery(undefined, {
     skip: !token,
   });
 
   // Sync RTK Query data back to Redux if they differ or if we need to restore session
   useEffect(() => {
-    if (data && (!isAuthenticated || authUser?._id !== data?._id)) {
-      dispatch(setCredentials({ user: data, token: token || localStorage.getItem("token") }));
+    if (token) {
+      if (isSuccess && data) {
+        if (!isAuthenticated || authUser?._id !== data?._id) {
+          dispatch(setCredentials({ user: data, token: token || localStorage.getItem("token") }));
+        }
+      } else if (isError) {
+        console.error("useMe: session restoration error:", error);
+        if (error.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          dispatch(logout());
+        } else {
+          dispatch(setLoading(false));
+        }
+      }
     }
-  }, [data, isAuthenticated, authUser?._id, dispatch, token]);
+  }, [token, isSuccess, isError, data, error, dispatch, isAuthenticated, authUser?._id]);
 
   return {
     data,
