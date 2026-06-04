@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSelector } from "react-redux";
 import api from "../lib/api.js";
 import { Link } from "react-router-dom";
-import { BadgeDollarSign, Layers, Users, Star, ArrowRight, CheckCircle2, Search, SlidersHorizontal, BookOpen } from "lucide-react";
+import { BadgeDollarSign, Layers, Users, Star, ArrowRight, CheckCircle2, Search, SlidersHorizontal, BookOpen, Rocket } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const container = {
@@ -29,7 +28,6 @@ const Projects = () => {
   const [difficulty, setDifficulty] = useState("");
   const [skill, setSkill] = useState("");
   const [sort, setSort] = useState("recent"); // 'recent', 'trending', 'most_active', 'most_contributors', 'bounty'
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const { data: projects, isLoading } = useQuery({
     queryKey: ["projects", search, difficulty, skill, sort],

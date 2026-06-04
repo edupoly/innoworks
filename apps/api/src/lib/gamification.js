@@ -40,28 +40,35 @@ export const awardXP = async (userId, xpAmount, actionReason) => {
     // Increment reputation and engineering scores based on action
     if (actionReason === 'PR_MERGED') {
       user.reputationScore += REPUTATION_WEIGHTS.MERGED_PR;
-      user.collaborationScore += 10;
-      user.perfectionScore += 15;
-      user.consistencyScore += 5;
+      user.collaborationScore += 12;
+      user.perfectionScore += 18;
+      user.consistencyScore += 8;
+      user.innovationScore += 5;
+      user.adaptabilityScore += 4;
       user.contributionStats.mergedPrsCount += 1;
     } else if (actionReason === 'PR_APPROVED') {
       user.reputationScore += REPUTATION_WEIGHTS.APPROVED_PR;
-      user.collaborationScore += 5;
-      user.innovationScore += 10;
+      user.collaborationScore += 8;
+      user.innovationScore += 12;
+      user.consistencyScore += 4;
+      user.perfectionScore += 5;
     } else if (actionReason === 'TESTING_REVIEW') {
       user.reputationScore += REPUTATION_WEIGHTS.SUBMITTED_REVIEW;
-      user.communicationScore += 10;
-      user.adaptabilityScore += 5;
-      user.collaborationScore += 5;
+      user.communicationScore += 15;
+      user.adaptabilityScore += 10;
+      user.collaborationScore += 8;
+      user.consistencyScore += 5;
     } else if (actionReason === 'ISSUE_SOLVED') {
       user.reputationScore += 15;
-      user.innovationScore += 15;
-      user.adaptabilityScore += 10;
+      user.innovationScore += 18;
+      user.adaptabilityScore += 12;
+      user.consistencyScore += 6;
       user.contributionStats.issuesCount += 1;
     } else if (actionReason === 'PROJECT_POSTED') {
       user.reputationScore += REPUTATION_WEIGHTS.POSTED_PROJECT;
-      user.innovationScore += 20;
-      user.communicationScore += 10;
+      user.innovationScore += 25;
+      user.communicationScore += 15;
+      user.collaborationScore += 5;
     }
 
     if (actionReason === 'PR_MERGED' || actionReason === 'PR_APPROVED' || actionReason === 'PR_CREATED') {

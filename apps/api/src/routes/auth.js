@@ -44,19 +44,6 @@ router.get("/me", authenticate, async (req, res) => {
       .populate('project')
       .sort({ createdAt: -1 });
 
-    // Unique submissions mapping
-    const uniqueSubmissions = [];
-    const seenProjects = new Set();
-
-    for (const sub of submissions) {
-      if (!sub.project) continue;
-      const projectId = sub.project._id.toString();
-      if (!seenProjects.has(projectId)) {
-        uniqueSubmissions.push(sub);
-        seenProjects.add(projectId);
-      }
-    }
-
     // Projects owned by this user
     const ownedProjects = await Project.find({ owner: user._id })
       .sort({ createdAt: -1 });
@@ -74,7 +61,7 @@ router.get("/me", authenticate, async (req, res) => {
 
     res.json({
       ...user.toObject(),
-      submissions: uniqueSubmissions,
+      submissions,
       ownedProjects,
       acceptedProjects: populatedAccepted
     });

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSelector, useDispatch } from "react-redux";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../lib/api";
 import { 
@@ -20,9 +19,6 @@ import {
   X,
   Edit3,
   Save,
-  Rocket,
-  Zap,
-  Star,
   Terminal,
   ShieldCheck
 } from "lucide-react";
@@ -46,6 +42,7 @@ const item = {
 const Dashboard = () => {
   const { user: authUser, isLoading, error } = useMe();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
   

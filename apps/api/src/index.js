@@ -24,10 +24,10 @@ const httpServer = createServer(app);
 // Trust proxy if behind Render or similar load balancer
 app.set('trust proxy', 1);
 
-// Global Rate Limiting
+// Global Rate Limiting - Increased for better user experience
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
+  max: 500, // Limit each IP to 500 requests per window
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many requests from this IP, please try again after 15 minutes" }
@@ -36,10 +36,10 @@ const limiter = rateLimit({
 // Apply rate limiter to all requests
 app.use(limiter);
 
-// Specific rate limit for Auth
+// Specific rate limit for Auth - Increased to prevent lockout
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20, // Limit each IP to 20 auth requests per hour
+  max: 100, // Limit each IP to 100 auth requests per hour
   message: { message: "Too many login attempts, please try again after an hour" }
 });
 app.use("/auth/github", authLimiter);

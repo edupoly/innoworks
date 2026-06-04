@@ -65,7 +65,7 @@ const Home = () => {
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-primary/5 rounded-full blur-[180px] animate-pulse"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-indigo-500/5 rounded-full blur-[160px] animate-pulse" style={{ animationDelay: '5s' }}></div>
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E')] opacity-[0.1] mix-blend-overlay"></div>
       </div>
 
       {/* Hero Section */}
@@ -84,11 +84,11 @@ const Home = () => {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="text-7xl md:text-[9rem] font-black mb-10 tracking-tighter leading-[0.85] text-foreground max-w-[90rem]"
+          className="text-7xl md:text-[8rem] font-black mb-10 tracking-tighter leading-[0.9] text-foreground max-w-[90rem]"
         >
-          Forge Your <br />
+          Architect Your <br />
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-indigo-600 to-blue-500">
-            Digital Legacy
+            Engineering Future
           </span>
         </motion.h1>
 
@@ -96,9 +96,9 @@ const Home = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="text-muted-foreground text-lg md:text-2xl max-w-3xl mb-16 font-medium leading-relaxed tracking-tight"
+          className="text-muted-foreground text-lg md:text-xl max-w-2xl mb-16 font-medium leading-relaxed tracking-tight"
         >
-          Innoworks is the premier orbital station for high-velocity developers. Solve mission-critical challenges, earn verified XP, and dominate the global rankings.
+          The elite ecosystem for high-velocity developers. Solve production-grade challenges, earn verified XP, and build a reputation that speaks for itself.
         </motion.p>
 
         <motion.div 
@@ -110,39 +110,29 @@ const Home = () => {
           {isAuthenticated ? (
             <Link
               to="/dashboard"
-              className="group btn-primary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/30 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1"
+              className="group btn-primary px-12 py-6 text-sm font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1"
             >
-              <LayoutDashboard size={22} />
+              <LayoutDashboard size={20} />
               Command Center
             </Link>
           ) : (
             <button
               onClick={handleLogin}
-              className="group btn-primary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/30 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1 relative overflow-hidden"
+              className="group btn-primary px-12 py-6 text-sm font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1 relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] transition-transform"></div>
-              <Github size={22} className="group-hover:rotate-12 transition-transform duration-500" />
+              <Github size={20} className="group-hover:rotate-12 transition-transform duration-500" />
               Login with GitHub
             </button>
           )}
 
-          {isAuthenticated ? (
-            <Link
-              to="/projects"
-              className="group btn-secondary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
-            >
-              <Search size={22} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
-              Explore Missions
-            </Link>
-          ) : (
-             <Link
-              to="/projects"
-              className="group btn-secondary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
-            >
-              <Rocket size={22} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
-              View Protocol
-            </Link>
-          )}
+          <Link
+            to="/projects"
+            className="group btn-secondary px-12 py-6 text-sm font-black uppercase tracking-widest rounded-2xl border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
+          >
+            <Search size={20} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
+            Explore Missions
+          </Link>
         </motion.div>
 
         {/* Ecosystem Logos (Ultra Subtle) */}
@@ -152,70 +142,91 @@ const Home = () => {
           transition={{ duration: 3, delay: 1 }}
           className="mt-40 flex flex-wrap justify-center gap-20 text-muted-foreground grayscale hover:grayscale-0 transition-all duration-1000"
         >
-          <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em]"><Github size={20} /> GitHub Verified</div>
-          <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em]"><ShieldCheck size={20} /> Zero-Trust Security</div>
-          <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em]"><Zap size={20} /> Real-Time Sync</div>
+          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em]"><Github size={18} /> GitHub Verified</div>
+          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em]"><ShieldCheck size={18} /> Zero-Trust Security</div>
+          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em]"><Zap size={18} /> Real-Time Sync</div>
         </motion.div>
+      </section>
+
+      {/* Professional "How it Works" section */}
+      <section className="relative z-10 w-full py-32 px-6 bg-secondary/20">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary mb-12">The_Protocol</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            {[
+              { step: "01", title: "Select Mission", desc: "Choose from production-grade challenges curated by elite engineers." },
+              { step: "02", title: "Fork & Execute", desc: "Build your solution in your own environment with full Git integration." },
+              { step: "03", title: "Peer Review", desc: "Submit for automated testing and expert peer verification." },
+              { step: "04", title: "Earn XP", desc: "Acquire verified reputation and climb the global engineering leaderboard." }
+            ].map((p, i) => (
+              <div key={i} className="space-y-4">
+                <div className="text-4xl font-black text-primary/20 tracking-tighter">{p.step}</div>
+                <h4 className="text-lg font-black tracking-tight">{p.title}</h4>
+                <p className="text-muted-foreground text-sm font-medium leading-relaxed">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Bento-style Features Section */}
       <section className="relative z-10 w-full py-40 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 grid-rows-2 gap-8 h-[900px] md:h-[700px]">
+          <div className="grid grid-cols-1 md:grid-cols-3 grid-rows-2 gap-8 h-[auto] md:h-[700px]">
             {/* Feature 1: Large */}
             <motion.div 
               whileHover={{ y: -8 }}
-              className="md:col-span-2 row-span-1 bg-card border border-border/50 rounded-[3.5rem] p-16 shadow-2xl relative overflow-hidden group transition-all duration-500"
+              className="md:col-span-2 row-span-1 bg-card border border-border/50 rounded-[3rem] p-12 shadow-2xl relative overflow-hidden group transition-all duration-500"
             >
               <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] translate-x-1/2 -translate-y-1/2 group-hover:bg-primary/10 transition-colors"></div>
-              <div className="w-20 h-20 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-10 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                <Rocket size={40} />
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-8 group-hover:scale-110 transition-all duration-500">
+                <Rocket size={32} />
               </div>
-              <h3 className="text-4xl font-black mb-6 tracking-tight">Orbital PR Velocity</h3>
-              <p className="text-muted-foreground text-xl max-w-lg font-medium leading-relaxed">
-                Our proprietary workflow engine synchronizes with your local Git environment to provide instant validation and seamless merges for all student-led missions.
+              <h3 className="text-3xl font-black mb-4 tracking-tight">Production-Grade Challenges</h3>
+              <p className="text-muted-foreground text-lg max-w-lg font-medium leading-relaxed">
+                Solve real-world engineering hurdles across diverse stacks. Our engine synchronizes with GitHub to provide instant validation.
               </p>
             </motion.div>
 
             {/* Feature 2: Small (Vertical) */}
             <motion.div 
               whileHover={{ y: -8 }}
-              className="md:col-span-1 row-span-2 bg-primary p-16 rounded-[3.5rem] shadow-2xl shadow-primary/20 text-primary-foreground flex flex-col justify-end relative overflow-hidden group transition-all duration-500"
+              className="md:col-span-1 row-span-2 bg-primary p-12 rounded-[3rem] shadow-2xl shadow-primary/20 text-primary-foreground flex flex-col justify-end relative overflow-hidden group transition-all duration-500"
             >
               <div className="absolute top-12 right-12 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-transform duration-1000">
-                <Zap size={180} />
+                <Zap size={150} />
               </div>
-              <h3 className="text-4xl font-black mb-6 tracking-tight">Quantum XP System</h3>
-              <p className="text-primary-foreground/90 text-xl font-medium leading-relaxed">
-                Every line of code is measured and rewarded. Accumulate verified reputation that translates directly into professional engineering credibility.
+              <h3 className="text-3xl font-black mb-4 tracking-tight">Verified Engineering Reputation</h3>
+              <p className="text-primary-foreground/90 text-lg font-medium leading-relaxed">
+                Every line of code is measured. Accumulate verified XP that translates directly into professional engineering credibility.
               </p>
             </motion.div>
 
             {/* Feature 3: Small */}
             <motion.div 
               whileHover={{ y: -8 }}
-              className="md:col-span-1 row-span-1 bg-secondary/50 backdrop-blur-2xl p-16 rounded-[3.5rem] border border-border/50 shadow-2xl group flex flex-col justify-center transition-all duration-500"
+              className="md:col-span-1 row-span-1 bg-secondary/50 backdrop-blur-2xl p-12 rounded-[3rem] border border-border/50 shadow-2xl group flex flex-col justify-center transition-all duration-500"
             >
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
-                <ShieldCheck size={32} />
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                <ShieldCheck size={28} />
               </div>
-              <h3 className="text-2xl font-black mb-4 tracking-tight">Immutable Trust</h3>
-              <p className="text-muted-foreground text-base font-medium leading-relaxed">
-                Cryptographically signed reviews ensure peer-to-peer verification remains the gold standard.
+              <h3 className="text-2xl font-black mb-2 tracking-tight">Zero-Trust Verification</h3>
+              <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+                Automated test suites and expert reviews ensure only the highest quality solutions are merged into our core repositories.
               </p>
             </motion.div>
 
             {/* Feature 4: Small */}
             <motion.div 
               whileHover={{ y: -8 }}
-              className="md:col-span-1 row-span-1 bg-card border border-border/50 rounded-[3.5rem] p-16 shadow-2xl group flex flex-col justify-center transition-all duration-500"
+              className="md:col-span-1 row-span-1 bg-card border border-border/50 rounded-[3rem] p-12 shadow-2xl group flex flex-col justify-center transition-all duration-500"
             >
-               <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
-                <Zap size={32} />
+              <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                <Sparkles size={28} />
               </div>
-              <h3 className="text-2xl font-black mb-4 tracking-tight">Live Intelligence</h3>
-              <p className="text-muted-foreground text-base font-medium leading-relaxed">
-                Real-time repository analytics provide deep insights into project health and contributor velocity.
+              <h3 className="text-2xl font-black mb-2 tracking-tight">Global Leaderboards</h3>
+              <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+                Compete with the top 1% of student engineers worldwide. Rise through the ranks and unlock exclusive missions.
               </p>
             </motion.div>
           </div>
