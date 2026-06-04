@@ -74,31 +74,37 @@ const ThemeToggle = () => {
   );
 };
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 const NotificationDropdown = () => {
-  const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const fetchNotifications = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return; // Don't fetch if token is missing
-    
-    try {
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: async () => {
       const response = await api.get("/users/notifications");
-      setNotifications(response.data);
-    } catch (err) {
-      if (err.response?.status !== 401) {
-        console.error("Failed to load notifications:", err.message);
-      }
-    }
-  };
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
 
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000); // Poll every 10s as robust fallback
-    return () => clearInterval(interval);
-  }, []);
+  const markAllReadMutation = useMutation({
+    mutationFn: () => api.put("/users/notifications/read-all"),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+    }
+  });
+
+  const readSingleMutation = useMutation({
+    mutationFn: (id) => api.put(`/users/notifications/${id}/read`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+    }
+  });
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -110,27 +116,18 @@ const NotificationDropdown = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleMarkAllRead = async () => {
-    try {
-      await api.put("/users/notifications/read-all");
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    } catch (err) {
-      console.error(err);
-    }
+  const handleMarkAllRead = async (e) => {
+    e.stopPropagation();
+    markAllReadMutation.mutate();
   };
 
   const handleReadSingle = async (n) => {
-    try {
-      if (!n.read) {
-        await api.put(`/users/notifications/${n._id}/read`);
-        setNotifications(prev => prev.map(notif => notif._id === n._id ? { ...notif, read: true } : notif));
-      }
-      setIsOpen(false);
-      if (n.link) {
-        navigate(n.link);
-      }
-    } catch (err) {
-      console.error(err);
+    if (!n.read) {
+      readSingleMutation.mutate(n._id);
+    }
+    setIsOpen(false);
+    if (n.link) {
+      navigate(n.link);
     }
   };
 

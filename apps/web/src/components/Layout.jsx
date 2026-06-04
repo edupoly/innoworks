@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTheme } from "./ThemeProvider";
 import { logoutUser } from "../store/slices/authSlice";
 import CommandPalette from "./CommandPalette";
+import { useQueryClient } from "@tanstack/react-query";
 import { initiateSocket, disconnectSocket, subscribeToNotifications } from "../lib/socket";
 import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers } from "lucide-react";
 
@@ -14,6 +15,7 @@ const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const { setTheme } = useTheme();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   
@@ -123,6 +125,9 @@ const Layout = () => {
         const toastId = Date.now().toString();
         setToasts((prev) => [...prev, { id: toastId, ...newNotification }]);
 
+        // Refetch notifications in the background to sync the badge/dropdown
+        queryClient.invalidateQueries(["notifications"]);
+
         // Auto-dismiss after 6 seconds
         setTimeout(() => {
           dismissToast(toastId);
@@ -135,7 +140,7 @@ const Layout = () => {
     return () => {
       disconnectSocket();
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, queryClient]);
 
   const dismissToast = (id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
