@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { GitBranch, CheckCircle2, AlertCircle } from "lucide-react";
+import { GitBranch, CheckCircle2, AlertCircle, RefreshCcw } from "lucide-react";
+import { motion } from "framer-motion";
 import api from "../lib/api";
 
 const BranchPicker = ({ owner, repo, onSelect, selectedBranch }) => {
@@ -7,80 +8,86 @@ const BranchPicker = ({ owner, repo, onSelect, selectedBranch }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const fetchBranches = async () => {
     if (!owner || !repo) return;
-
-    const fetchBranches = async () => {
-      setIsLoading(true);
-      setError("");
-      try {
-        const response = await api.get(`/auth/repos/${owner}/${repo}/branches`);
-        const fetchedBranches = response.data;
-        setBranches(fetchedBranches);
-        
-        // If current selected branch is not in the list, or no branch selected, pick a default
-        const isCurrentBranchValid = fetchedBranches.some(b => b.name === selectedBranch);
-        
-        if (!isCurrentBranchValid && fetchedBranches.length > 0) {
-          const defaultBranch = fetchedBranches.find(b => b.name === 'main' || b.name === 'master') || fetchedBranches[0];
-          onSelect(defaultBranch.name);
-        }
-      } catch (error) {
-        console.error("Failed to fetch branches:", error);
-        setError("Could not load branches for this repository.");
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    setError("");
+    try {
+      const response = await api.get(`/auth/repos/${owner}/${repo}/branches`);
+      const fetchedBranches = response.data;
+      setBranches(fetchedBranches);
+      
+      const isCurrentBranchValid = fetchedBranches.some(b => b.name === selectedBranch);
+      
+      if (!isCurrentBranchValid && fetchedBranches.length > 0) {
+        const defaultBranch = fetchedBranches.find(b => b.name === 'main' || b.name === 'master') || fetchedBranches[0];
+        onSelect(defaultBranch.name);
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch branches:", error);
+      setError("Strategic link failed. Could not load branch data.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchBranches();
   }, [owner, repo]);
 
   if (!owner || !repo) {
     return (
-      <div className="p-4 border border-dashed border-border rounded-xl text-center text-xs text-muted-foreground">
-        Select a repository first to see available branches.
+      <div className="p-8 border border-dashed border-border/50 rounded-2xl text-center bg-muted/5">
+        <GitBranch size={24} className="mx-auto text-muted-foreground opacity-20 mb-3" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Awaiting Target Selection</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full space-y-3">
+    <div className="w-full space-y-4">
       {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-center gap-2 text-xs font-medium">
-          <AlertCircle size={14} />
+        <div className="p-4 bg-destructive/5 border border-destructive/20 text-destructive rounded-2xl flex items-center gap-3 text-xs font-bold">
+          <AlertCircle size={16} />
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {isLoading ? (
-          <div className="col-span-full py-4 text-center text-muted-foreground animate-pulse text-xs">
-            Fetching branches...
+          <div className="col-span-full py-10 text-center space-y-3">
+            <RefreshCcw size={20} className="mx-auto text-primary animate-spin" />
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">Scanning Branches...</p>
           </div>
         ) : branches.length > 0 ? (
           branches.map((branch) => (
-            <div
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               key={branch.name}
               onClick={() => onSelect(branch.name)}
-              className={`p-3 flex items-center justify-between cursor-pointer rounded-xl border transition-all ${
+              className={`p-4 flex items-center justify-between cursor-pointer rounded-2xl border transition-all ${
                 selectedBranch === branch.name 
-                  ? "bg-primary/5 border-primary shadow-sm" 
-                  : "bg-background border-border hover:border-primary/30"
+                  ? "bg-primary/10 border-primary shadow-lg shadow-primary/5 ring-1 ring-primary/20" 
+                  : "bg-background border-border/50 hover:border-primary/30"
               }`}
             >
               <div className="flex items-center gap-3 overflow-hidden">
-                <GitBranch size={16} className={selectedBranch === branch.name ? "text-primary" : "text-muted-foreground"} />
-                <span className={`text-xs font-bold truncate ${selectedBranch === branch.name ? "text-foreground" : "text-muted-foreground"}`}>
+                <GitBranch size={14} className={selectedBranch === branch.name ? "text-primary" : "text-muted-foreground"} />
+                <span className={`text-[11px] font-black truncate uppercase tracking-widest ${selectedBranch === branch.name ? "text-foreground" : "text-muted-foreground"}`}>
                   {branch.name}
                 </span>
               </div>
-              {selectedBranch === branch.name && <CheckCircle2 size={14} className="text-primary flex-shrink-0" />}
-            </div>
+              {selectedBranch === branch.name && (
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                  <CheckCircle2 size={12} className="text-primary" />
+                </motion.div>
+              )}
+            </motion.div>
           ))
         ) : (
-          <div className="col-span-full py-4 text-center text-muted-foreground text-xs">
-            No branches found.
+          <div className="col-span-full py-10 text-center bg-muted/10 rounded-2xl">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Empty Branch Stack</p>
           </div>
         )}
       </div>

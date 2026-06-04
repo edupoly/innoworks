@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Search, Globe, Lock, Code2, CheckCircle2 } from "lucide-react";
+import { Search, Globe, Lock, Code2, CheckCircle2, Github, RefreshCcw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../lib/api";
 
 const RepoPicker = ({ onSelect, selectedRepo }) => {
@@ -7,17 +8,19 @@ const RepoPicker = ({ onSelect, selectedRepo }) => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchRepos = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get("/auth/repos");
+      setRepos(response.data);
+    } catch (error) {
+      console.error("Failed to fetch repositories:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchRepos = async () => {
-      try {
-        const response = await api.get("/auth/repos");
-        setRepos(response.data);
-      } catch (error) {
-        console.error("Failed to fetch repositories:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchRepos();
   }, []);
 
@@ -26,68 +29,97 @@ const RepoPicker = ({ onSelect, selectedRepo }) => {
   );
 
   return (
-    <div className="w-full space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-        <input
-          type="text"
-          placeholder="Search repositories..."
-          className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+    <div className="w-full space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={18} />
+          <input
+            type="text"
+            placeholder="Search repositories..."
+            className="w-full pl-12 pr-4 py-4 bg-muted/20 border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <button 
+          onClick={fetchRepos}
+          className="p-4 bg-muted/20 border border-border/50 rounded-2xl hover:bg-muted/40 transition-all text-muted-foreground hover:text-primary"
+          title="Refresh Repositories"
+        >
+          <RefreshCcw size={18} className={isLoading ? "animate-spin" : ""} />
+        </button>
       </div>
 
-      <div className="max-h-[400px] overflow-y-auto border border-border rounded-2xl divide-y divide-border bg-card shadow-sm">
+      <div className="max-h-[440px] overflow-y-auto border border-border/50 rounded-[2rem] divide-y divide-border/30 bg-background shadow-sm custom-scrollbar">
         {isLoading ? (
-          <div className="p-8 text-center text-muted-foreground animate-pulse">
-            Loading your repositories...
+          <div className="p-20 text-center space-y-4">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Accessing GitHub Nodes...</p>
           </div>
         ) : filteredRepos.length > 0 ? (
-          filteredRepos.map((repo) => (
-            <div
-              key={repo.id}
-              onClick={() => onSelect(repo)}
-              className={`p-4 flex items-center justify-between cursor-pointer transition-colors hover:bg-muted/50 ${
-                selectedRepo?.id === repo.id ? "bg-primary/5 border-primary/20" : ""
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <div className={`p-2 rounded-lg ${repo.private ? "bg-orange-100 text-orange-600 dark:bg-orange-500/10" : "bg-blue-100 text-blue-600 dark:bg-blue-500/10"}`}>
-                  {repo.private ? <Lock size={18} /> : <Globe size={18} />}
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm flex items-center gap-2">
-                    {repo.full_name}
-                    {selectedRepo?.id === repo.id && <CheckCircle2 size={14} className="text-primary" />}
-                  </h4>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-                      {repo.private ? "Private" : "Public"}
-                    </span>
-                    {repo.language && (
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-                        <Code2 size={10} />
-                        {repo.language}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <button
-                className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${
-                  selectedRepo?.id === repo.id
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background border-border hover:border-primary/50"
+          <div className="p-2 space-y-1">
+            {filteredRepos.map((repo) => (
+              <motion.div
+                layout
+                key={repo.id}
+                onClick={() => onSelect(repo)}
+                className={`p-5 flex items-center justify-between cursor-pointer rounded-2xl transition-all ${
+                  selectedRepo?.id === repo.id 
+                    ? "bg-primary/5 border border-primary/20 shadow-inner" 
+                    : "hover:bg-muted/30 border border-transparent"
                 }`}
               >
-                {selectedRepo?.id === repo.id ? "Selected" : "Select"}
-              </button>
-            </div>
-          ))
+                <div className="flex items-center gap-5">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border shadow-sm transition-all ${
+                    repo.private 
+                      ? "bg-orange-500/10 text-orange-500 border-orange-500/20" 
+                      : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                  }`}>
+                    {repo.private ? <Lock size={20} /> : <Globe size={20} />}
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="font-black text-sm flex items-center gap-2 tracking-tight truncate">
+                      {repo.full_name.split('/')[1]}
+                      {selectedRepo?.id === repo.id && (
+                        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-primary bg-primary/10 p-0.5 rounded-full">
+                          <CheckCircle2 size={12} />
+                        </motion.span>
+                      )}
+                    </h4>
+                    <div className="flex items-center gap-4 mt-1.5">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                        @{repo.full_name.split('/')[0]}
+                      </span>
+                      {repo.language && (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5 bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">
+                          <Code2 size={10} />
+                          {repo.language}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border transition-all ${
+                  selectedRepo?.id === repo.id
+                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                    : "bg-background border-border/50 text-muted-foreground group-hover:border-primary/50"
+                }`}>
+                  {selectedRepo?.id === repo.id ? "Targeted" : "Select"}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         ) : (
-          <div className="p-8 text-center text-muted-foreground">
-            No repositories found matching your search.
+          <div className="p-20 text-center space-y-6">
+            <div className="w-16 h-16 bg-muted/50 rounded-3xl flex items-center justify-center mx-auto border border-border/50">
+              <Github size={32} className="text-muted-foreground opacity-20" />
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-sm font-black uppercase tracking-[0.2em]">No Nodes Found</h4>
+              <p className="text-xs font-medium text-muted-foreground">We couldn't locate any matching repositories.</p>
+            </div>
+            <button onClick={() => setSearch("")} className="text-[10px] font-black uppercase tracking-[0.25em] text-primary hover:underline">Reset Search Filters</button>
           </div>
         )}
       </div>
