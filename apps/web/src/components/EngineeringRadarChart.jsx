@@ -166,4 +166,4 @@ export const EngineeringRadarChart = memo(({ stats, size = 320 }) => {
       </div>
     </div>
   );
-};
+});

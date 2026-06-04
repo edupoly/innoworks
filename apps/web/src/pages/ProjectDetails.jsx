@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector, useDispatch } from "react-redux";
@@ -129,12 +129,12 @@ const ProjectDetails = () => {
   const updateProjectMutation = useMutation({
     mutationFn: (data) => api.put(`/projects/${id}`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(["project", id]);
+      queryClient.invalidateQueries({ queryKey: ["project", id] });
       setIsEditing(false);
     },
   });
 
-  const handleUpdateProject = async (e) => {
+  const handleUpdateProject = useCallback(async (e) => {
     e.preventDefault();
     setIsUpdatingProject(true);
     try {
@@ -148,14 +148,23 @@ const ProjectDetails = () => {
     } finally {
       setIsUpdatingProject(false);
     }
-  };
+  }, [updateProjectMutation, editTitle, editDescription, editBounty]);
 
-  const isAccepted = (authUser?.acceptedProjects || []).some(p => (p._id || p) === id);
+  const isAccepted = useMemo(() => 
+    (authUser?.acceptedProjects || []).some(p => (p._id || p) === id),
+  [authUser?.acceptedProjects, id]);
 
-  const activeSubmissions = projectSubmissions?.filter(s => s.status !== 'MERGED' && s.status !== 'REJECTED') || [];
-  const submissionHistory = projectSubmissions?.filter(s => s.status === 'MERGED' || s.status === 'REJECTED') || [];
+  const activeSubmissions = useMemo(() => 
+    projectSubmissions?.filter(s => s.status !== 'MERGED' && s.status !== 'REJECTED') || [],
+  [projectSubmissions]);
 
-  const mySubmissions = projectSubmissions?.filter(s => s.user?._id === authUser?._id || s.user === authUser?._id) || [];
+  const submissionHistory = useMemo(() => 
+    projectSubmissions?.filter(s => s.status === 'MERGED' || s.status === 'REJECTED') || [],
+  [projectSubmissions]);
+
+  const mySubmissions = useMemo(() => 
+    projectSubmissions?.filter(s => s.user?._id === authUser?._id || s.user === authUser?._id) || [],
+  [projectSubmissions, authUser?._id]);
 
   const deleteMutation = useMutation({
     mutationFn: () => api.delete(`/projects/${id}`),
@@ -164,11 +173,11 @@ const ProjectDetails = () => {
     },
   });
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
       deleteMutation.mutate();
     }
-  };
+  }, [deleteMutation]);
 
   const acceptMutation = useMutation({
     mutationFn: () => api.post(`/projects/${id}/accept`),
@@ -179,27 +188,27 @@ const ProjectDetails = () => {
           token: localStorage.getItem("token") 
         }));
       }
-      queryClient.invalidateQueries(["me"]);
+      queryClient.invalidateQueries({ queryKey: ["me"] });
       checkFork();
     },
   });
 
-  const checkFork = async () => {
+  const checkFork = useCallback(async () => {
     try {
       const res = await api.get(`/projects/${id}/fork-status`);
       setForkStatus(res.data);
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (isAccepted) {
       checkFork();
     }
-  }, [isAccepted, id]);
+  }, [isAccepted, checkFork]);
 
-  const handleDevSubmit = async (e) => {
+  const handleDevSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (!selectedRepo || !selectedBranch) return;
     setSubmittingDev(true);
@@ -211,15 +220,15 @@ const ProjectDetails = () => {
         linkedIssue: selectedIssue?.number
       });
       setDevSuccess(true);
-      queryClient.invalidateQueries(["projectSubmissions", id]);
+      queryClient.invalidateQueries({ queryKey: ["projectSubmissions", id] });
     } catch (err) {
       setDevError(err.response?.data?.message || "Failed to submit contribution.");
     } finally {
       setSubmittingDev(false);
     }
-  };
+  }, [id, selectedRepo, selectedBranch, selectedIssue, queryClient]);
 
-  const handleTestSubmit = async (e) => {
+  const handleTestSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (!selectedPR || !testFeedback) return;
     setSubmittingTest(true);
@@ -238,27 +247,27 @@ const ProjectDetails = () => {
       setTimeout(() => {
         setTestSuccess(false);
         setSelectedPR(null);
-        queryClient.invalidateQueries(["projectIntelligence", id]);
-        queryClient.invalidateQueries(["projectSubmissions", id]);
+        queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
+        queryClient.invalidateQueries({ queryKey: ["projectSubmissions", id] });
       }, 3000);
     } catch (err) {
       setTestError("Failed to submit review.");
     } finally {
       setSubmittingTest(false);
     }
-  };
+  }, [id, selectedPR, testFeedback, testOutcome, checklist, testRating, testBugs, testSuggestions, queryClient]);
 
-  const toggleChecklist = (index) => {
+  const toggleChecklist = useCallback((index) => {
     setChecklist(prev => prev.map((item, idx) => 
       idx === index ? { ...item, checked: !item.checked } : item
     ));
-  };
+  }, []);
 
   const mergeMutation = useMutation({
     mutationFn: (submissionId) => api.post(`/submissions/${submissionId}/merge`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["projectIntelligence", id]);
-      queryClient.invalidateQueries(["projectSubmissions", id]);
+      queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
+      queryClient.invalidateQueries({ queryKey: ["projectSubmissions", id] });
     },
   });
 
@@ -270,40 +279,40 @@ const ProjectDetails = () => {
     },
   });
 
-  const handleMerge = (submissionId) => {
+  const handleMerge = useCallback((submissionId) => {
     if (window.confirm("Are you sure you want to merge this?")) {
       mergeMutation.mutate(submissionId);
     }
-  };
+  }, [mergeMutation]);
 
-  const handleReject = (submissionId) => {
+  const handleReject = useCallback((submissionId) => {
     if (window.confirm("Are you sure you want to reject this submission? This will close the PR.")) {
       rejectMutation.mutate(submissionId);
     }
-  };
+  }, [rejectMutation]);
 
   const closeIssueMutation = useMutation({
     mutationFn: (issueNumber) => api.patch(`/projects/${id}/issues/${issueNumber}/close`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["projectIntelligence", id]);
+      queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
     },
   });
 
   const createIssueMutation = useMutation({
     mutationFn: (issueData) => api.post(`/projects/${id}/issues`, issueData),
     onSuccess: () => {
-      queryClient.invalidateQueries(["projectIntelligence", id]);
+      queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
       setIsAddingIssue(false);
       setIssueTitle("");
       setIssueBody("");
     },
   });
 
-  const handleCloseIssue = (issueNumber) => {
+  const handleCloseIssue = useCallback((issueNumber) => {
     if (window.confirm(`Are you sure you want to close issue #${issueNumber}?`)) {
       closeIssueMutation.mutate(issueNumber);
     }
-  };
+  }, [closeIssueMutation]);
 
   const [isAddingIssue, setIsAddingIssue] = useState(false);
   const [issueTitle, setIssueTitle] = useState("");
@@ -443,7 +452,7 @@ const ProjectDetails = () => {
                     <h3 className="text-sm font-black uppercase tracking-[0.3em]">README.md Protocol</h3>
                   </div>
                   <button 
-                    onClick={() => queryClient.invalidateQueries(["projectIntelligence", id])}
+                    onClick={() => queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] })}
                     className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
                   >
                     <RefreshCcw size={12} /> Refetch

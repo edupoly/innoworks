@@ -6,6 +6,7 @@ import { User } from '../models/User.js';
 import { Review } from '../models/Review.js';
 import { awardXP, XP_VALUES } from '../lib/gamification.js';
 import { sendNotification } from '../lib/notifications.js';
+import { clearCache } from '../middleware/cache.js';
 
 const router = Router();
 
@@ -51,6 +52,10 @@ if (githubApp) {
       project.forks = payload.repository.forks_count || project.forks;
       await project.save();
 
+      // Clear caches
+      clearCache(`/projects/${project._id}`);
+      clearCache('/projects');
+
       // Broadcast Socket.IO notifications for new commits if any
       const branchName = payload.ref.replace("refs/heads/", "");
       if (branchName === project.branchName) {
@@ -82,6 +87,9 @@ if (githubApp) {
       // Update open issues count
       project.openIssuesCount = payload.repository.open_issues_count || project.openIssuesCount;
       await project.save();
+
+      // Clear caches
+      clearCache(`/projects/${project._id}`);
 
       // Notify Owner or Assigned users
       if (action === "opened") {
@@ -174,6 +182,9 @@ if (githubApp) {
         ]
       }).populate('user');
 
+      // Clear caches early for visibility
+      clearCache(`/projects/${project._id}`);
+
       // Method 2: External PR Detection (PR opened externally using Git CLI / Website)
       if (!submission && action === "opened") {
         const prCreator = payload.pull_request.user.login;
@@ -245,6 +256,11 @@ if (githubApp) {
         // Award Merged XP! (200 XP)
         await awardXP(submission.user._id, XP_VALUES.PR_MERGED, 'PR_MERGED');
         
+        // Clear caches on merge
+        clearCache(`/users/profile/${submission.user.username}`);
+        clearCache('/users/leaderboard');
+        clearCache('/projects');
+
         await sendNotification(
           submission.user._id,
           'PR_MERGED',
@@ -298,6 +314,9 @@ if (githubApp) {
 
       if (!submission) return;
 
+      // Clear project cache
+      clearCache(`/projects/${project._id}`);
+
       const reviewer = await User.findOne({ username: reviewerUsername });
       const reviewerId = reviewer ? reviewer._id : project.owner;
 
@@ -332,6 +351,8 @@ if (githubApp) {
       // Award XP to reviewer if tester (30 XP)
       if (reviewer && reviewer.roles.includes('TESTER')) {
         await awardXP(reviewer._id, XP_VALUES.TESTING_REVIEW, 'TESTING_REVIEW');
+        clearCache(`/users/profile/${reviewer.username}`);
+        clearCache('/users/leaderboard');
       }
 
       await sendNotification(

@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Search, Globe, Lock, Code2, CheckCircle2, Github, RefreshCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "../lib/api";
 
-const RepoPicker = ({ onSelect, selectedRepo }) => {
+const RepoPicker = memo(({ onSelect, selectedRepo }) => {
   const [repos, setRepos] = useState([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchRepos = async () => {
+  const fetchRepos = useCallback(async () => {
     setIsLoading(true);
     setError("");
     try {
@@ -22,11 +22,11 @@ const RepoPicker = ({ onSelect, selectedRepo }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchRepos();
-  }, []);
+  }, [fetchRepos]);
 
   const filteredRepos = repos.filter((repo) =>
     repo.full_name.toLowerCase().includes(search.toLowerCase())

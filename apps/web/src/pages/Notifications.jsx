@@ -20,14 +20,14 @@ const Notifications = () => {
   const markAllReadMutation = useMutation({
     mutationFn: () => api.put("/users/notifications/read-all"),
     onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     }
   });
 
   const readSingleMutation = useMutation({
     mutationFn: (id) => api.put(`/users/notifications/${id}/read`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     }
   });
 

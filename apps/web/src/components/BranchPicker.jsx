@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { GitBranch, CheckCircle2, AlertCircle, RefreshCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "../lib/api";
 
-const BranchPicker = ({ owner, repo, onSelect, selectedBranch }) => {
+const BranchPicker = memo(({ owner, repo, onSelect, selectedBranch }) => {
   const [branches, setBranches] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");

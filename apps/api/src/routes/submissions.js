@@ -9,6 +9,7 @@ import { createPullRequest, createPullRequestReview, mergePullRequest, parseRepo
 import { validateObjectId, validateSubmission } from '../middleware/validate.js';
 import { awardXP, XP_VALUES } from '../lib/gamification.js';
 import { sendNotification } from '../lib/notifications.js';
+import { clearCache } from '../middleware/cache.js';
 import axios from 'axios';
 
 const router = Router();
@@ -194,6 +195,10 @@ router.post("/", authenticate, validateObjectId, validateSubmission, async (req,
       `💎 @${user.username} submitted a solution for "${project.title}"!`,
       `/projects/${project._id}`
     );
+
+    // Clear caches
+    clearCache(`/projects/${projectId}`);
+    clearCache('/projects');
   } catch (error) {
     console.error("❌ Submission Error:", error.message);
     res.status(500).json({ message: "Error creating submission: " + error.message });
@@ -395,6 +400,14 @@ router.post("/:id/reviews", authenticate, async (req, res) => {
       `/dashboard`
     );
 
+    // Clear caches
+    clearCache(`/projects/${submission.project._id}`);
+    clearCache(`/users/profile/${reviewerUser.username}`);
+    const devUser = await User.findById(submission.user);
+    if (devUser) clearCache(`/users/profile/${devUser.username}`);
+    clearCache('/users/leaderboard');
+    clearCache('/projects');
+
     res.status(201).json(review);
   } catch (error) {
     console.error("❌ Submit Peer Review Error:", error.message);
@@ -466,6 +479,13 @@ router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
       `/dashboard`
     );
 
+    // Clear caches
+    clearCache(`/projects/${submission.project._id}`);
+    const mergedUser = await User.findById(submission.user);
+    if (mergedUser) clearCache(`/users/profile/${mergedUser.username}`);
+    clearCache('/users/leaderboard');
+    clearCache('/projects');
+
     res.json({ message: "Submission merged successfully." });
   } catch (error) {
     console.error("❌ Merge Error:", error.message);
@@ -523,6 +543,10 @@ router.post("/:id/reject", authenticate, validateObjectId, async (req, res) => {
       `❌ Your contribution for "${submission.project.title}" has been closed/rejected by the maintainer.`,
       `/dashboard`
     );
+
+    // Clear caches
+    clearCache(`/projects/${submission.project._id}`);
+    clearCache('/projects');
 
     res.json({ message: "Submission rejected and closed successfully." });
   } catch (error) {
