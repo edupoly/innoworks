@@ -118,20 +118,31 @@ const Home = () => {
           ) : (
             <button
               onClick={handleLogin}
-              className="group btn-primary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/30 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1"
+              className="group btn-primary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/30 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1 relative overflow-hidden"
             >
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] transition-transform"></div>
               <Github size={22} className="group-hover:rotate-12 transition-transform duration-500" />
-              Connect GitHub
+              Login with GitHub
             </button>
           )}
 
-          <Link
-            to="/projects"
-            className="group btn-secondary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
-          >
-            <Search size={22} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
-            Explore Missions
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              to="/projects"
+              className="group btn-secondary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
+            >
+              <Search size={22} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
+              Explore Missions
+            </Link>
+          ) : (
+             <Link
+              to="/projects"
+              className="group btn-secondary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
+            >
+              <Rocket size={22} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
+              View Protocol
+            </Link>
+          )}
         </motion.div>
 
         {/* Ecosystem Logos (Ultra Subtle) */}

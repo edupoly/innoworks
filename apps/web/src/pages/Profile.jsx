@@ -47,14 +47,21 @@ const Profile = () => {
   );
 
   return (
-    <div className="py-12 max-w-6xl mx-auto px-4">
-      <button 
-        onClick={() => navigate(-1)}
-        className="mb-8 flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors group"
-      >
-        <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-        Back
-      </button>
+    <div className="py-20 max-w-6xl mx-auto px-4 relative noise-bg">
+      {/* Dynamic Background Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '3s' }}></div>
+      </div>
+
+      <div className="relative z-10">
+        <button 
+          onClick={() => navigate(-1)}
+          className="mb-12 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors group"
+        >
+          <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          Return to Deck
+        </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Stats & Identity */}

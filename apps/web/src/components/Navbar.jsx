@@ -312,7 +312,7 @@ const Navbar = () => {
               className="btn-primary flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-full group shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"
             >
               <Github size={18} className="group-hover:rotate-12 transition-transform duration-300" />
-              Connect GitHub
+              Login with GitHub
             </button>
           )}
         </div>

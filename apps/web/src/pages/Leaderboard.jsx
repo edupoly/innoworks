@@ -23,8 +23,8 @@ const Leaderboard = () => {
   ];
 
   if (isLoading) return (
-    <div className="flex flex-col items-center justify-center py-32">
-      <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"></div>
+    <div className="flex flex-col items-center justify-center py-40">
+      <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-8"></div>
       <p className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px] animate-pulse">Calculating developer standings...</p>
     </div>
   );
@@ -33,47 +33,53 @@ const Leaderboard = () => {
   const restOfUsers = users?.slice(3) || [];
 
   return (
-    <div className="py-20 max-w-6xl mx-auto px-4 selection:bg-primary/30">
-      <div className="text-center mb-20 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -z-10"></div>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-6"
-        >
-          <Zap size={12} className="fill-primary" />
-          Live Standings Sync
-        </motion.div>
-        <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/60">
-          Engineering Elite
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-xl mx-auto font-medium leading-relaxed">
-          Unlocking open source contribution leaderboards. See the top engineering minds of our student community.
-        </p>
+    <div className="py-20 max-w-6xl mx-auto px-4 selection:bg-primary/30 relative noise-bg">
+      {/* Dynamic Background Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute top-0 left-0 w-[40%] h-[40%] bg-indigo-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
 
-      {/* Period Selection Tabs */}
-      <div className="flex justify-center mb-20">
-        <div className="bg-muted/50 p-1.5 rounded-[2rem] flex gap-1 border border-border/40 backdrop-blur-xl">
-          {periods.map((p) => {
-            const isSel = period === p.id;
-            return (
-              <button
-                key={p.id}
-                onClick={() => setPeriod(p.id)}
-                className={`flex items-center gap-2.5 px-8 py-3.5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
-                  isSel 
-                    ? "bg-background text-primary shadow-2xl shadow-primary/20 border border-primary/20" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                <p.icon size={14} className={isSel ? "animate-pulse" : ""} />
-                {p.label}
-              </button>
-            );
-          })}
+      <div className="relative z-10">
+        <div className="text-center mb-24">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary/80 border border-border/50 text-primary text-[10px] font-black uppercase tracking-[0.25em] backdrop-blur-xl shadow-sm mb-8"
+          >
+            <Zap size={12} className="fill-primary" />
+            Live Analytics Sync
+          </motion.div>
+          <h1 className="text-6xl md:text-[5rem] font-black tracking-tighter mb-8 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 leading-[1]">
+            Engineering Elite
+          </h1>
+          <p className="text-muted-foreground text-xl max-w-xl mx-auto font-medium leading-relaxed">
+            The global rankings of student engineering excellence. Compete, contribute, and dominate.
+          </p>
         </div>
-      </div>
+
+        {/* Period Selection Tabs */}
+        <div className="flex justify-center mb-24">
+          <div className="bg-secondary/50 p-2 rounded-[2.5rem] flex gap-1.5 border border-border/50 backdrop-blur-2xl shadow-xl shadow-black/5">
+            {periods.map((p) => {
+              const isSel = period === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setPeriod(p.id)}
+                  className={`flex items-center gap-3 px-10 py-4 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${
+                    isSel 
+                      ? "bg-background text-primary shadow-2xl shadow-primary/20 border border-primary/20" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <p.icon size={16} className={isSel ? "animate-pulse" : ""} />
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
       {/* Podium Showcase */}
       {topThree.length > 0 && (
