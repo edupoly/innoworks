@@ -4,13 +4,24 @@ import { setCredentials, logout, setLoading } from "../store/slices/authSlice";
 import { useGetMeQuery } from "../store/api/authApiSlice";
 
 export const useMe = () => {
-  const { isAuthenticated, user: authUser } = useSelector((state) => state.auth);
+  const { isAuthenticated, user: authUser, loading } = useSelector((state) => state.auth);
   const token = localStorage.getItem("token");
   const dispatch = useDispatch();
 
-  const { data, isLoading, isSuccess, isError, error, refetch } = useGetMeQuery(undefined, {
+  const { data, isLoading, isFetching, isSuccess, isError, error, refetch } = useGetMeQuery(undefined, {
     skip: !token,
   });
+
+  // Timeout protection: ensure initialization screen always terminates
+  useEffect(() => {
+    if (token && loading) {
+      const timer = setTimeout(() => {
+        console.warn("useMe: session restoration timed out. Failsafe activated.");
+        dispatch(setLoading(false));
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [token, loading, dispatch]);
 
   // Sync RTK Query data back to Redux if they differ or if we need to restore session
   useEffect(() => {
@@ -18,6 +29,8 @@ export const useMe = () => {
       if (isSuccess && data) {
         if (!isAuthenticated || authUser?._id !== data?._id) {
           dispatch(setCredentials({ user: data, token: token || localStorage.getItem("token") }));
+        } else {
+          dispatch(setLoading(false));
         }
       } else if (isError) {
         console.error("useMe: session restoration error:", error);
@@ -28,9 +41,11 @@ export const useMe = () => {
         } else {
           dispatch(setLoading(false));
         }
+      } else if (!isLoading && !isFetching) {
+        dispatch(setLoading(false));
       }
     }
-  }, [token, isSuccess, isError, data, error, dispatch, isAuthenticated, authUser?._id]);
+  }, [token, isSuccess, isError, isLoading, isFetching, data, error, dispatch, isAuthenticated, authUser?._id]);
 
   return {
     data,
