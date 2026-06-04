@@ -281,17 +281,19 @@ const Navbar = () => {
                 <span>Dashboard</span>
               </Link>
               
-              <Link to={`/profile/${user?.username}`} className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-full border border-border/50 hover:bg-muted transition-colors">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-blue-400 p-[2px] shadow-sm">
-                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                     {user?.avatarUrl ? (
-                       <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
-                      ) : (
-                       <User size={16} className="text-primary" />
-                     )}
+              {user?.username && (
+                <Link to={`/profile/${user.username}`} className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-full border border-border/50 hover:bg-muted transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-blue-400 p-[2px] shadow-sm">
+                    <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                       {user?.avatarUrl ? (
+                         <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
+                        ) : (
+                         <User size={16} className="text-primary" />
+                       )}
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-destructive/50"

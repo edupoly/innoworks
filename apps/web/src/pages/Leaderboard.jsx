@@ -22,6 +22,8 @@ const Metric = ({ label, value }) => {
 };
 
 const LeaderboardRow = ({ user, rank, period }) => {
+  if (!user || !user.username) return null;
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -87,6 +89,8 @@ const LeaderboardRow = ({ user, rank, period }) => {
 };
 
 const PodiumCard = ({ user, rank, color, bgColor, borderColor, featured }) => {
+  if (!user || !user.username) return null;
+
   return (
     <div className={`relative bg-card border ${borderColor} rounded-[3rem] p-10 text-center shadow-2xl transition-all hover:shadow-primary/5 group ${featured ? 'md:pb-16' : ''}`}>
       {featured && (
