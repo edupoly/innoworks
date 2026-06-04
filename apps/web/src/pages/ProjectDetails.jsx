@@ -445,20 +445,171 @@ const ProjectDetails = () => {
         {activeTab === "dev_flow" && (
           <motion.div key="dev_flow" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
              <div className="lg:col-span-2 space-y-6">
-                <div className="bg-card border border-border/50 rounded-3xl p-6">
-                  <h3 className="text-xs font-black uppercase mb-4">1. Fork Repository</h3>
+                <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
+                    <GitFork size={18} className="text-primary" /> 
+                    1. Mission Synchronization
+                  </h3>
+                  
                   {!isAccepted ? (
-                    <button onClick={() => acceptMutation.mutate()} className="btn-primary py-2 px-6">Accept & Fork</button>
-                  ) : <p className="text-emerald-500 font-bold">Repository Synchronized</p>}
+                    <div className="space-y-6">
+                      <p className="text-sm font-medium text-foreground/80 leading-relaxed max-w-xl">
+                        Accepting this mission will automatically fork the repository to your GitHub account and grant you strategic access to the codebase.
+                      </p>
+                      <button 
+                        onClick={() => acceptMutation.mutate()} 
+                        disabled={acceptMutation.isLoading}
+                        className="btn-primary py-4 px-10 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 flex items-center gap-3"
+                      >
+                        {acceptMutation.isLoading ? (
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                          <><Rocket size={16} /> Accept & Initialize Fork</>
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4 p-5 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                          <CheckCircle2 size={24} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-emerald-500 uppercase tracking-widest">Mission Active</p>
+                          <p className="text-xs font-medium text-muted-foreground">The repository has been linked to your profile.</p>
+                        </div>
+                      </div>
+                      
+                      {forkStatus?.forkExists ? (
+                        <div className="p-6 bg-muted/30 border border-border/50 rounded-2xl space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">GitHub Workspace</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 flex items-center gap-1.5">
+                              <Activity size={12} /> Live Link
+                            </span>
+                          </div>
+                          <p className="text-sm font-bold text-foreground font-mono break-all">{forkStatus.forkFullName}</p>
+                          <div className="flex gap-3">
+                            <a 
+                              href={forkStatus.forkUrl} 
+                              target="_blank" 
+                              rel="noreferrer" 
+                              className="btn-secondary px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                            >
+                              <Github size={14} /> View Fork
+                            </a>
+                            <button className="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-border/50 hover:bg-muted/50 transition-colors">
+                              Clone Setup
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-6 bg-orange-500/5 border border-orange-500/20 rounded-2xl flex items-center gap-4">
+                           <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 animate-pulse">
+                             <Clock size={20} />
+                           </div>
+                           <p className="text-xs font-bold text-orange-500 leading-relaxed uppercase tracking-wider">
+                             Waiting for GitHub to finish forking... <br/>
+                             <span className="text-[9px] opacity-70">This usually takes 10-20 seconds.</span>
+                           </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
+                   <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
+                     <BookOpen size={18} className="text-primary" /> 
+                     Development Guidelines
+                   </h3>
+                   <ul className="space-y-4">
+                     {[
+                       "Create a new branch for your specific feature or fix.",
+                       "Ensure all tests pass locally before submitting.",
+                       "Maintain clean code standards and descriptive commits.",
+                       "Follow the project's specific contribution guidelines."
+                     ].map((guide, i) => (
+                       <li key={i} className="flex items-start gap-3 text-sm font-medium text-foreground/70">
+                         <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0"></div>
+                         {guide}
+                       </li>
+                     ))}
+                   </ul>
                 </div>
              </div>
-             <div className="bg-card border border-border/50 rounded-3xl p-6">
-                <h3 className="text-xs font-black uppercase mb-4">2. Submit Solution</h3>
-                <form onSubmit={handleDevSubmit} className="space-y-4">
-                   <RepoPicker onSelect={setSelectedRepo} selectedRepo={selectedRepo} />
-                   <BranchPicker owner={selectedRepo?.owner?.login || authUser?.username} repo={selectedRepo?.name} onSelect={setSelectedBranch} selectedBranch={selectedBranch} />
-                   <button type="submit" disabled={!selectedRepo || !selectedBranch} className="w-full btn-primary py-3">Submit</button>
-                </form>
+
+             <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
+                  <Send size={18} className="text-primary" /> 
+                  2. Deploy Solution
+                </h3>
+                
+                {devSuccess ? (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center py-10 text-center space-y-4"
+                  >
+                    <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2">
+                      <CheckCircle2 size={40} />
+                    </div>
+                    <h4 className="text-xl font-black tracking-tight">Transmission Successful</h4>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider leading-relaxed">
+                      Your solution has been deployed to the verification queue. Automated testing will begin shortly.
+                    </p>
+                    <button 
+                      onClick={() => navigate("/dashboard")}
+                      className="btn-primary px-8 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] mt-4"
+                    >
+                      Return to Command Center
+                    </button>
+                  </motion.div>
+                ) : (
+                  <form onSubmit={handleDevSubmit} className="space-y-8">
+                    {devError && (
+                      <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive text-xs font-bold rounded-xl flex items-center gap-3">
+                        <AlertCircle size={18} />
+                        {devError}
+                      </div>
+                    )}
+                    
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Source Repository</label>
+                        <RepoPicker onSelect={setSelectedRepo} selectedRepo={selectedRepo} />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Working Branch</label>
+                        <BranchPicker 
+                          owner={selectedRepo?.owner?.login || authUser?.username} 
+                          repo={selectedRepo?.name} 
+                          onSelect={setSelectedBranch} 
+                          selectedBranch={selectedBranch} 
+                        />
+                      </div>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={!selectedRepo || !selectedBranch || submittingDev} 
+                      className="w-full btn-primary py-4 font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
+                    >
+                      {submittingDev ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <><Rocket size={16} /> Deploy to Validation</>
+                      )}
+                    </button>
+                    
+                    <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest opacity-60">
+                      Syncing this branch will create an automated PR on the upstream repository.
+                    </p>
+                  </form>
+                )}
              </div>
           </motion.div>
         )}

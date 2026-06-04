@@ -371,7 +371,13 @@ router.post("/:id/accept", authenticate, validateObjectId, async (req, res) => {
 
     const isAlreadyAccepted = (user.acceptedProjects || []).some(id => id && id.toString() === project._id.toString());
     if (isAlreadyAccepted) {
-      return res.json({ message: "Challenge accepted and fork initiated" });
+      return res.json({ 
+        message: "Challenge already accepted",
+        user: {
+          ...user.toObject(),
+          githubAccessToken: undefined // Don't leak token
+        }
+      });
     }
 
     try {
@@ -395,7 +401,13 @@ router.post("/:id/accept", authenticate, validateObjectId, async (req, res) => {
       `/projects/${project._id}`
     );
 
-    res.json({ message: "Challenge accepted and fork initiated" });
+    res.json({ 
+      message: "Challenge accepted and fork initiated",
+      user: {
+        ...user.toObject(),
+        githubAccessToken: undefined
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: "Error accepting challenge: " + error.message });
   }
