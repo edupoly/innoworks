@@ -28,7 +28,7 @@ const LeaderboardRow = ({ user, rank, period }) => {
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      className="bg-card/50 backdrop-blur-md rounded-3xl p-6 border border-border/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary/30 hover:bg-card transition-all group"
+      className="bg-card/50 backdrop-blur-sm rounded-[2.5rem] p-8 border border-border/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary/30 hover:bg-card transition-all group"
     >
       <div className="flex items-center gap-8">
         <div className="w-10 h-10 rounded-xl bg-muted/80 flex items-center justify-center font-black text-muted-foreground border border-border group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20 transition-colors">

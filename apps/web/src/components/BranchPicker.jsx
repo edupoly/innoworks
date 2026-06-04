@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GitBranch, CheckCircle2, AlertCircle, RefreshCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "../lib/api";
@@ -8,32 +8,51 @@ const BranchPicker = ({ owner, repo, onSelect, selectedBranch }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchBranches = async () => {
-    if (!owner || !repo) return;
-    setIsLoading(true);
-    setError("");
-    try {
-      const response = await api.get(`/auth/repos/${owner}/${repo}/branches`);
-      const fetchedBranches = response.data;
-      setBranches(fetchedBranches);
-      
-      const isCurrentBranchValid = fetchedBranches.some(b => b.name === selectedBranch);
-      
-      if (!isCurrentBranchValid && fetchedBranches.length > 0) {
-        const defaultBranch = fetchedBranches.find(b => b.name === 'main' || b.name === 'master') || fetchedBranches[0];
-        onSelect(defaultBranch.name);
-      }
-    } catch (error) {
-      console.error("Failed to fetch branches:", error);
-      setError("Strategic link failed. Could not load branch data.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let isCurrent = true;
+
+    if (!owner || !repo) {
+      setBranches([]);
+      setError("");
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchBranches = async () => {
+      setIsLoading(true);
+      setError("");
+      setBranches([]);
+
+      try {
+        const response = await api.get(`/auth/repos/${owner}/${repo}/branches`);
+        if (!isCurrent) return;
+
+        const fetchedBranches = response.data;
+        setBranches(fetchedBranches);
+        
+        const isCurrentBranchValid = fetchedBranches.some(b => b.name === selectedBranch);
+        
+        if (!isCurrentBranchValid && fetchedBranches.length > 0) {
+          const defaultBranch = fetchedBranches.find(b => b.name === 'main' || b.name === 'master') || fetchedBranches[0];
+          onSelect(defaultBranch.name);
+        }
+      } catch (error) {
+        if (!isCurrent) return;
+        console.error("Failed to fetch branches:", error);
+        setError(error.response?.data?.message || "Strategic link failed. Could not load branch data.");
+      } finally {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      }
+    };
+
     fetchBranches();
-  }, [owner, repo]);
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [owner, repo, selectedBranch, onSelect]);
 
   if (!owner || !repo) {
     return (

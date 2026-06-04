@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Code2, Trophy, LayoutDashboard, Moon, Sun, Terminal, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,11 +10,9 @@ import api from "../lib/api";
 const CommandPalette = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const { isAuthenticated } = useSelector((state) => state.auth);
 
-  const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-  
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [projects, setProjects] = useState([]);
@@ -34,26 +32,35 @@ const CommandPalette = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!query || !isAuthenticated) {
       setProjects([]);
+      setIsLoading(false);
       return;
     }
 
+    let isCurrent = true;
     const delayDebounce = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const response = await api.get(`/projects?search=${query}`);
-        setProjects(response.data.slice(0, 5));
+        const response = await api.get(`/projects?search=${encodeURIComponent(query)}`);
+        if (isCurrent) {
+          setProjects(response.data.slice(0, 5));
+        }
       } catch (err) {
         console.error("Failed to query projects for command palette:", err);
       } finally {
-        setIsLoading(false);
+        if (isCurrent) {
+          setIsLoading(false);
+        }
       }
     }, 300);
 
-    return () => clearTimeout(delayDebounce);
+    return () => {
+      isCurrent = false;
+      clearTimeout(delayDebounce);
+    };
   }, [query, isAuthenticated]);
 
   // Command palette navigation items
-  const navigationItems = [
+  const navigationItems = useMemo(() => [
     ...(isAuthenticated ? [
       { name: "Explore Active Challenges", icon: Code2, action: () => navigate("/projects"), shortcut: "G P" },
       { name: "Global Leaderboard", icon: Trophy, action: () => navigate("/leaderboard"), shortcut: "G L" },
@@ -61,22 +68,37 @@ const CommandPalette = ({ isOpen, onClose }) => {
       { name: "Post a Challenge", icon: Terminal, action: () => navigate("/projects/new"), shortcut: "C P" },
       { name: "Sign Out", icon: LogOut, action: () => {
         dispatch(logoutUser());
-      }, shortcut: isMac ? "⇧ Q" : "Shift Q" }
+      }, shortcut: "Shift Q" }
     ] : []),
-    { name: "Switch to Dark Mode", icon: Moon, action: () => setTheme("dark"), shortcut: isMac ? "⇧ D" : "Shift D" },
-    { name: "Switch to Light Mode", icon: Sun, action: () => setTheme("light"), shortcut: isMac ? "⇧ L" : "Shift L" }
-  ];
+    { name: "Switch to Dark Mode", icon: Moon, action: () => setTheme("dark"), shortcut: "Shift D" },
+    { name: "Switch to Light Mode", icon: Sun, action: () => setTheme("light"), shortcut: "Shift L" }
+  ], [dispatch, isAuthenticated, navigate, setTheme]);
 
-  const filteredNavigation = navigationItems.filter(item => 
-    item.name.toLowerCase().includes(query.toLowerCase())
+  const filteredNavigation = useMemo(
+    () => navigationItems.filter(item => item.name.toLowerCase().includes(query.toLowerCase())),
+    [navigationItems, query]
   );
 
   const totalItems = filteredNavigation.length + projects.length;
+
+  useEffect(() => {
+    if (selectedIndex >= totalItems) {
+      setSelectedIndex(Math.max(totalItems - 1, 0));
+    }
+  }, [selectedIndex, totalItems]);
 
   // Handle arrow keys and select
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isOpen) return;
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (totalItems === 0) return;
 
       if (e.key === "ArrowDown") {
         e.preventDefault();
@@ -98,15 +120,12 @@ const CommandPalette = ({ isOpen, onClose }) => {
           }
         }
         onClose();
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, selectedIndex, totalItems, filteredNavigation, projects]);
+  }, [isOpen, selectedIndex, totalItems, filteredNavigation, projects, navigate, onClose]);
 
   return (
     <AnimatePresence>
@@ -226,8 +245,8 @@ const CommandPalette = ({ isOpen, onClose }) => {
             {/* Footer */}
             <div className="px-4 py-3 bg-muted/50 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground font-medium">
               <div className="flex items-center gap-4">
-                <span>↑↓ to navigate</span>
-                <span>↵ to select</span>
+                <span>Up/Down to navigate</span>
+                <span>Enter to select</span>
               </div>
               <span>Command Palette v1.0</span>
             </div>

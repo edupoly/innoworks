@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { PageTransition } from "./PageTransition";
 import { AnimatePresence, motion } from "framer-motion";
@@ -118,7 +118,7 @@ const Layout = () => {
   // WebSockets setup for real-time notifications on auth change
   useEffect(() => {
     if (isAuthenticated && user?._id) {
-      const socket = initiateSocket(user._id);
+      initiateSocket(user._id);
 
       subscribeToNotifications((newNotification) => {
         // Add new notification to toast notifications stack
@@ -126,7 +126,7 @@ const Layout = () => {
         setToasts((prev) => [...prev, { id: toastId, ...newNotification }]);
 
         // Refetch notifications in the background to sync the badge/dropdown
-        queryClient.invalidateQueries(["notifications"]);
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
 
         // Auto-dismiss after 6 seconds
         setTimeout(() => {
@@ -170,8 +170,8 @@ const Layout = () => {
     <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground transition-colors duration-300 relative overflow-x-hidden">
       {/* Dynamic Ambient Background Layers */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.22)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.18)_1px,transparent_1px)] bg-[size:48px_48px] opacity-40"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/70 to-background"></div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E')] opacity-[0.03] mix-blend-overlay"></div>
       </div>
 
@@ -192,13 +192,14 @@ const Layout = () => {
             <button 
               onClick={() => setIsCommandPaletteOpen(true)}
               className="hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest bg-muted px-3 py-1.5 rounded-lg border border-border/50 flex items-center gap-1.5"
+              aria-label="Open command palette"
             >
               <span>Command Palette</span>
-              <kbd className="text-[10px] bg-background border px-1 rounded">{isMac ? "⌘K" : "Ctrl K"}</kbd>
+              <kbd className="text-[10px] bg-background border px-1 rounded">{isMac ? "Cmd K" : "Ctrl K"}</kbd>
             </button>
             <span className="text-border">|</span>
-            <a href="#" className="hover:text-primary transition-colors">Documentation</a>
-            <a href="#" className="hover:text-primary transition-colors">Status</a>
+            <Link to="/projects" className="hover:text-primary transition-colors">Explore</Link>
+            <Link to="/leaderboard" className="hover:text-primary transition-colors">Leaderboard</Link>
           </div>
         </div>
       </footer>

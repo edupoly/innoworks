@@ -402,6 +402,34 @@ if (githubApp) {
       console.error(err);
     }
   });
+
+  // 8. Star Event Handler
+  githubApp.webhooks.on("star", async ({ payload }) => {
+    const repoUrl = payload.repository.html_url;
+    try {
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      if (!project) return;
+
+      project.stars = payload.repository.stargazers_count;
+      await project.save();
+    } catch (err) {
+      console.error("❌ Webhook Star error:", err.message);
+    }
+  });
+
+  // 9. Fork Event Handler
+  githubApp.webhooks.on("fork", async ({ payload }) => {
+    const repoUrl = payload.repository.html_url;
+    try {
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      if (!project) return;
+
+      project.forks = payload.repository.forks_count;
+      await project.save();
+    } catch (err) {
+      console.error("❌ Webhook Fork error:", err.message);
+    }
+  });
 }
 
 export default router;

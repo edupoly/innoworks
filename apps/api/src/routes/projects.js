@@ -78,6 +78,15 @@ router.get("/:id/intelligence", authenticate, validateObjectId, async (req, res)
     const { owner, repo } = parseRepoUrl(project.repoUrl);
     const intelligence = await fetchGraphQLRepositoryIntelligence(user.githubAccessToken, owner, repo);
 
+    // Sync stats back to Project document for freshness in the marketplace
+    if (intelligence && intelligence.statistics) {
+      project.stars = intelligence.statistics.stars;
+      project.forks = intelligence.statistics.forks;
+      project.openIssuesCount = intelligence.statistics.openIssues;
+      project.contributorsCount = intelligence.statistics.totalContributors;
+      await project.save();
+    }
+
     res.json(intelligence);
   } catch (error) {
     console.error("❌ Live Intelligence Error:", error.message);

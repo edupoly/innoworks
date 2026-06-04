@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -7,7 +7,7 @@ import {
   Link,
   useNavigate,
 } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import AuthCallback from "./pages/AuthCallback";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
@@ -17,8 +17,6 @@ import Projects from "./pages/Projects";
 import Leaderboard from "./pages/Leaderboard";
 import ProjectDetails from "./pages/ProjectDetails";
 import CreateProject from "./pages/CreateProject";
-import { setCredentials, setLoading } from "./store/slices/authSlice";
-import api from "./lib/api.js";
 import { Github, Rocket, Search, ShieldCheck, Zap, Sparkles, LayoutDashboard } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -77,7 +75,7 @@ const Home = () => {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="text-7xl md:text-[8rem] font-black mb-10 tracking-tighter leading-[0.9] text-foreground max-w-[90rem]"
+          className="text-5xl sm:text-6xl md:text-[8rem] font-black mb-10 tracking-tight md:tracking-tighter leading-[0.95] text-foreground max-w-[90rem]"
         >
           Architect Your <br />
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-indigo-600 to-blue-500">
@@ -98,12 +96,12 @@ const Home = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col sm:flex-row gap-6"
+          className="flex w-full max-w-xl flex-col sm:flex-row gap-4 sm:gap-6"
         >
           {isAuthenticated ? (
             <Link
               to="/dashboard"
-              className="group btn-primary px-12 py-6 text-sm font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1"
+              className="group btn-primary w-full sm:w-auto px-8 sm:px-12 py-5 sm:py-6 text-sm font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1"
             >
               <LayoutDashboard size={20} />
               Command Center
@@ -111,7 +109,7 @@ const Home = () => {
           ) : (
             <button
               onClick={handleLogin}
-              className="group btn-primary px-12 py-6 text-sm font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1 relative overflow-hidden"
+              className="group btn-primary w-full sm:w-auto px-8 sm:px-12 py-5 sm:py-6 text-sm font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1 relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] transition-transform"></div>
               <Github size={20} className="group-hover:rotate-12 transition-transform duration-500" />
@@ -121,7 +119,7 @@ const Home = () => {
 
           <Link
             to="/projects"
-            className="group btn-secondary px-12 py-6 text-sm font-black uppercase tracking-widest rounded-2xl border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
+            className="group btn-secondary w-full sm:w-auto px-8 sm:px-12 py-5 sm:py-6 text-sm font-black uppercase tracking-widest rounded-2xl border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
           >
             <Search size={20} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
             Explore Missions

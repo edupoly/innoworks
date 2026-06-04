@@ -22,6 +22,12 @@ const CreateProject = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  const handleRepoSelect = (repo) => {
+    setSelectedRepo(repo);
+    setBranchName("");
+    setError("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedRepo) {
@@ -118,6 +124,7 @@ const CreateProject = () => {
                 <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Bounty (XP)</label>
                 <input
                   type="number"
+                  min="0"
                   placeholder="0"
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-medium"
                   value={formData.bounty}
@@ -165,7 +172,7 @@ const CreateProject = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Select Repository</label>
-                <RepoPicker onSelect={setSelectedRepo} selectedRepo={selectedRepo} />
+                <RepoPicker onSelect={handleRepoSelect} selectedRepo={selectedRepo} />
               </div>
 
               {selectedRepo && (
@@ -189,7 +196,7 @@ const CreateProject = () => {
               className="w-full btn-primary py-4 text-lg flex items-center justify-center gap-3 shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {isLoading ? (
-                <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="w-6 h-6 border-[3px] border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
                   <Send size={20} />

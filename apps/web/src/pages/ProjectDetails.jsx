@@ -59,7 +59,7 @@ const ProjectDetails = () => {
       const response = await api.get(`/projects/${id}/intelligence`);
       return response.data;
     },
-    refetchInterval: 60000 // Refetch every minute
+    refetchInterval: 300000 // Refetch every 5 minutes to reduce polling
   });
 
   // 2. Fetch basic project details
@@ -405,7 +405,10 @@ const ProjectDetails = () => {
                     <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500"><FileCode2 size={16} /></div>
                     <h3 className="text-sm font-black uppercase tracking-[0.3em]">README.md Protocol</h3>
                   </div>
-                  <button className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
+                  <button 
+                    onClick={() => queryClient.invalidateQueries(["projectIntelligence", id])}
+                    className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+                  >
                     <RefreshCcw size={12} /> Refetch
                   </button>
                 </div>
@@ -919,12 +922,38 @@ const ProjectDetails = () => {
                  <h3 className="text-sm font-black uppercase tracking-[0.3em]">Live Feed</h3>
                </div>
                
-               <div className="space-y-10 py-10 text-center">
-                 <Activity size={48} className="mx-auto text-muted-foreground opacity-20 mb-4" />
-                 <div className="space-y-2">
-                   <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Aggregating Global Activity...</p>
-                   <p className="text-[10px] font-medium text-muted-foreground/60 max-w-xs mx-auto">No recent events detected for this mission. New commits and reviews will appear here in real-time.</p>
-                 </div>
+               <div className="space-y-10 py-4">
+                 {intelligence?.overview?.recentActivityFeed?.length > 0 ? (
+                   intelligence.overview.recentActivityFeed.map((event, idx) => (
+                     <div key={idx} className="flex gap-6 relative group">
+                       {idx < intelligence.overview.recentActivityFeed.length - 1 && (
+                         <div className="absolute left-[15px] top-[40px] bottom-[-40px] w-px bg-border/50 group-hover:bg-primary/30 transition-colors"></div>
+                       )}
+                       <div className="w-8 h-8 rounded-full bg-muted border border-border/50 flex items-center justify-center shrink-0 relative z-10">
+                         <div className={`w-2 h-2 rounded-full ${event.type === 'commit' ? 'bg-primary' : event.type === 'pull_request' ? 'bg-indigo-500' : 'bg-emerald-500'} animate-pulse`}></div>
+                       </div>
+                       <div className="space-y-2 flex-1">
+                         <p className="text-sm font-bold leading-relaxed text-foreground">
+                           <span className="text-primary mr-1">@{event.actor || "GitHub User"}</span> 
+                           {event.type === "commit" && `pushed commit: ${event.title}`}
+                           {event.type === "pull_request" && `opened ${event.title}`}
+                           {event.type === "issue" && `opened ${event.title}`}
+                         </p>
+                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                           {new Date(event.date).toLocaleDateString()} • {new Date(event.date).toLocaleTimeString()}
+                         </p>
+                       </div>
+                     </div>
+                   ))
+                 ) : (
+                   <div className="py-10 text-center">
+                     <Activity size={48} className="mx-auto text-muted-foreground opacity-20 mb-4" />
+                     <div className="space-y-2">
+                       <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Aggregating Global Activity...</p>
+                       <p className="text-[10px] font-medium text-muted-foreground/60 max-w-xs mx-auto">No recent events detected for this mission. New commits and reviews will appear here in real-time.</p>
+                     </div>
+                   </div>
+                 )}
                </div>
              </div>
              

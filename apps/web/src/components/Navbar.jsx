@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { logoutUser } from "../store/slices/authSlice";
 import { Github, LogOut, LayoutDashboard, Code2, User, Moon, Sun, Monitor, Bell, Check, Sparkles, Trophy } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
@@ -95,14 +95,14 @@ const NotificationDropdown = () => {
   const markAllReadMutation = useMutation({
     mutationFn: () => api.put("/users/notifications/read-all"),
     onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     }
   });
 
   const readSingleMutation = useMutation({
     mutationFn: (id) => api.put(`/users/notifications/${id}/read`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     }
   });
 
@@ -138,11 +138,12 @@ const NotificationDropdown = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 rounded-xl text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 relative"
+        aria-label="Open notifications"
       >
         <Bell size={20} />
         {unreadCount > 0 && (
           <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-background animate-pulse shadow-sm">
-            {unreadCount}
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
@@ -221,7 +222,6 @@ import { useMe } from "../hooks/useAuth";
 const Navbar = () => {
   const { isAuthenticated, user } = useMe();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
@@ -246,7 +246,7 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden md:flex items-center gap-1 pl-8">
-          {isAuthenticated && navLinks.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
@@ -298,6 +298,7 @@ const Navbar = () => {
                 onClick={handleLogout}
                 className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-destructive/50"
                 title="Logout"
+                aria-label="Logout"
               >
                 <LogOut size={16} />
               </button>

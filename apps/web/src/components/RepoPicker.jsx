@@ -1,20 +1,24 @@
 import { useState, useEffect } from "react";
 import { Search, Globe, Lock, Code2, CheckCircle2, Github, RefreshCcw } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import api from "../lib/api";
 
 const RepoPicker = ({ onSelect, selectedRepo }) => {
   const [repos, setRepos] = useState([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const fetchRepos = async () => {
     setIsLoading(true);
+    setError("");
     try {
       const response = await api.get("/auth/repos");
       setRepos(response.data);
     } catch (error) {
       console.error("Failed to fetch repositories:", error);
+      setRepos([]);
+      setError(error.response?.data?.message || "Could not load repositories from GitHub.");
     } finally {
       setIsLoading(false);
     }
@@ -42,9 +46,12 @@ const RepoPicker = ({ onSelect, selectedRepo }) => {
           />
         </div>
         <button 
+          type="button"
           onClick={fetchRepos}
+          disabled={isLoading}
           className="p-4 bg-muted/20 border border-border/50 rounded-2xl hover:bg-muted/40 transition-all text-muted-foreground hover:text-primary"
           title="Refresh Repositories"
+          aria-label="Refresh repositories"
         >
           <RefreshCcw size={18} className={isLoading ? "animate-spin" : ""} />
         </button>
@@ -55,6 +62,17 @@ const RepoPicker = ({ onSelect, selectedRepo }) => {
           <div className="p-20 text-center space-y-4">
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Accessing GitHub Nodes...</p>
+          </div>
+        ) : error ? (
+          <div className="p-16 text-center space-y-5">
+            <div className="w-16 h-16 bg-destructive/10 rounded-3xl flex items-center justify-center mx-auto border border-destructive/20">
+              <Github size={28} className="text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-sm font-black uppercase tracking-[0.2em]">Repository Sync Failed</h4>
+              <p className="text-xs font-medium text-muted-foreground">{error}</p>
+            </div>
+            <button type="button" onClick={fetchRepos} className="text-[10px] font-black uppercase tracking-[0.25em] text-primary hover:underline">Retry Sync</button>
           </div>
         ) : filteredRepos.length > 0 ? (
           <div className="p-2 space-y-1">
@@ -119,7 +137,7 @@ const RepoPicker = ({ onSelect, selectedRepo }) => {
               <h4 className="text-sm font-black uppercase tracking-[0.2em]">No Nodes Found</h4>
               <p className="text-xs font-medium text-muted-foreground">We couldn't locate any matching repositories.</p>
             </div>
-            <button onClick={() => setSearch("")} className="text-[10px] font-black uppercase tracking-[0.25em] text-primary hover:underline">Reset Search Filters</button>
+            <button type="button" onClick={() => setSearch("")} className="text-[10px] font-black uppercase tracking-[0.25em] text-primary hover:underline">Reset Search Filters</button>
           </div>
         )}
       </div>
