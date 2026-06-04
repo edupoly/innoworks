@@ -4,7 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { createServer } from "http";
-import { Server } from "socket.io";
+import { initSocket } from "./lib/socket.js";
 
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
@@ -53,7 +53,7 @@ connectDB().catch(err => {
 let FRONTEND_URL = process.env.FRONTEND_URL || "https://innoworks.up.railway.app";
 if (FRONTEND_URL.endsWith("/")) FRONTEND_URL = FRONTEND_URL.slice(0, -1);
 
-const io = new Server(httpServer, {
+const io = initSocket(httpServer, {
   cors: {
     origin: [FRONTEND_URL],
     methods: ["GET", "POST"],
@@ -167,19 +167,37 @@ app.get("/", (req, res) => {
   });
 });
 
+import jwt from 'jsonwebtoken';
+
 // 404 handler
 app.use(notFound);
 
 // Global error handler
 app.use(errorHandler);
 
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    return next(new Error("Authentication error"));
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+    socket.userId = decoded.userId;
+    next();
+  } catch (err) {
+    next(new Error("Authentication error"));
+  }
+});
+
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
   
   socket.on("join", (userId) => {
-    if (userId) {
+    if (userId && socket.userId === userId.toString()) {
       socket.join(userId.toString());
       console.log(`👤 User socket ${socket.id} joined room: ${userId}`);
+    } else {
+      console.warn(`Unauthorized join attempt from ${socket.id} for user ${userId}`);
     }
   });
 

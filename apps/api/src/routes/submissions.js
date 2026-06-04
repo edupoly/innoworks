@@ -5,19 +5,13 @@ import { User } from '../models/User.js';
 import { Review } from '../models/Review.js';
 import { authenticate } from '../middleware/auth.js';
 import { testQueue } from '../lib/queue.js';
-import { createPullRequest, createPullRequestReview, mergePullRequest } from '../lib/github.js';
+import { createPullRequest, createPullRequestReview, mergePullRequest, parseRepoUrl } from '../lib/github.js';
 import { validateObjectId, validateSubmission } from '../middleware/validate.js';
 import { awardXP, XP_VALUES } from '../lib/gamification.js';
 import { sendNotification } from '../lib/notifications.js';
 import axios from 'axios';
 
 const router = Router();
-
-const parseRepoUrl = (url) => {
-  const cleanUrl = url.replace(/\/$/, "").replace(/\.git$/, "");
-  const parts = cleanUrl.replace("https://github.com/", "").split("/");
-  return { owner: parts[0], repo: parts[1] };
-};
 
 // 1. Get all open submissions that require testing (excluding requester's own)
 router.get("/testing/open", authenticate, async (req, res) => {
@@ -172,6 +166,9 @@ router.post("/", authenticate, validateObjectId, validateSubmission, async (req,
       }
     } catch (prError) {
       console.warn("⚠️ GitHub PR Creation skipped/failed:", prError.message);
+      if (submission && !existingSubmission) {
+        await Submission.findByIdAndDelete(submission._id);
+      }
       return res.status(400).json({ message: prError.message || "Pull request creation validation failed on GitHub" });
     }
 

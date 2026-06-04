@@ -1,10 +1,6 @@
 import request from 'supertest';
 import express from 'express';
-import { Router } from 'express';
 import authRoutes from '../routes/auth.js';
-import mongoose from 'mongoose';
-import { User } from '../models/User.js';
-import jwt from 'jsonwebtoken';
 
 // Mocking dependencies might be complex here, so we'll do a basic integration test structure
 // For a real production app, we would use a test database

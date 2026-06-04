@@ -7,8 +7,11 @@ let socket = null;
 export const initiateSocket = (userId) => {
   if (socket) return socket;
 
+  const token = localStorage.getItem("token");
+
   socket = io(SOCKET_URL, {
     withCredentials: true,
+    auth: { token },
     transports: ["websocket", "polling"]
   });
 

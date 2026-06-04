@@ -1,5 +1,5 @@
 import { Notification } from '../models/Notification.js';
-import { io } from '../index.js';
+import { getIO } from './socket.js';
 
 /**
  * Send a notification to a specific user.
@@ -20,6 +20,7 @@ export const sendNotification = async (userId, type, message, link = '') => {
       read: false
     });
 
+    const io = getIO();
     if (io) {
       // Emit to the user's private Socket.IO room
       io.to(userId.toString()).emit('notification', {

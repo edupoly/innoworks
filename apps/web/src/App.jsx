@@ -322,22 +322,8 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           
-          <Route
-            path="/projects"
-            element={
-              <ProtectedRoute>
-                <Projects />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/leaderboard"
-            element={
-              <ProtectedRoute>
-                <Leaderboard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route
             path="/projects/:id"
             element={

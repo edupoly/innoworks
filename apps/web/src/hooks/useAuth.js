@@ -15,20 +15,22 @@ export const useMe = () => {
       const response = await api.get("/auth/me");
       return response.data;
     },
-    enabled: !!token,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: !!token && !isAuthenticated, // Only fetch if not already authenticated in Redux
+    staleTime: 1000 * 60 * 60, // 1 hour
+    cacheTime: 1000 * 60 * 60,
+    retry: false
   });
 
   // Sync React Query data back to Redux if they differ or if we need to restore session
   useEffect(() => {
-    if (query.data && (!isAuthenticated || JSON.stringify(query.data) !== JSON.stringify(authUser))) {
+    if (query.data && !isAuthenticated) {
       dispatch(setCredentials({ user: query.data, token: token || localStorage.getItem("token") }));
     }
-  }, [query.data, authUser, isAuthenticated, dispatch, token]);
+  }, [query.data, isAuthenticated, dispatch, token]);
 
   return {
     ...query,
-    user: query.data || authUser,
+    user: authUser || query.data,
     isAuthenticated: isAuthenticated || !!query.data,
   };
 };

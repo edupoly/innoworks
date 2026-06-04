@@ -12,6 +12,7 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronLeft,
+  ChevronRight,
   Rocket,
   ShieldCheck,
   Code2,
@@ -356,8 +357,13 @@ const ProjectDetails = () => {
       <div className="flex border-b border-border/50 mb-8 gap-6 text-sm font-bold select-none">
         <button onClick={() => setActiveTab("overview")} className={`pb-4 border-b-2 px-1 ${activeTab === "overview" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Base Overview</button>
         <button onClick={() => setActiveTab("stats")} className={`pb-4 border-b-2 px-1 ${activeTab === "stats" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Analytics</button>
-        {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
+        {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? (
           <button onClick={() => setActiveTab("management")} className={`pb-4 border-b-2 px-1 ${activeTab === "management" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Submissions</button>
+        ) : (
+          <>
+            <button onClick={() => setActiveTab("dev_flow")} className={`pb-4 border-b-2 px-1 ${activeTab === "dev_flow" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Develop</button>
+            <button onClick={() => setActiveTab("test_flow")} className={`pb-4 border-b-2 px-1 ${activeTab === "test_flow" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Test</button>
+          </>
         )}
         <button onClick={() => setActiveTab("activity")} className={`pb-4 border-b-2 px-1 ${activeTab === "activity" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Activity</button>
       </div>
@@ -459,9 +465,161 @@ const ProjectDetails = () => {
 
         {activeTab === "test_flow" && (
           <motion.div key="test_flow" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-             <div className="lg:col-span-2 bg-card border border-border/50 rounded-3xl p-6">
-               <h3 className="text-xs font-black uppercase mb-4">Pull Requests</h3>
-               <p className="text-muted-foreground text-sm">Select a PR from GitHub to review.</p>
+             <div className="lg:col-span-1 bg-card border border-border/50 rounded-3xl p-6 space-y-6 h-fit">
+               <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Submissions Pending Test</h3>
+               {activeSubmissions.filter(s => s.user?._id !== authUser?._id && s.user !== authUser?._id).length > 0 ? (
+                 <div className="space-y-4">
+                   {activeSubmissions.filter(s => s.user?._id !== authUser?._id && s.user !== authUser?._id).map(sub => (
+                     <div 
+                       key={sub._id} 
+                       onClick={() => { setSelectedPR(sub); setTestSuccess(false); setTestError(""); }}
+                       className={`p-4 border rounded-2xl cursor-pointer hover:border-primary/50 hover:bg-muted/10 transition-all ${selectedPR?._id === sub._id ? 'border-primary bg-primary/5' : 'border-border/50'}`}
+                     >
+                       <div className="flex items-center gap-3">
+                         <img src={sub.user?.avatarUrl} alt={sub.user?.username} className="w-10 h-10 rounded-full" />
+                         <div>
+                           <p className="text-sm font-bold">@{sub.user?.username}</p>
+                           <p className="text-xs text-muted-foreground">Branch: {sub.branchName}</p>
+                         </div>
+                       </div>
+                       <div className="mt-3 flex items-center justify-between text-[10px] font-black uppercase text-muted-foreground tracking-wider">
+                         <span>Status: {sub.status}</span>
+                         <span className="text-primary flex items-center gap-1">Review <ChevronRight size={12} /></span>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <div className="text-center py-8">
+                   <ClipboardList size={36} className="mx-auto text-muted-foreground opacity-30 mb-3" />
+                   <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider">No submissions to test</p>
+                 </div>
+               )}
+             </div>
+
+             <div className="lg:col-span-2 bg-card border border-border/50 rounded-3xl p-8 space-y-6">
+               {selectedPR ? (
+                 <>
+                   <div className="flex items-center justify-between pb-6 border-b border-border/50">
+                     <div className="flex items-center gap-4">
+                       <img src={selectedPR.user?.avatarUrl} alt={selectedPR.user?.username} className="w-12 h-12 rounded-full" />
+                       <div>
+                         <h3 className="text-lg font-black">Reviewing @{selectedPR.user?.username}'s Solution</h3>
+                         <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Fork: <a href={selectedPR.forkUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">{selectedPR.forkUrl?.replace("https://github.com/", "")}</a></p>
+                       </div>
+                     </div>
+                     <button onClick={() => setSelectedPR(null)} className="p-2 hover:bg-muted/50 rounded-lg text-muted-foreground"><X size={16} /></button>
+                   </div>
+
+                   {testSuccess ? (
+                     <div className="flex flex-col items-center justify-center py-12 text-center">
+                       <CheckCircle2 size={48} className="text-emerald-500 mb-4 animate-bounce" />
+                       <h4 className="text-lg font-black">Review Submitted Successfully!</h4>
+                       <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider mt-1">XP and Reputation sync pending webhook confirmation.</p>
+                     </div>
+                   ) : (
+                     <form onSubmit={handleTestSubmit} className="space-y-6">
+                       {testError && (
+                         <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-xl flex items-center gap-2">
+                           <AlertCircle size={16} />
+                           {testError}
+                         </div>
+                       )}
+
+                       <div className="space-y-4">
+                         <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">1. Quality Checklist</h4>
+                         <div className="space-y-3">
+                           {checklist.map((item, idx) => (
+                             <label key={idx} className="flex items-start gap-3 cursor-pointer select-none">
+                               <input 
+                                 type="checkbox" 
+                                 checked={item.checked} 
+                                 onChange={() => toggleChecklist(idx)}
+                                 className="mt-1 rounded border-border text-primary focus:ring-primary/20 w-4 h-4"
+                               />
+                               <span className="text-sm font-medium leading-tight">{item.item}</span>
+                             </label>
+                           ))}
+                         </div>
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border/30">
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Outcome Decision</label>
+                           <select 
+                             value={testOutcome} 
+                             onChange={(e) => setTestOutcome(e.target.value)}
+                             className="w-full px-4 py-3 bg-background border border-border rounded-xl font-bold text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                           >
+                             <option value="APPROVED">Approve Submission</option>
+                             <option value="NEEDS_CHANGES">Request Changes</option>
+                             <option value="REJECTED">Reject / Close Submission</option>
+                           </select>
+                         </div>
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Rating Score (1-5)</label>
+                           <select 
+                             value={testRating} 
+                             onChange={(e) => setTestRating(Number(e.target.value))}
+                             className="w-full px-4 py-3 bg-background border border-border rounded-xl font-bold text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                           >
+                             {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} Stars</option>)}
+                           </select>
+                         </div>
+                       </div>
+
+                       <div className="space-y-2 pt-4 border-t border-border/30">
+                         <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">General Feedback & Review Details</label>
+                         <textarea 
+                           required 
+                           rows={4} 
+                           placeholder="Provide constructive review comments regarding features, performance, code cleanliness..."
+                           value={testFeedback}
+                           onChange={(e) => setTestFeedback(e.target.value)}
+                           className="w-full px-4 py-3 bg-background border border-border rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                         />
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border/30">
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Bugs Found (One per line)</label>
+                           <textarea 
+                             rows={3} 
+                             placeholder="List any identified errors or flaws..."
+                             value={testBugs}
+                             onChange={(e) => setTestBugs(e.target.value)}
+                             className="w-full px-4 py-3 bg-background border border-border rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                           />
+                         </div>
+                         <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Suggestions for Improvement</label>
+                           <textarea 
+                             rows={3} 
+                             placeholder="Recommended improvements or visual enhancements..."
+                             value={testSuggestions}
+                             onChange={(e) => setTestSuggestions(e.target.value)}
+                             className="w-full px-4 py-3 bg-background border border-border rounded-xl font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                           />
+                         </div>
+                       </div>
+
+                       <button 
+                         type="submit" 
+                         disabled={submittingTest || !testFeedback}
+                         className="w-full btn-primary py-4 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2"
+                       >
+                         {submittingTest ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <><Send size={14} /> Submit Review Report</>}
+                       </button>
+                     </form>
+                   )}
+                 </>
+               ) : (
+                 <div className="text-center py-24">
+                   <ShieldCheck size={64} className="mx-auto text-primary opacity-20 mb-6 animate-pulse" />
+                   <h4 className="text-lg font-black">Interactive QA & Testing Workspace</h4>
+                   <p className="text-muted-foreground text-sm max-w-sm mx-auto leading-relaxed mt-2">Select a submission from the pending list on the left to begin quality-assurance check, verify metrics, and post review logs directly to GitHub.</p>
+                 </div>
+               )}
              </div>
           </motion.div>
         )}

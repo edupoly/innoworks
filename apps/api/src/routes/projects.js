@@ -3,19 +3,13 @@ import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { Submission } from '../models/Submission.js';
 import { authenticate, verifyProjectOwnership } from '../middleware/auth.js';
-import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue } from '../lib/github.js';
+import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue, parseRepoUrl } from '../lib/github.js';
 import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';
 import { evaluateBadges, awardXP, XP_VALUES } from '../lib/gamification.js';
 import axios from 'axios';
 
 const router = Router();
-
-const parseRepoUrl = (url) => {
-  const cleanUrl = url.replace(/\/$/, "").replace(/\.git$/, "");
-  const parts = cleanUrl.replace("https://github.com/", "").split("/");
-  return { owner: parts[0], repo: parts[1] };
-};
 
 // Middleware instance for project routes
 const verifyOwnership = verifyProjectOwnership(Project);
@@ -409,24 +403,32 @@ router.post("/:id/accept", authenticate, validateObjectId, async (req, res) => {
 
 // 13. Delete a project (Owner only)
 router.delete("/:id", authenticate, validateObjectId, verifyOwnership, async (req, res) => {
+  const session = await req.project.collection.conn.startSession();
   try {
+    session.startTransaction();
     const projectId = req.project._id;
 
     // Remove from acceptedProjects lists
     await User.updateMany(
       { acceptedProjects: projectId },
-      { $pull: { acceptedProjects: projectId } }
+      { $pull: { acceptedProjects: projectId } },
+      { session }
     );
 
     // Delete associated submissions
-    await Submission.deleteMany({ project: projectId });
+    await Submission.deleteMany({ project: projectId }, { session });
 
     // Delete project
-    await Project.findByIdAndDelete(projectId);
+    await Project.findByIdAndDelete(projectId).session(session);
 
+    await session.commitTransaction();
     res.json({ message: "Project deleted successfully." });
   } catch (error) {
+    await session.abortTransaction();
+    console.error("❌ Delete Project Error:", error.message);
     res.status(500).json({ message: "Error deleting project" });
+  } finally {
+    session.endSession();
   }
 });
 

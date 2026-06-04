@@ -2,7 +2,13 @@ import { Worker } from "bullmq";
 import { Submission } from '../models/Submission.js';
 import { User } from '../models/User.js';
 import { getRedisConnection } from '../lib/redis.js';
+import { exec } from 'child_process';
+import util from 'util';
+import path from 'path';
+import fs from 'fs/promises';
+import os from 'os';
 
+const execAsync = util.promisify(exec);
 const connection = getRedisConnection();
 
 export const testWorker = new Worker(
@@ -11,17 +17,44 @@ export const testWorker = new Worker(
     const { submissionId } = job.data;
     console.log(`Running tests for submission ${submissionId}...`);
 
+    let tempDir = null;
     try {
       const submission = await Submission.findById(submissionId).populate('project');
       if (!submission) throw new Error("Submission not found");
 
       await Submission.findByIdAndUpdate(submissionId, { status: "TESTING" });
 
-      // Simulate test execution
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
-      const testOutput = "All tests passed! (Simulated)";
-      const success = true;
+      const forkUrl = submission.forkUrl;
+      const branchName = submission.branchName;
+      
+      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'innoworks-test-'));
+      
+      console.log(`Cloning ${forkUrl} branch ${branchName} into ${tempDir}`);
+      
+      let testOutput = "";
+      let success = false;
+      
+      try {
+        await execAsync(`git clone --depth 1 -b ${branchName} ${forkUrl} .`, { cwd: tempDir, timeout: 30000 });
+        testOutput += "Clone successful.\n";
+        
+        // Check if package.json exists
+        const files = await fs.readdir(tempDir);
+        if (files.includes('package.json')) {
+          await execAsync(`npm install`, { cwd: tempDir, timeout: 60000 });
+          testOutput += "Dependencies installed.\n";
+          
+          const { stdout, stderr } = await execAsync(`npm test`, { cwd: tempDir, timeout: 60000 });
+          testOutput += stdout + "\n" + stderr;
+          success = true;
+        } else {
+          testOutput += "No package.json found. Assuming success for non-Node.js project.\n";
+          success = true;
+        }
+      } catch (err) {
+        success = false;
+        testOutput += "\nError: " + err.message + "\n" + (err.stdout || "") + "\n" + (err.stderr || "");
+      }
 
       if (success) {
         await Submission.findByIdAndUpdate(submissionId, {
@@ -58,11 +91,11 @@ export const testWorker = new Worker(
       } else {
         await Submission.findByIdAndUpdate(submissionId, {
           status: "REJECTED",
-          testOutput: "Tests failed.",
+          testOutput: testOutput || "Tests failed.",
         });
       }
 
-      return { success: true };
+      return { success };
     } catch (error) {
       console.error(`Test execution failed for ${submissionId}:`, error);
       await Submission.findByIdAndUpdate(submissionId, { 
@@ -70,11 +103,19 @@ export const testWorker = new Worker(
         testOutput: `Internal Error: ${error.message}` 
       });
       throw error;
+    } finally {
+      if (tempDir) {
+        try {
+          await fs.rm(tempDir, { recursive: true, force: true });
+        } catch (cleanupErr) {
+          console.error(`Failed to cleanup temp dir ${tempDir}:`, cleanupErr);
+        }
+      }
     }
   },
   {
     connection,
-    concurrency: 5,
+    concurrency: 2, // Reduced concurrency to avoid overloading system with git/npm
   },
 );
 

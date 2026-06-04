@@ -4,10 +4,12 @@ import mongoose from "mongoose";
 
 import { closeRedisConnection } from "../lib/redis.js";
 import { testWorker } from "../workers/testWorker.js";
+import { testQueue } from "../lib/queue.js";
 
 describe("Health Check", () => {
   afterAll(async () => {
     await testWorker.close();
+    await testQueue.close();
     await closeRedisConnection();
     await mongoose.connection.close();
   });

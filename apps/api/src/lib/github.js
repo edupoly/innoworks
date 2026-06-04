@@ -4,6 +4,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+export const parseRepoUrl = (url) => {
+  if (!url) return { owner: '', repo: '' };
+  const cleanUrl = url.replace(/\/$/, "").replace(/\.git$/, "");
+  const parts = cleanUrl.replace("https://github.com/", "").split("/");
+  return { owner: parts[0], repo: parts[1] };
+};
+
 const appId = process.env.GITHUB_APP_ID;
 const privateKey = process.env.GITHUB_PRIVATE_KEY;
 const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
