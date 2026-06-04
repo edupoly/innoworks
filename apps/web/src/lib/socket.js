@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || "https://innoworks.onrender.com";
+const SOCKET_URL = import.meta.env.VITE_API_URL || "https://innoworks-api.up.railway.app";
 
 let socket = null;
 

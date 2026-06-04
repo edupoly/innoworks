@@ -55,7 +55,7 @@ const Home = () => {
   }, [isAuthenticated, navigate]);
 
   const handleLogin = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || "https://innoworks.onrender.com";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://innoworks-api.up.railway.app";
     window.location.href = `${apiUrl}/auth/github`;
   };
 

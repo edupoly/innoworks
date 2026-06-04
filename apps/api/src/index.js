@@ -50,12 +50,12 @@ connectDB().catch(err => {
   console.log("⚠️ Server starting without DB - check your MONGODB_URI");
 });
 
-let FRONTEND_URL = process.env.FRONTEND_URL || "https://innoworks.vercel.app";
+let FRONTEND_URL = process.env.FRONTEND_URL || "https://innoworks.up.railway.app";
 if (FRONTEND_URL.endsWith("/")) FRONTEND_URL = FRONTEND_URL.slice(0, -1);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: [FRONTEND_URL, "https://innoworkss.netlify.app"],
+    origin: [FRONTEND_URL],
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -67,7 +67,7 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     
-    const allowedOrigins = [FRONTEND_URL, "https://innoworkss.netlify.app", "http://localhost:5173", "http://localhost:3000"];
+    const allowedOrigins = [FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"];
     const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
     
     if (allowedOrigins.includes(normalizedOrigin)) {

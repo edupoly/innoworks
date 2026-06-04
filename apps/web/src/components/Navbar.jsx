@@ -306,7 +306,7 @@ const Navbar = () => {
           ) : (
             <button
               onClick={() => {
-                const apiUrl = import.meta.env.VITE_API_URL || "https://innoworks.onrender.com";
+                const apiUrl = import.meta.env.VITE_API_URL || "https://innoworks-api.up.railway.app";
                 window.location.href = `${apiUrl}/auth/github`;
               }}
               className="btn-primary flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-full group shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-let BASE_URL = import.meta.env.VITE_API_URL || "https://innoworks.onrender.com";
+let BASE_URL = import.meta.env.VITE_API_URL || "https://innoworks-api.up.railway.app";
 if (BASE_URL.endsWith("/")) BASE_URL = BASE_URL.slice(0, -1);
 
 const api = axios.create({
