@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const badgeSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String },
+  icon: { type: String, default: '🏆' },
   awardedAt: { type: Date, default: Date.now }
 });
 

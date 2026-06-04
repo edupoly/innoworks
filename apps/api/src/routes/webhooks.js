@@ -213,6 +213,11 @@ if (githubApp) {
         });
         await submission.save();
 
+        // Increment user PR count
+        if (action === "opened") {
+          await User.findByIdAndUpdate(submission.user._id, { $inc: { "contributionStats.prsCount": 1 } });
+        }
+
         await sendNotification(
           project.owner,
           'PR_CREATED',

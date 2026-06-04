@@ -342,7 +342,7 @@ router.get("/:id", validateObjectId, async (req, res) => {
 
 // 11. Owner Permissions: Edit & Archive Project
 router.put("/:id", authenticate, validateObjectId, verifyOwnership, validateProject, async (req, res) => {
-  const { title, description, difficulty, status, requiredSkills, techStack } = req.body;
+  const { title, description, difficulty, status, requiredSkills, techStack, bounty } = req.body;
   try {
     const updateFields = {};
     if (title) updateFields.title = title;
@@ -351,6 +351,7 @@ router.put("/:id", authenticate, validateObjectId, verifyOwnership, validateProj
     if (status) updateFields.status = status;
     if (requiredSkills) updateFields.requiredSkills = requiredSkills;
     if (techStack) updateFields.techStack = techStack;
+    if (bounty !== undefined) updateFields.bounty = bounty;
 
     const updated = await Project.findByIdAndUpdate(
       req.params.id,

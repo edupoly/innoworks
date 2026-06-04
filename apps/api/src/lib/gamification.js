@@ -18,6 +18,7 @@ export const REPUTATION_WEIGHTS = {
 
 /**
  * Award XP to a user and check for levels or badge unlocks.
+ * Also updates engineering metrics based on the action.
  * 
  * @param {string} userId - ID of the user
  * @param {number} xpAmount - XP to award
@@ -32,13 +33,31 @@ export const awardXP = async (userId, xpAmount, actionReason) => {
     const previousLevel = user.level;
     user.xp += xpAmount;
 
-    // Increment reputation score based on standard action weights
+    // Increment reputation and engineering scores based on action
     if (actionReason === 'PR_MERGED') {
       user.reputationScore += REPUTATION_WEIGHTS.MERGED_PR;
+      user.collaborationScore += 10;
+      user.perfectionScore += 15;
+      user.consistencyScore += 5;
+      user.contributionStats.mergedPrsCount += 1;
     } else if (actionReason === 'PR_APPROVED') {
       user.reputationScore += REPUTATION_WEIGHTS.APPROVED_PR;
+      user.collaborationScore += 5;
+      user.innovationScore += 10;
     } else if (actionReason === 'TESTING_REVIEW') {
       user.reputationScore += REPUTATION_WEIGHTS.SUBMITTED_REVIEW;
+      user.communicationScore += 10;
+      user.adaptabilityScore += 5;
+      user.collaborationScore += 5;
+    } else if (actionReason === 'ISSUE_SOLVED') {
+      user.reputationScore += 15;
+      user.innovationScore += 15;
+      user.adaptabilityScore += 10;
+      user.contributionStats.issuesCount += 1;
+    }
+
+    if (actionReason === 'PR_MERGED' || actionReason === 'PR_APPROVED' || actionReason === 'PR_CREATED') {
+       // We'll increment prsCount on PR_CREATED in webhooks but just in case:
     }
 
     // Save triggers pre-save hook which caps scores and calculates levels
@@ -76,38 +95,39 @@ export const evaluateBadges = async (user) => {
   // Helper to check if user already has a badge
   const hasBadge = (badgeName) => user.badges.some(b => b.name === badgeName);
 
-  // Badge 1: First Contribution (e.g., if user has at least one accepted project or active solution)
-  // Let's check user's stats dynamically
+  // Badge 1: First Contribution
   if (!hasBadge('First Contribution') && user.xp >= XP_VALUES.ISSUE_SOLVED) {
     badgeUnlocked.push({
       name: 'First Contribution',
-      description: 'Awarded for solving your very first open-source issue.'
+      description: 'Awarded for solving your very first open-source issue.',
+      icon: '🚀'
     });
   }
 
-  // Badge 2: 10 Merged PRs
-  // We can calculate this by checking their reputation score or total PR status from submission queries.
-  // For safety, let's tie it to reputation score threshold (e.g. 500+ from merged PRs)
-  if (!hasBadge('10 Merged PRs') && user.reputationScore >= (REPUTATION_WEIGHTS.MERGED_PR * 10)) {
+  // Badge 2: 10 Merged PRs (Engineering Veteran)
+  if (!hasBadge('Engineering Veteran') && user.reputationScore >= (REPUTATION_WEIGHTS.MERGED_PR * 10)) {
     badgeUnlocked.push({
-      name: '10 Merged PRs',
-      description: 'Successfully merged 10 pull requests into production repositories.'
+      name: 'Engineering Veteran',
+      description: 'Successfully merged 10 pull requests into production repositories.',
+      icon: '🎖️'
     });
   }
 
-  // Badge 3: Top Tester
-  if (!hasBadge('Top Tester') && user.reputationScore >= 300 && user.roles.includes('TESTER')) {
+  // Badge 3: Master Reviewer
+  if (!hasBadge('Master Reviewer') && user.communicationScore >= 80 && user.roles.includes('TESTER')) {
     badgeUnlocked.push({
-      name: 'Top Tester',
-      description: 'Superb quality checking. Provided over 10 testing reports for peer pull requests.'
+      name: 'Master Reviewer',
+      description: 'Superb quality checking. High communication and collaboration scores.',
+      icon: '🕵️'
     });
   }
 
-  // Badge 4: Issue Hunter
-  if (!hasBadge('Issue Hunter') && user.xp >= 1000) {
+  // Badge 4: Polyglot Developer
+  if (!hasBadge('Polyglot Developer') && user.adaptabilityScore >= 70) {
     badgeUnlocked.push({
-      name: 'Issue Hunter',
-      description: 'Tracked down and fixed multiple complicated repository bug reports.'
+      name: 'Polyglot Developer',
+      description: 'Highly adaptable across multiple tech stacks and challenges.',
+      icon: '🌍'
     });
   }
 
@@ -115,22 +135,27 @@ export const evaluateBadges = async (user) => {
   if (!hasBadge('Open Source Champion') && user.xp >= 5000) {
     badgeUnlocked.push({
       name: 'Open Source Champion',
-      description: 'A legendary leader of the student open-source developers community.'
+      description: 'A legendary leader of the Innoworks student community.',
+      icon: '🏆'
     });
   }
 
   if (badgeUnlocked.length > 0) {
-    user.badges.push(...badgeUnlocked);
-    await user.save();
+    // Avoid duplicates just in case
+    const newBadges = badgeUnlocked.filter(b => !hasBadge(b.name));
+    if (newBadges.length > 0) {
+      user.badges.push(...newBadges);
+      await user.save();
 
-    for (const badge of badgeUnlocked) {
-      await sendNotification(
-        user._id,
-        'ACHIEVEMENT_UNLOCKED',
-        `🥇 Achievement Unlocked: "${badge.name}"!`,
-        '/dashboard'
-      );
-      console.log(`🥇 Badge Unlocked for @${user.username}: "${badge.name}"`);
+      for (const badge of newBadges) {
+        await sendNotification(
+          user._id,
+          'ACHIEVEMENT_UNLOCKED',
+          `${badge.icon} Achievement Unlocked: "${badge.name}"!`,
+          '/dashboard'
+        );
+        console.log(`🥇 Badge Unlocked for @${user.username}: "${badge.name}"`);
+      }
     }
   }
 };

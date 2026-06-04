@@ -43,12 +43,12 @@ const item = {
 // Custom SVG Radar Chart component for professional grade engineering metrics
 const EngineeringRadarChart = ({ stats }) => {
   const {
-    collaborationScore = 75,
-    innovationScore = 60,
-    consistencyScore = 80,
-    communicationScore = 70,
-    perfectionScore = 65,
-    adaptabilityScore = 85
+    collaborationScore = 0,
+    innovationScore = 0,
+    consistencyScore = 0,
+    communicationScore = 0,
+    perfectionScore = 0,
+    adaptabilityScore = 0
   } = stats || {};
 
   const metrics = [
@@ -427,8 +427,8 @@ const Dashboard = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {profile.badges.map((badge, idx) => (
                     <div key={idx} className="p-4 bg-muted/40 border border-border/50 rounded-2xl flex flex-col items-center text-center group hover:border-yellow-500/40 hover:bg-yellow-500/5 transition-all">
-                      <div className="w-10 h-10 rounded-full bg-yellow-500/10 text-yellow-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                        <Trophy size={20} className="fill-yellow-500/10" />
+                      <div className="w-10 h-10 rounded-full bg-yellow-500/10 text-yellow-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform text-lg">
+                        {badge.icon || <Trophy size={20} className="fill-yellow-500/10" />}
                       </div>
                       <p className="text-xs font-bold text-foreground mb-1">{badge.name}</p>
                       <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">{badge.description}</p>

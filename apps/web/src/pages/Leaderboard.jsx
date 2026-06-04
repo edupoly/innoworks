@@ -114,7 +114,7 @@ const Leaderboard = () => {
                         {user.username}
                         {user.badges?.length > 0 && (
                           <span className="text-[9px] font-black uppercase bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded">
-                            🏆 {user.badges[0].name}
+                            {user.badges[0].icon || "🏆"} {user.badges[0].name}
                           </span>
                         )}
                       </h3>

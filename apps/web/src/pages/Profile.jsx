@@ -134,8 +134,8 @@ const Profile = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {profile.badges.map((badge, i) => (
                   <div key={i} className="flex items-center gap-4 p-4 bg-card border border-border/50 rounded-2xl group hover:border-yellow-500/30 transition-all">
-                    <div className="w-12 h-12 rounded-xl bg-yellow-500/10 text-yellow-600 flex items-center justify-center shrink-0">
-                      <Trophy size={24} className="fill-yellow-500/10" />
+                    <div className="w-12 h-12 rounded-xl bg-yellow-500/10 text-yellow-600 flex items-center justify-center shrink-0 text-2xl">
+                      {badge.icon || <Trophy size={24} className="fill-yellow-500/10" />}
                     </div>
                     <div>
                       <p className="text-sm font-bold">{badge.name}</p>
