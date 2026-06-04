@@ -231,11 +231,9 @@ const Layout = () => {
       </AnimatePresence>
 
       <main className="flex-1 relative z-10">
-        <AnimatePresence mode="wait">
-          <PageTransition key={location.pathname} className="w-full h-full">
-            <Outlet />
-          </PageTransition>
-        </AnimatePresence>
+        <PageTransition className="w-full h-full">
+          <Outlet />
+        </PageTransition>
       </main>
 
       {/* Footer */}
