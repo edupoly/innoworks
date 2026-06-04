@@ -58,13 +58,7 @@ const Projects = () => {
   const skillsList = ["React", "Node.js", "Python", "JavaScript", "TypeScript", "Express", "Docker", "GraphQL", "CSS", "HTML"];
 
   return (
-    <div className="py-20 max-w-7xl mx-auto px-4 relative selection:bg-primary/20 noise-bg">
-      {/* Dynamic Background Elements */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '3s' }}></div>
-      </div>
-
+    <div className="py-20 max-w-7xl mx-auto px-4 relative selection:bg-primary/20">
       <div className="relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-8">
           <div className="space-y-4">

@@ -60,14 +60,7 @@ const Home = () => {
   };
 
   return (
-    <div className="flex flex-col bg-background overflow-hidden selection:bg-primary/20 scroll-smooth">
-      {/* Dynamic Ambient Background */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-primary/5 rounded-full blur-[180px] animate-pulse"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-indigo-500/5 rounded-full blur-[160px] animate-pulse" style={{ animationDelay: '5s' }}></div>
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E')] opacity-[0.1] mix-blend-overlay"></div>
-      </div>
-
+    <div className="flex flex-col bg-transparent selection:bg-primary/20 scroll-smooth">
       {/* Hero Section */}
       <section className="relative z-10 w-full min-h-screen flex flex-col items-center justify-center pt-20 pb-20 px-4 text-center">
         <motion.div

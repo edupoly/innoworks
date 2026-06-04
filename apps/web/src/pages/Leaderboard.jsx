@@ -170,11 +170,6 @@ const Leaderboard = () => {
 
   return (
     <div className="py-20 max-w-6xl mx-auto px-4 selection:bg-primary/30 relative noise-bg">
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute top-0 left-0 w-[40%] h-[40%] bg-indigo-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
-
       <div className="relative z-10">
         <div className="text-center mb-24">
           <motion.div

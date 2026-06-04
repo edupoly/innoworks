@@ -47,13 +47,7 @@ const Profile = () => {
   );
 
   return (
-    <div className="py-20 max-w-6xl mx-auto px-4 relative noise-bg">
-      {/* Dynamic Background Elements */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '3s' }}></div>
-      </div>
-
+    <div className="py-20 max-w-6xl mx-auto px-4 relative">
       <div className="relative z-10">
         <button 
           onClick={() => navigate(-1)}

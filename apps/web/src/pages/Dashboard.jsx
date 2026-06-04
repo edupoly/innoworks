@@ -138,8 +138,6 @@ const Dashboard = () => {
 
   return (
     <div className="py-20 max-w-7xl mx-auto px-4 md:px-6 relative selection:bg-primary/30">
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse"></div>
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px] -z-10 animate-pulse" style={{ animationDelay: '2s' }}></div>
       
       {/* Header Section */}
       <motion.header 
