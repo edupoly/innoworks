@@ -235,7 +235,7 @@ const Dashboard = () => {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-16 p-8 bg-white/[0.02] backdrop-blur-3xl rounded-[2.5rem] border border-white/5 relative group"
+          className="mb-16 p-8 bg-secondary/30 backdrop-blur-3xl rounded-[2.5rem] border border-border/50 relative group"
         >
           <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 rounded-full group-hover:bg-primary transition-colors"></div>
           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-4">Transmission_Bio</h3>
@@ -276,13 +276,13 @@ const Dashboard = () => {
           </motion.div>
 
           {/* Badges Preview Section */}
-          <div className="bg-card/30 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 w-full h-full flex flex-col justify-between shadow-2xl">
+          <div className="bg-card border border-border/50 p-8 rounded-[2.5rem] w-full h-full flex flex-col justify-between shadow-2xl">
             <div>
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-8">Achievements_Log</h3>
               {profile?.badges?.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
                   {profile.badges.map((badge, idx) => (
-                    <div key={idx} className="p-5 bg-white/[0.02] border border-white/5 rounded-3xl flex flex-col items-center text-center group hover:border-yellow-500/20 hover:bg-yellow-500/5 transition-all">
+                    <div key={idx} className="p-5 bg-card border border-border/50 rounded-3xl flex flex-col items-center text-center group hover:border-yellow-500/20 hover:bg-yellow-500/5 transition-all">
                       <div className="w-12 h-12 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-xl shadow-inner">
                         {badge.icon || <Trophy size={22} />}
                       </div>

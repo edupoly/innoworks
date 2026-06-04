@@ -62,24 +62,36 @@ const io = new Server(httpServer, {
 });
 
 // Relaxed CORS for development and OAuth
+const allowedOrigins = [
+  FRONTEND_URL,
+  "https://innoworks.up.railway.app",
+  "http://localhost:5173",
+  "http://localhost:3000"
+];
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     
-    const allowedOrigins = [FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"];
     const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
     
-    if (allowedOrigins.includes(normalizedOrigin)) {
-      // Return the NORMALIZED origin (no trailing slash) to avoid browser mismatches
-      callback(null, normalizedOrigin);
+    // Allow if it matches allowed origins or is a Railway subdomain
+    if (
+      allowedOrigins.includes(normalizedOrigin) || 
+      normalizedOrigin.endsWith('.up.railway.app') ||
+      normalizedOrigin.includes('localhost')
+    ) {
+      callback(null, true);
     } else {
+      console.warn(`🔒 CORS Blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 // Relaxed Helmet for OAuth redirects and development

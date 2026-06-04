@@ -38,7 +38,7 @@ export const EngineeringRadarChart = ({ stats, size = 320 }) => {
   }).join(" ");
 
   return (
-    <div className="relative group p-6 bg-white/[0.03] backdrop-blur-3xl rounded-[3rem] border border-white/5 shadow-2xl">
+    <div className="relative group p-6 bg-secondary/10 backdrop-blur-3xl rounded-[3rem] border border-border/50 shadow-2xl">
       <svg width={size} height={size} className="drop-shadow-2xl overflow-visible">
         {/* Grid circles */}
         {[20, 40, 60, 80, 100].map((r) => (
@@ -49,7 +49,7 @@ export const EngineeringRadarChart = ({ stats, size = 320 }) => {
             r={(radius * r) / 100}
             fill="none"
             stroke="currentColor"
-            className="text-white/5"
+            className="text-muted-foreground/10"
             strokeWidth="1"
           />
         ))}
@@ -65,7 +65,7 @@ export const EngineeringRadarChart = ({ stats, size = 320 }) => {
               x2={coords.x}
               y2={coords.y}
               stroke="currentColor"
-              className="text-white/5"
+              className="text-muted-foreground/10"
               strokeWidth="1"
             />
           );

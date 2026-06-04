@@ -97,7 +97,7 @@ const Home = () => {
           <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150"></div>
           <motion.div 
             whileHover={{ scale: 1.05 }}
-            className="relative px-6 py-2 rounded-full bg-background/50 border border-primary/20 text-primary text-xs font-black uppercase tracking-[0.2em] backdrop-blur-xl shadow-2xl flex items-center gap-3"
+            className="relative px-6 py-2 rounded-full bg-muted/50 border border-primary/20 text-primary text-xs font-black uppercase tracking-[0.2em] backdrop-blur-xl shadow-2xl flex items-center gap-3"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -145,7 +145,7 @@ const Home = () => {
           </button>
           <Link
             to="/projects"
-            className="group btn-secondary flex items-center justify-center gap-4 px-12 py-6 text-lg font-black uppercase tracking-widest hover:-translate-y-1 transition-all rounded-[2rem] border border-white/10 bg-white/5 backdrop-blur-2xl"
+            className="group btn-secondary flex items-center justify-center gap-4 px-12 py-6 text-lg font-black uppercase tracking-widest hover:-translate-y-1 transition-all rounded-[2rem] border border-border/50 bg-secondary/50 backdrop-blur-2xl"
           >
             <Search size={24} className="group-hover:scale-110 transition-transform" />
             Explore Missions
