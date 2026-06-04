@@ -18,6 +18,7 @@ const submissionSchema = new mongoose.Schema({
   branchName: { type: String, required: true },
   prNumber: { type: Number },
   prUrl: { type: String },
+  linkedIssue: { type: Number },
   status: { 
     type: String, 
     enum: ['PENDING', 'TESTING', 'UNDER_REVIEW', 'CHANGES_REQUESTED', 'APPROVED', 'MERGED', 'REJECTED'],

@@ -33,7 +33,7 @@ router.get("/testing/open", authenticate, async (req, res) => {
 
 // 2. Solve a challenge (Submit solution)
 router.post("/", authenticate, validateObjectId, validateSubmission, async (req, res) => {
-  const { projectId, forkUrl, branchName } = req.body;
+  const { projectId, forkUrl, branchName, linkedIssue } = req.body;
   const userId = req.user.userId;
 
   try {
@@ -59,10 +59,11 @@ router.post("/", authenticate, validateObjectId, validateSubmission, async (req,
       
       existingSubmission.forkUrl = forkUrl;
       existingSubmission.branchName = branchName;
+      existingSubmission.linkedIssue = linkedIssue;
       existingSubmission.status = "PENDING"; 
       existingSubmission.timeline.push({
         action: "SUBMITTED",
-        description: `Solution updated with branch: ${branchName} on fork.`,
+        description: `Solution updated with branch: ${branchName} on fork.${linkedIssue ? ` Resolves Issue #${linkedIssue}.` : ''}`,
         actor: userId
       });
       await existingSubmission.save();
@@ -73,10 +74,11 @@ router.post("/", authenticate, validateObjectId, validateSubmission, async (req,
         user: userId,
         forkUrl,
         branchName,
+        linkedIssue,
         status: "PENDING",
         timeline: [{
           action: "SUBMITTED",
-          description: `Challenge accepted and branch "${branchName}" submitted for validation.`,
+          description: `Challenge accepted and branch "${branchName}" submitted for validation.${linkedIssue ? ` Resolves Issue #${linkedIssue}.` : ''}`,
           actor: userId
         }]
       });
@@ -146,7 +148,7 @@ router.post("/", authenticate, validateObjectId, validateSubmission, async (req,
           baseOwner,
           baseRepo,
           `Submission for: ${project.title}`,
-          `This is an automated submission for the mission "${project.title}" by @${user.username}.\n\nFork: ${forkUrl}\nBranch: ${branchName}`,
+          `This is an automated submission for the mission "${project.title}" by @${user.username}.\n\nFork: ${forkUrl}\nBranch: ${branchName}${linkedIssue ? `\n\nResolves #${linkedIssue}` : ""}`,
           head,
           baseBranch
         );

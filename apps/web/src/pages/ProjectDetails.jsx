@@ -7,6 +7,7 @@ import {
   ExternalLink, 
   BadgeDollarSign, 
   Layers, 
+  Users,
   Clock, 
   Send,
   AlertCircle,
@@ -87,6 +88,7 @@ const ProjectDetails = () => {
   const [forkStatus, setForkStatus] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedRepo, setSelectedRepo] = useState(null);
+  const [selectedIssue, setSelectedIssue] = useState(null);
   const [devError, setDevError] = useState("");
   const [devSuccess, setDevSuccess] = useState(false);
   const [submittingDev, setSubmittingDev] = useState(false);
@@ -206,6 +208,7 @@ const ProjectDetails = () => {
         projectId: id,
         forkUrl: selectedRepo.html_url,
         branchName: selectedBranch,
+        linkedIssue: selectedIssue?.number
       });
       setDevSuccess(true);
       queryClient.invalidateQueries(["projectSubmissions", id]);
@@ -499,10 +502,10 @@ const ProjectDetails = () => {
                   <p className="text-primary-foreground/70 text-sm font-medium leading-relaxed">Accepting will fork the repository and initialize your personal development workspace.</p>
                   <button 
                     onClick={() => acceptMutation.mutate()}
-                    disabled={acceptMutation.isLoading}
+                    disabled={acceptMutation.isPending}
                     className="w-full py-4 bg-white text-primary rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    {acceptMutation.isLoading ? <RefreshCcw size={16} className="animate-spin" /> : <><Rocket size={16} /> Initialize Protocol</>}
+                    {acceptMutation.isPending ? <RefreshCcw size={16} className="animate-spin" /> : <><Rocket size={16} /> Initialize Protocol</>}
                   </button>
                 </motion.div>
               )}
@@ -647,8 +650,8 @@ const ProjectDetails = () => {
                               <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Description</label>
                               <textarea required rows={4} value={issueBody} onChange={(e)=>setIssueBody(e.target.value)} className="w-full p-5 bg-background border border-border/50 rounded-2xl font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Provide details, logs, or reproduction steps..." />
                             </div>
-                            <button type="submit" disabled={createIssueMutation.isLoading} className="w-full btn-primary py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl">
-                              {createIssueMutation.isLoading ? <RefreshCcw size={16} className="animate-spin" /> : 'Create GitHub Issue'}
+                            <button type="submit" disabled={createIssueMutation.isPending} className="w-full btn-primary py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl">
+                              {createIssueMutation.isPending ? <RefreshCcw size={16} className="animate-spin" /> : 'Create GitHub Issue'}
                             </button>
                          </form>
                        </motion.div>
@@ -676,15 +679,26 @@ const ProjectDetails = () => {
                              </div>
                            </div>
                            
-                           {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
-                             <button 
-                               onClick={() => handleCloseIssue(issue.number)}
-                               disabled={closeIssueMutation.isLoading}
-                               className="px-4 py-2 text-red-500 hover:bg-red-500/10 border border-red-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all opacity-0 group-hover:opacity-100"
-                             >
-                               Close Issue
-                             </button>
-                           )}
+                           <div className="flex items-center gap-3">
+                             {!(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
+                               <button 
+                                 onClick={() => { setSelectedIssue(issue); setActiveTab("dev_flow"); }}
+                                 className="px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all opacity-0 group-hover:opacity-100"
+                               >
+                                 Work on this
+                               </button>
+                             )}
+
+                             {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
+                               <button 
+                                 onClick={() => handleCloseIssue(issue.number)}
+                                 disabled={closeIssueMutation.isPending}
+                                 className="px-4 py-2 text-red-500 hover:bg-red-500/10 border border-red-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all opacity-0 group-hover:opacity-100"
+                               >
+                                 Close Issue
+                               </button>
+                             )}
+                           </div>
                          </div>
                        ))
                      ) : (
@@ -755,11 +769,11 @@ const ProjectDetails = () => {
                            
                            {sub.status === 'APPROVED' && (
                              <>
-                               <button onClick={() => handleMerge(sub._id)} disabled={mergeMutation.isLoading} className="px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all">
-                                 {mergeMutation.isLoading ? 'Merging...' : 'Merge PR'}
+                               <button onClick={() => handleMerge(sub._id)} disabled={mergeMutation.isPending} className="px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all">
+                                 {mergeMutation.isPending ? 'Merging...' : 'Merge PR'}
                                </button>
-                               <button onClick={() => handleReject(sub._id)} disabled={rejectMutation.isLoading} className="px-6 py-2.5 bg-destructive text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-destructive/20 hover:scale-105 active:scale-95 transition-all">
-                                 {rejectMutation.isLoading ? 'Rejecting...' : 'Reject PR'}
+                               <button onClick={() => handleReject(sub._id)} disabled={rejectMutation.isPending} className="px-6 py-2.5 bg-destructive text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-destructive/20 hover:scale-105 active:scale-95 transition-all">
+                                 {rejectMutation.isPending ? 'Rejecting...' : 'Reject PR'}
                                </button>
                              </>
                            )}
@@ -840,10 +854,10 @@ const ProjectDetails = () => {
                       </p>
                       <button 
                         onClick={() => acceptMutation.mutate()} 
-                        disabled={acceptMutation.isLoading}
+                        disabled={acceptMutation.isPending}
                         className="btn-primary py-5 px-12 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl shadow-primary/30 flex items-center gap-4 transition-all hover:scale-105 active:scale-95"
                       >
-                        {acceptMutation.isLoading ? (
+                        {acceptMutation.isPending ? (
                           <RefreshCcw size={18} className="animate-spin" />
                         ) : (
                           <><Rocket size={18} /> Initialize Fork Sequence</>
@@ -863,7 +877,30 @@ const ProjectDetails = () => {
                       </div>
                       
                       {forkStatus?.forkExists ? (
-                        <div className="p-8 bg-muted/20 border border-border/50 rounded-[2rem] space-y-6">
+                        <div className="space-y-6">
+                          {mySubmissions.length > 0 && (
+                            <div className="p-6 bg-primary/5 border border-primary/20 rounded-[2rem] space-y-4">
+                               <div className="flex items-center justify-between">
+                                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Active Mission Status</h4>
+                                  <span className="px-2 py-1 bg-primary text-primary-foreground rounded-md text-[8px] font-black uppercase tracking-widest">{mySubmissions[0].status}</span>
+                               </div>
+                               <div className="flex items-center gap-4">
+                                  <div className="w-10 h-10 rounded-xl bg-background border border-border/50 flex items-center justify-center text-primary"><GitPullRequest size={20} /></div>
+                                  <div>
+                                     <p className="text-xs font-bold text-foreground">PR #{mySubmissions[0].prNumber || 'Pending'}</p>
+                                     <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-widest">Linked to Branch: {mySubmissions[0].branchName}</p>
+                                  </div>
+                               </div>
+                               {mySubmissions[0].linkedIssue && (
+                                 <div className="p-3 bg-background/50 border border-border/30 rounded-xl flex items-center gap-3">
+                                    <div className="w-6 h-6 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500 font-black text-[9px]">#{mySubmissions[0].linkedIssue}</div>
+                                    <p className="text-[10px] font-bold text-muted-foreground">Resolves Linked Issue</p>
+                                 </div>
+                               )}
+                            </div>
+                          )}
+
+                          <div className="p-8 bg-muted/20 border border-border/50 rounded-[2rem] space-y-6">
                           <div className="flex items-center justify-between">
                             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Personal_Workspace</span>
                             <span className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 animate-pulse">
@@ -972,6 +1009,39 @@ const ProjectDetails = () => {
                       )}
                       
                       <div className="space-y-8">
+                        {selectedIssue && (
+                          <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between">
+                             <div className="flex items-center gap-4">
+                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black text-[10px]">#{selectedIssue.number}</div>
+                                <div className="min-w-0">
+                                   <p className="text-xs font-bold text-foreground truncate">{selectedIssue.title}</p>
+                                   <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Target Issue Linked</p>
+                                </div>
+                             </div>
+                             <button onClick={() => setSelectedIssue(null)} className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-all"><X size={14} /></button>
+                          </div>
+                        )}
+
+                        {!selectedIssue && intelligence?.issueAnalytics?.openIssuesList?.length > 0 && (
+                          <div className="space-y-4">
+                            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Link to Issue (Optional)</label>
+                            <div className="relative">
+                              <select 
+                                onChange={(e) => setSelectedIssue(intelligence.issueAnalytics.openIssuesList.find(i => i.number === parseInt(e.target.value)))}
+                                className="w-full px-5 py-4 bg-background border border-border/50 rounded-2xl font-bold text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none shadow-sm cursor-pointer"
+                              >
+                                <option value="">Select an issue to resolve...</option>
+                                {intelligence.issueAnalytics.openIssuesList.map(issue => (
+                                  <option key={issue.number} value={issue.number}>#{issue.number} {issue.title}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                                <ChevronRight size={14} className="rotate-90" />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         <div className="space-y-4">
                           <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Source Workspace</label>
                           <RepoPicker onSelect={setSelectedRepo} selectedRepo={selectedRepo} />
@@ -1283,6 +1353,10 @@ const ProjectDetails = () => {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Mission Title</label>
                   <input type="text" value={editTitle} onChange={(e)=>setEditTitle(e.target.value)} className="w-full p-5 bg-muted/20 border border-border/50 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Title" />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Bounty (XP)</label>
+                  <input type="number" value={editBounty} onChange={(e)=>setEditBounty(Number(e.target.value))} className="w-full p-5 bg-muted/20 border border-border/50 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Bounty" />
                 </div>
                 <div className="space-y-3">
                   <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Operational Description</label>

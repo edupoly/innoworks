@@ -223,11 +223,11 @@ const Dashboard = () => {
                 </div>
                 <div className="flex justify-end gap-4">
                   <button 
-                    disabled={updateProfileMutation.isLoading}
+                    disabled={updateProfileMutation.isPending}
                     type="submit"
                     className="btn-primary px-10 py-4 flex items-center gap-3 shadow-xl shadow-primary/20 rounded-2xl font-black uppercase tracking-widest text-xs"
                   >
-                    {updateProfileMutation.isLoading ? (
+                    {updateProfileMutation.isPending ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
                       <><Save size={18} /> Synchronize Profile</>
