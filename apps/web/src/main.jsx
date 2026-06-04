@@ -10,9 +10,12 @@ import { ThemeProvider } from "./components/ThemeProvider";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
-      staleTime: 60000, // 1 minute default stale time
-      retry: 1,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchOnMount: true,
+      staleTime: 30000, // 30 seconds default stale time
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
   },
 });

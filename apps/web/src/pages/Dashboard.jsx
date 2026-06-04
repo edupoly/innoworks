@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../lib/api";
@@ -53,12 +53,13 @@ const Dashboard = () => {
     if (tabParam && tabParam !== activeTab) {
       setActiveTab(tabParam);
     }
-  }, [tabParam]);
+  }, [tabParam, activeTab]);
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = useCallback((tab) => {
     setActiveTab(tab);
     setSearchParams({ tab });
-  };
+  }, [setSearchParams]);
+
   const [editData, setEditData] = useState({ bio: "", skills: "" });
 
   const profile = authUser;
@@ -75,7 +76,7 @@ const Dashboard = () => {
   const updateProfileMutation = useMutation({
     mutationFn: (data) => api.put("/users/profile", data),
     onSuccess: () => {
-      queryClient.invalidateQueries(["me"]);
+      queryClient.invalidateQueries({ queryKey: ["me"] });
       setIsEditing(false);
     },
   });
@@ -83,42 +84,52 @@ const Dashboard = () => {
   const deleteProjectMutation = useMutation({
     mutationFn: (projectId) => api.delete(`/projects/${projectId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["me"]);
+      queryClient.invalidateQueries({ queryKey: ["me"] });
     },
   });
 
-  const handleDeleteProject = (projectId) => {
+  const handleDeleteProject = useCallback((projectId) => {
     if (window.confirm("Are you sure you want to delete this challenge?")) {
       deleteProjectMutation.mutate(projectId);
     }
-  };
+  }, [deleteProjectMutation]);
 
-  const handleUpdateProfile = (e) => {
+  const handleUpdateProfile = useCallback((e) => {
     e.preventDefault();
     updateProfileMutation.mutate(editData);
-  };
+  }, [updateProfileMutation, editData]);
 
-  // Status mapping and statistics
-  const submissions = profile?.submissions || [];
-  
-  const pendingCount = submissions.filter(s => ['PENDING', 'TESTING', 'UNDER_REVIEW'].includes(s.status)).length;
-  const approvedCount = submissions.filter(s => ['APPROVED', 'MERGED'].includes(s.status)).length;
+  // Memoized Status mapping and statistics
+  const stats = useMemo(() => {
+    if (!profile) return [];
+    const submissions = profile.submissions || [];
+    const pendingCount = submissions.filter(s => ['PENDING', 'TESTING', 'UNDER_REVIEW'].includes(s.status)).length;
+    const approvedCount = submissions.filter(s => ['APPROVED', 'MERGED'].includes(s.status)).length;
 
-  const stats = [
-    { label: "Total XP", value: profile?.xp || 0, icon: Trophy, color: "text-yellow-500", bg: "bg-yellow-500/10 border-yellow-500/20" },
-    { label: "Reputation", value: profile?.reputationScore || 0, icon: Sparkles, color: "text-indigo-500", bg: "bg-indigo-500/10 border-indigo-500/20" },
-    { label: "Testing / Review", value: pendingCount, icon: Clock, color: "text-orange-500", bg: "bg-orange-500/10 border-orange-500/20" },
-    { label: "Merged / Approved", value: approvedCount, icon: Award, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
-  ];
+    return [
+      { label: "Total XP", value: profile.xp || 0, icon: Trophy, color: "text-yellow-500", bg: "bg-yellow-500/10 border-yellow-500/20" },
+      { label: "Reputation", value: profile.reputationScore || 0, icon: Sparkles, color: "text-indigo-500", bg: "bg-indigo-500/10 border-indigo-500/20" },
+      { label: "Testing / Review", value: pendingCount, icon: Clock, color: "text-orange-500", bg: "bg-orange-500/10 border-orange-500/20" },
+      { label: "Merged / Approved", value: approvedCount, icon: Award, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
+    ];
+  }, [profile]);
 
-  // Organize Kanban Columns
-  const submittedProjectIds = new Set(submissions.map(s => (s.project?._id || s.project)?.toString()).filter(Boolean));
-  const acceptedProjectsDetails = (profile?.acceptedProjects || []).filter(p => p && p._id && !submittedProjectIds.has(p._id.toString()));
-
-  const reviewingSubmissions = submissions.filter(s => ['PENDING', 'TESTING', 'UNDER_REVIEW'].includes(s.status));
-  const changesRequiredSubmissions = submissions.filter(s => s.status === 'CHANGES_REQUESTED');
-  const completedSubmissions = submissions.filter(s => ['APPROVED', 'MERGED'].includes(s.status));
-  const ownedProjects = profile?.ownedProjects || [];
+  // Memoized Kanban Columns data
+  const kanbanData = useMemo(() => {
+    if (!profile) return { accepted: [], reviewing: [], changes: [], completed: [] };
+    
+    const submissions = profile.submissions || [];
+    const submittedProjectIds = new Set(submissions.map(s => (s.project?._id || s.project)?.toString()).filter(Boolean));
+    
+    return {
+      accepted: (profile.acceptedProjects || []).filter(p => p && p._id && !submittedProjectIds.has(p._id.toString())),
+      reviewing: submissions.filter(s => ['PENDING', 'TESTING', 'UNDER_REVIEW'].includes(s.status)),
+      changes: submissions.filter(s => s.status === 'CHANGES_REQUESTED'),
+      completed: submissions.filter(s => ['APPROVED', 'MERGED'].includes(s.status)),
+      owned: profile.ownedProjects || [],
+      allSubmissions: submissions
+    };
+  }, [profile]);
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center py-32">
@@ -352,11 +363,11 @@ const Dashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-muted animate-pulse"></div>
                   Accepted
                 </span>
-                <span className="text-[9px] font-black bg-muted text-foreground px-2.5 py-1 rounded-lg border border-border/50">{acceptedProjectsDetails.length}</span>
+                <span className="text-[9px] font-black bg-muted text-foreground px-2.5 py-1 rounded-lg border border-border/50">{kanbanData.accepted.length}</span>
               </div>
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
-                {acceptedProjectsDetails.length > 0 ? (
-                  acceptedProjectsDetails.map((project) => (
+                {kanbanData.accepted.length > 0 ? (
+                  kanbanData.accepted.map((project) => (
                     <motion.div 
                       whileHover={{ y: -5 }}
                       key={project._id || project} 
@@ -386,11 +397,11 @@ const Dashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
                   Testing
                 </span>
-                <span className="text-[9px] font-black bg-blue-500/10 text-blue-500 px-2.5 py-1 rounded-lg border border-blue-500/20">{reviewingSubmissions.length}</span>
+                <span className="text-[9px] font-black bg-blue-500/10 text-blue-500 px-2.5 py-1 rounded-lg border border-blue-500/20">{kanbanData.reviewing.length}</span>
               </div>
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
-                {reviewingSubmissions.length > 0 ? (
-                  reviewingSubmissions.map((sub) => (
+                {kanbanData.reviewing.length > 0 ? (
+                  kanbanData.reviewing.map((sub) => (
                     <motion.div 
                       whileHover={{ y: -5 }}
                       key={sub._id} 
@@ -425,11 +436,11 @@ const Dashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
                   Actions
                 </span>
-                <span className="text-[9px] font-black bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-lg border border-orange-500/20">{changesRequiredSubmissions.length}</span>
+                <span className="text-[9px] font-black bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-lg border border-orange-500/20">{kanbanData.changes.length}</span>
               </div>
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
-                {changesRequiredSubmissions.length > 0 ? (
-                  changesRequiredSubmissions.map((sub) => (
+                {kanbanData.changes.length > 0 ? (
+                  kanbanData.changes.map((sub) => (
                     <motion.div 
                       whileHover={{ y: -5 }}
                       key={sub._id} 
@@ -460,11 +471,11 @@ const Dashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                   Deployed
                 </span>
-                <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-lg border border-emerald-500/20">{completedSubmissions.length}</span>
+                <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-lg border border-emerald-500/20">{kanbanData.completed.length}</span>
               </div>
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
-                {completedSubmissions.length > 0 ? (
-                  completedSubmissions.map((sub) => (
+                {kanbanData.completed.length > 0 ? (
+                  kanbanData.completed.map((sub) => (
                     <motion.div 
                       whileHover={{ y: -5 }}
                       key={sub._id} 
@@ -502,8 +513,8 @@ const Dashboard = () => {
             exit={{ opacity: 0, x: -20 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {ownedProjects.length > 0 ? (
-              ownedProjects.map((project) => (
+            {kanbanData.owned.length > 0 ? (
+              kanbanData.owned.map((project) => (
                 <div key={project._id} className="bg-card border border-border/50 rounded-3xl p-8 space-y-6 hover:border-primary/30 transition-all shadow-xl">
                   <div className="flex justify-between items-start">
                     <div className="p-3 bg-primary/5 rounded-2xl">
@@ -558,10 +569,10 @@ const Dashboard = () => {
             exit={{ opacity: 0, y: -20 }}
             className="max-w-3xl mx-auto w-full space-y-6"
           >
-            {submissions.length > 0 ? (
-              submissions.map((sub, idx) => (
+            {kanbanData.allSubmissions.length > 0 ? (
+              kanbanData.allSubmissions.map((sub, idx) => (
                 <div key={sub._id} className="relative pl-10 pb-8 last:pb-0 group">
-                  {idx !== submissions.length - 1 && (
+                  {idx !== kanbanData.allSubmissions.length - 1 && (
                     <div className="absolute left-[11px] top-10 bottom-0 w-0.5 bg-border/50 group-hover:bg-primary/30 transition-colors"></div>
                   )}
                   <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-background border-2 border-primary flex items-center justify-center z-10 shadow-[0_0_15px_rgba(99,102,241,0.3)]">

@@ -5,11 +5,12 @@ import { Project } from '../models/Project.js';
 import { Notification } from '../models/Notification.js';
 import { authenticate } from '../middleware/auth.js';
 import { validateObjectId } from '../middleware/validate.js';
+import { cacheMiddleware, clearCache } from '../middleware/cache.js';
 
 const router = Router();
 
 // 1. Get leaderboards (All Time, Weekly, Monthly)
-router.get("/leaderboard", async (req, res) => {
+router.get("/leaderboard", cacheMiddleware(300), async (req, res) => {
   const { period } = req.query; // 'weekly', 'monthly', 'all_time' (default)
 
   try {
@@ -118,6 +119,12 @@ router.put("/profile", authenticate, async (req, res) => {
       { new: true }
     ).select("-githubAccessToken");
     
+    // Clear user profile cache
+    if (user) {
+      clearCache(`/users/profile/${user.username}`);
+      clearCache('/users/leaderboard');
+    }
+
     res.json(user);
   } catch (error) {
     console.error("❌ Update Profile Error:", error.message);
@@ -126,7 +133,7 @@ router.put("/profile", authenticate, async (req, res) => {
 });
 
 // 6. Retrieve comprehensive user profile (portfolios, analytics, submissions)
-router.get("/profile/:username", async (req, res) => {
+router.get("/profile/:username", cacheMiddleware(60), async (req, res) => {
   try {
     const user = await User.findOne({ 
       username: { $regex: new RegExp(`^${req.params.username}$`, "i") } 

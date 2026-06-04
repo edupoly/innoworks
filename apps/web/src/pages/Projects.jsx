@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../lib/api.js";
 import { Link } from "react-router-dom";
 import { BadgeDollarSign, Layers, Users, Star, ArrowRight, CheckCircle2, Search, SlidersHorizontal, BookOpen, Rocket } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMe } from "../hooks/useAuth";
 
 const container = {
   hidden: { opacity: 0 },
@@ -17,8 +18,6 @@ const item = {
   hidden: { opacity: 0, y: 15 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 350, damping: 25 } }
 };
-
-import { useMe } from "../hooks/useAuth";
 
 const Projects = () => {
   const { user: authUser } = useMe();
@@ -53,9 +52,16 @@ const Projects = () => {
     enabled: !!authUser?.username,
   });
 
-  const submittedProjectIds = new Set(profile?.submissions?.map(s => (s.project?._id || s.project)?.toString()));
+  const submittedProjectIds = useMemo(() => {
+    return new Set(profile?.submissions?.map(s => (s.project?._id || s.project)?.toString()));
+  }, [profile?.submissions]);
 
-  const skillsList = ["React", "Node.js", "Python", "JavaScript", "TypeScript", "Express", "Docker", "GraphQL", "CSS", "HTML"];
+  const handleSetSkill = useCallback((s) => setSkill(s), []);
+  const handleSetDifficulty = useCallback((e) => setDifficulty(e.target.value), []);
+  const handleSetSort = useCallback((e) => setSort(e.target.value), []);
+  const handleSetSearch = useCallback((e) => setSearch(e.target.value), []);
+
+  const skillsList = useMemo(() => ["React", "Node.js", "Python", "JavaScript", "TypeScript", "Express", "Docker", "GraphQL", "CSS", "HTML"], []);
 
   return (
     <div className="py-20 max-w-7xl mx-auto px-4 relative selection:bg-primary/20">
@@ -95,7 +101,7 @@ const Projects = () => {
                 type="text"
                 placeholder="Search missions by title..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={handleSetSearch}
                 className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 text-sm font-bold leading-relaxed text-foreground"
               />
             </div>
@@ -104,7 +110,7 @@ const Projects = () => {
             <div className="relative">
               <select
                 value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value)}
+                onChange={handleSetDifficulty}
                 className="w-full text-sm bg-background/50 border border-border/50 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:focus:ring-primary/20 font-bold text-foreground appearance-none cursor-pointer hover:bg-background transition-colors"
               >
                 <option value="">All Difficulty Levels</option>
@@ -121,7 +127,7 @@ const Projects = () => {
             <div className="relative">
               <select
                 value={sort}
-                onChange={(e) => setSort(e.target.value)}
+                onChange={handleSetSort}
                 className="w-full text-sm bg-background/50 border border-border/50 rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:focus:ring-primary/20 font-bold text-foreground appearance-none cursor-pointer hover:bg-background transition-colors"
               >
                 <option value="recent">Sort by: Latest</option>
@@ -139,7 +145,7 @@ const Projects = () => {
           {/* Skill Tag Filters Row */}
           <div className="border-t border-border/30 pt-6 flex flex-wrap items-center gap-2.5">
             <button
-              onClick={() => setSkill("")}
+              onClick={() => handleSetSkill("")}
               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${
                 !skill 
                   ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
@@ -154,7 +160,7 @@ const Projects = () => {
               return (
                 <button
                   key={s}
-                  onClick={() => setSkill(s)}
+                  onClick={() => handleSetSkill(s)}
                   className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${
                     isSel 
                       ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 

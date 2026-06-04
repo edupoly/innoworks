@@ -15,10 +15,10 @@ export const useMe = () => {
       const response = await api.get("/auth/me");
       return response.data;
     },
-    enabled: !!token && (!isAuthenticated || !authUser),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    enabled: !!token,
+    staleTime: 1000 * 60 * 5, // 5 minutes stale time for user session info
     gcTime: 1000 * 60 * 60,
-    retry: false
+    retry: 1
   });
 
   // Sync React Query data back to Redux if they differ or if we need to restore session

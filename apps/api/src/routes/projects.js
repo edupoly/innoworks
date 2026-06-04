@@ -7,6 +7,7 @@ import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue, parseRe
 import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';
 import { evaluateBadges, awardXP, XP_VALUES } from '../lib/gamification.js';
+import { cacheMiddleware, clearCache } from '../middleware/cache.js';
 import axios from 'axios';
 
 const router = Router();
@@ -15,7 +16,7 @@ const router = Router();
 const verifyOwnership = verifyProjectOwnership(Project);
 
 // 1. Get all projects (Marketplace) with comprehensive search, filters, and sorting
-router.get("/", async (req, res) => {
+router.get("/", cacheMiddleware(30), async (req, res) => {
   try {
     const { search, difficulty, skill, sort, tech } = req.query;
     
@@ -322,6 +323,9 @@ router.post("/", authenticate, async (req, res) => {
     await awardXP(userId, XP_VALUES.PROJECT_POSTED, 'PROJECT_POSTED');
     await evaluateBadges(user);
 
+    // Clear marketplace cache
+    clearCache('/projects');
+
     res.status(201).json(project);
   } catch (error) {
     console.error("❌ Create Project Error:", error.message);
@@ -330,7 +334,7 @@ router.post("/", authenticate, async (req, res) => {
 });
 
 // 10. Get single project base details
-router.get("/:id", validateObjectId, async (req, res) => {
+router.get("/:id", validateObjectId, cacheMiddleware(60), async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
       .populate('owner', 'username avatarUrl roles')
@@ -362,6 +366,10 @@ router.put("/:id", authenticate, validateObjectId, verifyOwnership, validateProj
       { $set: updateFields },
       { new: true }
     );
+
+    // Clear project and marketplace cache
+    clearCache(`/projects/${req.params.id}`);
+    clearCache('/projects');
 
     res.json(updated);
   } catch (error) {
@@ -443,6 +451,11 @@ router.delete("/:id", authenticate, validateObjectId, verifyOwnership, async (re
     await Project.findByIdAndDelete(projectId).session(session);
 
     await session.commitTransaction();
+
+    // Clear caches
+    clearCache(`/projects/${projectId}`);
+    clearCache('/projects');
+
     res.json({ message: "Project deleted successfully." });
   } catch (error) {
     await session.abortTransaction();

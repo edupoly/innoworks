@@ -19,8 +19,34 @@ const Layout = () => {
   const { setTheme } = useTheme();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
+
+  // Visibility and Network detection for automatic revalidation
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      queryClient.refetchQueries({ stale: true });
+    };
+    const handleOffline = () => setIsOnline(false);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        queryClient.invalidateQueries({ stale: true });
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [queryClient]);
 
   const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
@@ -188,6 +214,22 @@ const Layout = () => {
       </div>
 
       <Navbar />
+      
+      {/* Offline Indicator */}
+      <AnimatePresence>
+        {!isOnline && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-destructive text-destructive-foreground py-1.5 px-4 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 z-[60] relative overflow-hidden"
+          >
+            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+            Network Connection Lost - Viewing Offline Mode
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <main className="flex-1 relative z-10">
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname} className="w-full h-full">

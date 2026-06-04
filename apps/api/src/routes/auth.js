@@ -39,25 +39,15 @@ router.get("/me", authenticate, async (req, res) => {
     // Automatically evaluate and award badges on each session sync
     await evaluateBadges(user);
 
-    // Fetch user submissions with deep populated project info
-    const submissions = await Submission.find({ user: user._id })
-      .populate('project')
-      .sort({ createdAt: -1 });
-
-    // Projects owned by this user
-    const ownedProjects = await Project.find({ owner: user._id })
-      .sort({ createdAt: -1 });
-
-    // Ensure valid accepted projects and populate them
-    const uniqueAcceptedIds = Array.from(new Set(
-      (user.acceptedProjects || [])
-        .map(id => id.toString())
-    ));
-
-    const populatedAccepted = await Project.find({ 
-      _id: { $in: uniqueAcceptedIds },
-      status: 'OPEN'
-    }).select('title difficulty bounty repoUrl branchName');
+    // Fetch related data in parallel
+    const [submissions, ownedProjects, populatedAccepted] = await Promise.all([
+      Submission.find({ user: user._id }).populate('project').sort({ createdAt: -1 }),
+      Project.find({ owner: user._id }).sort({ createdAt: -1 }),
+      Project.find({ 
+        _id: { $in: Array.from(new Set((user.acceptedProjects || []).map(id => id.toString()))) },
+        status: 'OPEN'
+      }).select('title difficulty bounty repoUrl branchName')
+    ]);
 
     res.json({
       ...user.toObject(),

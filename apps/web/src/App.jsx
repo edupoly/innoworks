@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -8,17 +8,29 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
-import AuthCallback from "./pages/AuthCallback";
-import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
-import Notifications from "./pages/Notifications";
-import Profile from "./pages/Profile";
-import Projects from "./pages/Projects";
-import Leaderboard from "./pages/Leaderboard";
-import ProjectDetails from "./pages/ProjectDetails";
-import CreateProject from "./pages/CreateProject";
-import { Github, Rocket, Search, ShieldCheck, Zap, Sparkles, LayoutDashboard } from "lucide-react";
+import { Github, Rocket, Search, ShieldCheck, Zap, Sparkles, LayoutDashboard, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import Layout from "./components/Layout";
+
+// Lazy Load Pages
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Projects = lazy(() => import("./pages/Projects"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const ProjectDetails = lazy(() => import("./pages/ProjectDetails"));
+const CreateProject = lazy(() => import("./pages/CreateProject"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+
+// High-fidelity loading fallback for Suspense
+const PageLoader = () => (
+  <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
+    <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">
+      Loading Module...
+    </p>
+  </div>
+);
 
 // Protected Route Component to prevent unauthorized access and handle loading
 const ProtectedRoute = ({ children }) => {
@@ -309,58 +321,60 @@ function App() {
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route
-            path="/projects/:id"
-            element={
-              <ProtectedRoute>
-                <ProjectDetails />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/projects/new"
-            element={
-              <ProtectedRoute>
-                <CreateProject />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <ProtectedRoute>
-                <Notifications />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/profile/:username" element={<Profile />} />
-        </Route>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route
+              path="/projects/:id"
+              element={
+                <ProtectedRoute>
+                  <ProjectDetails />
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/projects/new"
+              element={
+                <ProtectedRoute>
+                  <CreateProject />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/profile/:username" element={<Profile />} />
+          </Route>
 
-        {/* Auth Callback variants */}
-        <Route path="/auth/callback/*" element={<AuthCallback />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="//auth/callback/*" element={<AuthCallback />} />
-        <Route path="//auth/callback" element={<AuthCallback />} />
-        <Route path="/auth/*" element={<AuthCallback />} />
-        
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Auth Callback variants */}
+          <Route path="/auth/callback/*" element={<AuthCallback />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="//auth/callback/*" element={<AuthCallback />} />
+          <Route path="//auth/callback" element={<AuthCallback />} />
+          <Route path="/auth/*" element={<AuthCallback />} />
+          
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

@@ -7,35 +7,64 @@ const api = axios.create({
   baseURL: BASE_URL,
 });
 
-// Add a request interceptor to include the auth token
+// Simple in-memory cache for GET requests
+const cache = new Map();
+const CACHE_TTL = 5000; // 5 seconds deduplication window
+
+// Add a request interceptor
 api.interceptors.request.use(
   (config) => {
+    // Auth token
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Request Deduplication / Caching for GET requests
+    if (config.method === 'get') {
+      const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
+      const cached = cache.get(cacheKey);
+      
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        return Promise.reject({
+          config,
+          message: 'Deduplicated',
+          isDeduplicated: true,
+          data: cached.data
+        });
+      }
+    }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Add a response interceptor to handle unauthorized errors
+// Add a response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Cache successful GET requests
+    if (response.config.method === 'get') {
+      const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
+      cache.set(cacheKey, {
+        data: response.data,
+        timestamp: Date.now()
+      });
+    }
+    return response;
+  },
   (error) => {
+    // Handle deduplicated requests
+    if (error.isDeduplicated) {
+      return Promise.resolve({ data: error.data, config: error.config, status: 200 });
+    }
+
     if (error.response?.status === 401) {
-      // Don't logout if we are already on the home page or auth callback
       const isAuthPath = window.location.pathname === '/' || window.location.pathname.includes('/auth/callback');
-      
       if (!isAuthPath) {
-        console.warn("API 401: Clearing tokens and redirecting to home. Path:", window.location.pathname);
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         window.location.href = '/';
-      } else {
-        console.log("API 401 on auth path: Not clearing tokens. Path:", window.location.pathname);
       }
     }
     return Promise.reject(error);

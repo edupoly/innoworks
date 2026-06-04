@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
+import { memo } from "react";
 
 // Custom SVG Radar Chart component for professional grade engineering metrics
-export const EngineeringRadarChart = ({ stats, size = 320 }) => {
+export const EngineeringRadarChart = memo(({ stats, size = 320 }) => {
   const {
     collaborationScore = 0,
     innovationScore = 0,
