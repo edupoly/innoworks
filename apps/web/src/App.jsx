@@ -311,7 +311,7 @@ import { useMe } from "./hooks/useAuth";
 import { useAutoRecovery } from "./hooks/useAutoRecovery";
 
 function App() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
   
   // Consistently handle session restoration and user data sync via React Query
   useMe();
@@ -320,8 +320,26 @@ function App() {
   useAutoRecovery();
 
   useEffect(() => {
-    console.log("App: Component mounted, isAuthenticated:", isAuthenticated);
-  }, [isAuthenticated]);
+    console.log("App: Component mounted, isAuthenticated:", isAuthenticated, "loading:", loading);
+  }, [isAuthenticated, loading]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center px-4 select-none relative">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[150px]" />
+        </div>
+        <div className="relative z-10 space-y-6">
+          <div className="relative w-20 h-20 mx-auto">
+            <div className="absolute inset-0 border-4 border-primary/10 rounded-full" />
+            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+          <h2 className="text-xl font-black tracking-tight text-foreground uppercase tracking-[0.2em] text-[10px]">Initializing Node</h2>
+          <p className="text-muted-foreground text-[10px] font-mono font-medium">Decrypting secure telemetry stream...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
