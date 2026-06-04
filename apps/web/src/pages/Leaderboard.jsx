@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import api from "../lib/api.js";
 import { Trophy, Medal, Crown, TrendingUp, User, Calendar, Award, Star, Zap, Activity, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useGetLeaderboardQuery } from "../store/api/usersApiSlice";
 
 const Metric = ({ label, value }) => {
   return (
@@ -146,13 +145,7 @@ const PodiumCard = ({ user, rank, color, bgColor, borderColor, featured }) => {
 const Leaderboard = () => {
   const [period, setPeriod] = useState("all_time");
 
-  const { data: users, isLoading } = useQuery({
-    queryKey: ["leaderboard", period],
-    queryFn: async () => {
-      const response = await api.get(`/users/leaderboard?period=${period}`);
-      return response.data;
-    },
-  });
+  const { data: users, isLoading } = useGetLeaderboardQuery(period);
 
   const periods = [
     { id: "all_time", label: "All Time", icon: Trophy },

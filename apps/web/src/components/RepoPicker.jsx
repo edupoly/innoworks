@@ -143,6 +143,6 @@ const RepoPicker = memo(({ onSelect, selectedRepo }) => {
       </div>
     </div>
   );
-};
+});
 
 export default RepoPicker;

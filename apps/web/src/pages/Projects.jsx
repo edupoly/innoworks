@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
-import api from "../lib/api.js";
 import { Link } from "react-router-dom";
 import { BadgeDollarSign, Layers, Users, Star, ArrowRight, CheckCircle2, Search, SlidersHorizontal, BookOpen, Rocket } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
+import { useGetProjectsQuery } from "../store/api/projectsApiSlice";
+import { useGetUserProfileQuery } from "../store/api/usersApiSlice";
 
 const container = {
   hidden: { opacity: 0 },
@@ -28,28 +28,15 @@ const Projects = () => {
   const [skill, setSkill] = useState("");
   const [sort, setSort] = useState("recent"); // 'recent', 'trending', 'most_active', 'most_contributors', 'bounty'
 
-  const { data: projects, isLoading } = useQuery({
-    queryKey: ["projects", search, difficulty, skill, sort],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (search) params.append("search", search);
-      if (difficulty) params.append("difficulty", difficulty);
-      if (skill) params.append("skill", skill);
-      if (sort) params.append("sort", sort);
-      
-      const response = await api.get(`/projects?${params.toString()}`);
-      return response.data;
-    },
+  const { data: projects, isLoading } = useGetProjectsQuery({
+    search,
+    difficulty,
+    skill,
+    sort
   });
 
-  const { data: profile } = useQuery({
-    queryKey: ["profile", authUser?.username],
-    queryFn: async () => {
-      if (!authUser?.username) return null;
-      const response = await api.get(`/users/profile/${authUser.username}`);
-      return response.data;
-    },
-    enabled: !!authUser?.username,
+  const { data: profile } = useGetUserProfileQuery(authUser?.username, {
+    skip: !authUser?.username,
   });
 
   const submittedProjectIds = useMemo(() => {

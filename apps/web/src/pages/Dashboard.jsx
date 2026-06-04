@@ -1,7 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import api from "../lib/api";
 import { 
   Trophy, 
   Sparkles, 
@@ -25,6 +23,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
 import { EngineeringRadarChart } from "../components/EngineeringRadarChart";
+import { useUpdateProfileMutation } from "../store/api/usersApiSlice";
+import { useDeleteProjectMutation } from "../store/api/projectsApiSlice";
 
 const container = {
   hidden: { opacity: 0 },
@@ -41,7 +41,6 @@ const item = {
 
 const Dashboard = () => {
   const { user: authUser, isLoading, error } = useMe();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -73,31 +72,28 @@ const Dashboard = () => {
     }
   }, [profile]);
 
-  const updateProfileMutation = useMutation({
-    mutationFn: (data) => api.put("/users/profile", data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-      setIsEditing(false);
-    },
-  });
+  const [updateProfile] = useUpdateProfileMutation();
+  const [deleteProject] = useDeleteProjectMutation();
 
-  const deleteProjectMutation = useMutation({
-    mutationFn: (projectId) => api.delete(`/projects/${projectId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-    },
-  });
-
-  const handleDeleteProject = useCallback((projectId) => {
+  const handleDeleteProject = useCallback(async (projectId) => {
     if (window.confirm("Are you sure you want to delete this challenge?")) {
-      deleteProjectMutation.mutate(projectId);
+      try {
+        await deleteProject(projectId).unwrap();
+      } catch (err) {
+        console.error("Failed to delete project:", err);
+      }
     }
-  }, [deleteProjectMutation]);
+  }, [deleteProject]);
 
-  const handleUpdateProfile = useCallback((e) => {
+  const handleUpdateProfile = useCallback(async (e) => {
     e.preventDefault();
-    updateProfileMutation.mutate(editData);
-  }, [updateProfileMutation, editData]);
+    try {
+      await updateProfile(editData).unwrap();
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+    }
+  }, [updateProfile, editData]);
 
   // Memoized Status mapping and statistics
   const stats = useMemo(() => {

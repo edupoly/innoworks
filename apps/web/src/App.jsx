@@ -308,12 +308,16 @@ const Home = () => {
 };
 
 import { useMe } from "./hooks/useAuth";
+import { useAutoRecovery } from "./hooks/useAutoRecovery";
 
 function App() {
   const { isAuthenticated } = useSelector((state) => state.auth);
   
   // Consistently handle session restoration and user data sync via React Query
   useMe();
+
+  // Trigger auto recovery tracking (Visibility, Focus, Sleep Wake, Reconnect, Inactivity)
+  useAutoRecovery();
 
   useEffect(() => {
     console.log("App: Component mounted, isAuthenticated:", isAuthenticated);

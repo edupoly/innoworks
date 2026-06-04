@@ -1,39 +1,26 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { 
+  useGetNotificationsQuery, 
+  useMarkNotificationsReadMutation, 
+  useMarkNotificationReadMutation 
+} from "../store/api/usersApiSlice";
 import api from "../lib/api";
 import { Bell, Check, Trophy, Sparkles, Clock, Trash2, ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const Notifications = () => {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: notifications, isLoading } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: async () => {
-      const response = await api.get("/users/notifications");
-      return response.data;
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+  const { data: notifications, isLoading } = useGetNotificationsQuery(undefined, {
+    pollingInterval: 60000, // 1 minute
   });
 
-  const markAllReadMutation = useMutation({
-    mutationFn: () => api.put("/users/notifications/read-all"),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    }
-  });
-
-  const readSingleMutation = useMutation({
-    mutationFn: (id) => api.put(`/users/notifications/${id}/read`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    }
-  });
+  const [markAllRead] = useMarkNotificationsReadMutation();
+  const [readSingle] = useMarkNotificationReadMutation();
 
   const handleNotificationClick = (n) => {
     if (!n.read) {
-      readSingleMutation.mutate(n._id);
+      readSingle(n._id);
     }
     if (n.link) {
       navigate(n.link);
@@ -78,7 +65,7 @@ const Notifications = () => {
         
         {unreadCount > 0 && (
           <button 
-            onClick={() => markAllReadMutation.mutate()}
+            onClick={() => markAllRead()}
             className="text-xs font-black text-primary hover:underline flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-primary/5 transition-all"
           >
             <Check size={14} /> Mark all read

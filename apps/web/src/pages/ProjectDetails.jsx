@@ -1,7 +1,23 @@
 import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector, useDispatch } from "react-redux";
+import { 
+  useGetProjectQuery, 
+  useGetProjectIntelligenceQuery, 
+  useGetProjectForkStatusQuery,
+  useUpdateProjectMutation,
+  useDeleteProjectMutation,
+  useAcceptProjectMutation,
+  useCloseProjectIssueMutation,
+  useCreateProjectIssueMutation
+} from "../store/api/projectsApiSlice";
+import { 
+  useGetProjectSubmissionsQuery, 
+  useCreateSubmissionMutation,
+  useSubmitReviewMutation,
+  useMergeSubmissionMutation,
+  useRejectSubmissionMutation
+} from "../store/api/submissionsApiSlice";
 import { 
   Github, 
   ExternalLink, 
@@ -40,7 +56,6 @@ import {
   Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import api from "../lib/api";
 import RepoPicker from "../components/RepoPicker";
 import BranchPicker from "../components/BranchPicker";
 import { setCredentials } from "../store/slices/authSlice";
@@ -49,43 +64,24 @@ import { useMe } from "../hooks/useAuth";
 const ProjectDetails = () => {
   const { id } = useParams();
   const { user: authUser } = useMe();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // 1. Fetch live repository intelligence using high-performance GraphQL endpoint
-  const { data: intelligence, isLoading: loadingIntel, error: intelError } = useQuery({
-    queryKey: ["projectIntelligence", id],
-    queryFn: async () => {
-      const response = await api.get(`/projects/${id}/intelligence`);
-      return response.data;
-    },
-    refetchInterval: 300000 // Refetch every 5 minutes to reduce polling
+  // 1. Fetch live repository intelligence
+  const { data: intelligence, isLoading: loadingIntel, error: intelError } = useGetProjectIntelligenceQuery(id, {
+    pollingInterval: 300000 // 5 minutes
   });
 
   // 2. Fetch basic project details
-  const { data: project, isLoading: loadingProject } = useQuery({
-    queryKey: ["project", id],
-    queryFn: async () => {
-      const response = await api.get(`/projects/${id}`);
-      return response.data;
-    },
-  });
+  const { data: project, isLoading: loadingProject } = useGetProjectQuery(id);
 
   // 3. Fetch submissions for this project
-  const { data: projectSubmissions } = useQuery({
-    queryKey: ["projectSubmissions", id],
-    queryFn: async () => {
-      const response = await api.get(`/submissions/project/${id}`);
-      return response.data;
-    },
-  });
+  const { data: projectSubmissions } = useGetProjectSubmissionsQuery(id);
   
   // Navigation tabs
   const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'stats', 'dev_flow', 'test_flow'
   
   // Start Developing states
-  const [forkStatus, setForkStatus] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedRepo, setSelectedRepo] = useState(null);
   const [selectedIssue, setSelectedIssue] = useState(null);
@@ -126,29 +122,25 @@ const ProjectDetails = () => {
     }
   }, [project]);
 
-  const updateProjectMutation = useMutation({
-    mutationFn: (data) => api.put(`/projects/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project", id] });
-      setIsEditing(false);
-    },
-  });
+  const [updateProject] = useUpdateProjectMutation();
 
   const handleUpdateProject = useCallback(async (e) => {
     e.preventDefault();
     setIsUpdatingProject(true);
     try {
-      await updateProjectMutation.mutateAsync({
+      await updateProject({
+        id,
         title: editTitle,
         description: editDescription,
         bounty: editBounty
-      });
+      }).unwrap();
+      setIsEditing(false);
     } catch (err) {
       console.error(err);
     } finally {
       setIsUpdatingProject(false);
     }
-  }, [updateProjectMutation, editTitle, editDescription, editBounty]);
+  }, [updateProject, id, editTitle, editDescription, editBounty]);
 
   const isAccepted = useMemo(() => 
     (authUser?.acceptedProjects || []).some(p => (p._id || p) === id),
@@ -166,67 +158,66 @@ const ProjectDetails = () => {
     projectSubmissions?.filter(s => s.user?._id === authUser?._id || s.user === authUser?._id) || [],
   [projectSubmissions, authUser?._id]);
 
-  const deleteMutation = useMutation({
-    mutationFn: () => api.delete(`/projects/${id}`),
-    onSuccess: () => {
-      navigate("/projects");
-    },
-  });
+  const [deleteProject] = useDeleteProjectMutation();
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
     if (window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
-      deleteMutation.mutate();
+      try {
+        await deleteProject(id).unwrap();
+        navigate("/projects");
+      } catch (err) {
+        console.error(err);
+      }
     }
-  }, [deleteMutation]);
+  }, [deleteProject, id, navigate]);
 
-  const acceptMutation = useMutation({
-    mutationFn: () => api.post(`/projects/${id}/accept`),
-    onSuccess: (response) => {
-      if (response.data?.user) {
+  const [acceptProject, { isLoading: isAccepting }] = useAcceptProjectMutation();
+
+  const acceptProjectHandler = useCallback(async () => {
+    try {
+      const response = await acceptProject(id).unwrap();
+      if (response?.user) {
         dispatch(setCredentials({ 
-          user: response.data.user, 
+          user: response.user, 
           token: localStorage.getItem("token") 
         }));
       }
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-      checkFork();
-    },
-  });
-
-  const checkFork = useCallback(async () => {
-    try {
-      const res = await api.get(`/projects/${id}/fork-status`);
-      setForkStatus(res.data);
     } catch (err) {
       console.error(err);
     }
-  }, [id]);
+  }, [acceptProject, id, dispatch]);
 
-  useEffect(() => {
-    if (isAccepted) {
-      checkFork();
-    }
-  }, [isAccepted, checkFork]);
+  const { data: forkStatus, refetch: checkFork } = useGetProjectForkStatusQuery(id, {
+    skip: !isAccepted
+  });
+
+  const [createSubmission, { isLoading: isSubmittingDevMutation }] = useCreateSubmissionMutation();
+  const [submitReview, { isLoading: isSubmittingTestMutation }] = useSubmitReviewMutation();
+  const [mergeSubmission, { isLoading: isMerging }] = useMergeSubmissionMutation();
+  const [rejectSubmission, { isLoading: isRejecting }] = useRejectSubmissionMutation();
+  const [closeIssue, { isLoading: isClosingIssue }] = useCloseProjectIssueMutation();
+  const [createIssue, { isLoading: isCreatingIssue }] = useCreateProjectIssueMutation();
+
 
   const handleDevSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (!selectedRepo || !selectedBranch) return;
     setSubmittingDev(true);
     try {
-      await api.post("/submissions", {
+      await createSubmission({
         projectId: id,
         forkUrl: selectedRepo.html_url,
         branchName: selectedBranch,
         linkedIssue: selectedIssue?.number
-      });
+      }).unwrap();
       setDevSuccess(true);
-      queryClient.invalidateQueries({ queryKey: ["projectSubmissions", id] });
     } catch (err) {
-      setDevError(err.response?.data?.message || "Failed to submit contribution.");
+      setDevError(err.data?.message || "Failed to submit contribution.");
     } finally {
       setSubmittingDev(false);
     }
-  }, [id, selectedRepo, selectedBranch, selectedIssue, queryClient]);
+  }, [id, selectedRepo, selectedBranch, selectedIssue, createSubmission]);
+
 
   const handleTestSubmit = useCallback(async (e) => {
     e.preventDefault();
@@ -234,7 +225,8 @@ const ProjectDetails = () => {
     setSubmittingTest(true);
     try {
       const reviewTarget = selectedPR._id || selectedPR.number;
-      await api.post(`/submissions/${reviewTarget}/reviews`, {
+      await submitReview({
+        id: reviewTarget,
         projectId: id,
         feedback: testFeedback,
         outcome: testOutcome,
@@ -242,20 +234,18 @@ const ProjectDetails = () => {
         rating: testRating,
         bugsFound: testBugs.split("\n").filter(b => b.trim() !== ""),
         suggestions: testSuggestions
-      });
+      }).unwrap();
       setTestSuccess(true);
       setTimeout(() => {
         setTestSuccess(false);
         setSelectedPR(null);
-        queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
-        queryClient.invalidateQueries({ queryKey: ["projectSubmissions", id] });
       }, 3000);
     } catch (err) {
       setTestError("Failed to submit review.");
     } finally {
       setSubmittingTest(false);
     }
-  }, [id, selectedPR, testFeedback, testOutcome, checklist, testRating, testBugs, testSuggestions, queryClient]);
+  }, [id, selectedPR, testFeedback, testOutcome, checklist, testRating, testBugs, testSuggestions, submitReview]);
 
   const toggleChecklist = useCallback((index) => {
     setChecklist(prev => prev.map((item, idx) => 
@@ -263,60 +253,55 @@ const ProjectDetails = () => {
     ));
   }, []);
 
-  const mergeMutation = useMutation({
-    mutationFn: (submissionId) => api.post(`/submissions/${submissionId}/merge`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
-      queryClient.invalidateQueries({ queryKey: ["projectSubmissions", id] });
-    },
-  });
-
-  const rejectMutation = useMutation({
-    mutationFn: (submissionId) => api.post(`/submissions/${submissionId}/reject`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
-      queryClient.invalidateQueries({ queryKey: ["projectSubmissions", id] });
-    },
-  });
-
-  const handleMerge = useCallback((submissionId) => {
+  const handleMerge = useCallback(async (submissionId) => {
     if (window.confirm("Are you sure you want to merge this?")) {
-      mergeMutation.mutate(submissionId);
+      try {
+        await mergeSubmission({ id: submissionId, projectId: id }).unwrap();
+      } catch (err) {
+        console.error(err);
+      }
     }
-  }, [mergeMutation]);
+  }, [mergeSubmission, id]);
 
-  const handleReject = useCallback((submissionId) => {
+  const handleReject = useCallback(async (submissionId) => {
     if (window.confirm("Are you sure you want to reject this submission? This will close the PR.")) {
-      rejectMutation.mutate(submissionId);
+      try {
+        await rejectSubmission({ id: submissionId, projectId: id }).unwrap();
+      } catch (err) {
+        console.error(err);
+      }
     }
-  }, [rejectMutation]);
+  }, [rejectSubmission, id]);
 
-  const closeIssueMutation = useMutation({
-    mutationFn: (issueNumber) => api.patch(`/projects/${id}/issues/${issueNumber}/close`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
-    },
-  });
-
-  const createIssueMutation = useMutation({
-    mutationFn: (issueData) => api.post(`/projects/${id}/issues`, issueData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] });
-      setIsAddingIssue(false);
-      setIssueTitle("");
-      setIssueBody("");
-    },
-  });
-
-  const handleCloseIssue = useCallback((issueNumber) => {
+  const handleCloseIssue = useCallback(async (issueNumber) => {
     if (window.confirm(`Are you sure you want to close issue #${issueNumber}?`)) {
-      closeIssueMutation.mutate(issueNumber);
+      try {
+        await closeIssue({ id, issueNumber }).unwrap();
+      } catch (err) {
+        console.error(err);
+      }
     }
-  }, [closeIssueMutation]);
+  }, [closeIssue, id]);
 
   const [isAddingIssue, setIsAddingIssue] = useState(false);
   const [issueTitle, setIssueTitle] = useState("");
   const [issueBody, setIssueBody] = useState("");
+
+  const handleAddIssue = useCallback(async (e) => {
+    e.preventDefault();
+    try {
+      await createIssue({
+        id,
+        title: issueTitle,
+        body: issueBody
+      }).unwrap();
+      setIsAddingIssue(false);
+      setIssueTitle("");
+      setIssueBody("");
+    } catch (err) {
+      console.error(err);
+    }
+  }, [createIssue, id, issueTitle, issueBody]);
 
   const handleCreateIssue = (e) => {
     e.preventDefault();
@@ -391,10 +376,11 @@ const ProjectDetails = () => {
               </div>
             ) : (
               <div className="flex flex-wrap items-center gap-4">
-                <button 
-                  onClick={() => { if (!isAccepted) acceptMutation.mutate(); setActiveTab("dev_flow"); }}
+                <button
+                  onClick={() => { if (!isAccepted) acceptProjectHandler(); setActiveTab("dev_flow"); }}
                   className={`px-8 py-4 font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl flex items-center gap-2.5 transition-all shadow-xl ${activeTab === "dev_flow" ? "bg-indigo-600 text-white shadow-indigo-600/30" : "bg-indigo-600/10 text-indigo-600 border border-indigo-600/20 hover:bg-indigo-600/20"}`}
                 >
+
                   <Rocket size={16} /> Start Dev_Flow
                 </button>
                 <button 
@@ -509,13 +495,14 @@ const ProjectDetails = () => {
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-primary p-8 rounded-[2rem] text-primary-foreground shadow-2xl shadow-primary/20 space-y-6">
                   <h4 className="text-xl font-black tracking-tight leading-tight">Secure This <br />Mission Now.</h4>
                   <p className="text-primary-foreground/70 text-sm font-medium leading-relaxed">Accepting will fork the repository and initialize your personal development workspace.</p>
-                  <button 
-                    onClick={() => acceptMutation.mutate()}
-                    disabled={acceptMutation.isPending}
+                  <button
+                    onClick={() => acceptProjectHandler()}
+                    disabled={isAccepting}
                     className="w-full py-4 bg-white text-primary rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    {acceptMutation.isPending ? <RefreshCcw size={16} className="animate-spin" /> : <><Rocket size={16} /> Initialize Protocol</>}
+                    {isAccepting ? <RefreshCcw size={16} className="animate-spin" /> : <><Rocket size={16} /> Initialize Protocol</>}
                   </button>
+
                 </motion.div>
               )}
             </div>
@@ -592,8 +579,8 @@ const ProjectDetails = () => {
                               <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Description</label>
                               <textarea required rows={4} value={issueBody} onChange={(e)=>setIssueBody(e.target.value)} className="w-full p-5 bg-background border border-border/50 rounded-2xl font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Provide details, logs, or reproduction steps..." />
                             </div>
-                            <button type="submit" disabled={createIssueMutation.isPending} className="w-full btn-primary py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl">
-                              {createIssueMutation.isPending ? <RefreshCcw size={16} className="animate-spin" /> : 'Create GitHub Issue'}
+                            <button type="submit" disabled={isCreatingIssue} className="w-full btn-primary py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl">
+                              {isCreatingIssue ? <RefreshCcw size={16} className="animate-spin" /> : 'Create GitHub Issue'}
                             </button>
                          </form>
                        </motion.div>
@@ -634,7 +621,7 @@ const ProjectDetails = () => {
                              {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
                                <button 
                                  onClick={() => handleCloseIssue(issue.number)}
-                                 disabled={closeIssueMutation.isPending}
+                                 disabled={isClosingIssue}
                                  className="px-4 py-2 text-red-500 hover:bg-red-500/10 border border-red-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all opacity-0 group-hover:opacity-100"
                                >
                                  Close Issue
@@ -711,11 +698,11 @@ const ProjectDetails = () => {
                            
                            {['PENDING', 'UNDER_REVIEW', 'APPROVED', 'CHANGES_REQUESTED'].includes(sub.status) && sub.prNumber && (
                              <>
-                               <button onClick={() => handleMerge(sub._id)} disabled={mergeMutation.isPending} className="px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all">
-                                 {mergeMutation.isPending ? 'Merging...' : 'Merge PR'}
+                               <button onClick={() => handleMerge(sub._id)} disabled={isMerging} className="px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all">
+                                 {isMerging ? 'Merging...' : 'Merge PR'}
                                </button>
-                               <button onClick={() => handleReject(sub._id)} disabled={rejectMutation.isPending} className="px-6 py-2.5 bg-destructive text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-destructive/20 hover:scale-105 active:scale-95 transition-all">
-                                 {rejectMutation.isPending ? 'Rejecting...' : 'Reject PR'}
+                               <button onClick={() => handleReject(sub._id)} disabled={isRejecting} className="px-6 py-2.5 bg-destructive text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-destructive/20 hover:scale-105 active:scale-95 transition-all">
+                                 {isRejecting ? 'Rejecting...' : 'Reject PR'}
                                </button>
                              </>
                            )}
@@ -794,17 +781,18 @@ const ProjectDetails = () => {
                       <p className="text-lg font-medium text-foreground/70 leading-relaxed">
                         To begin this mission, initialize the secure protocol. We will automatically fork the target repository and establish a high-bandwidth link to your profile.
                       </p>
-                      <button 
-                        onClick={() => acceptMutation.mutate()} 
-                        disabled={acceptMutation.isPending}
+                      <button
+                        onClick={() => acceptProjectHandler()}
+                        disabled={isAccepting}
                         className="btn-primary py-5 px-12 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl shadow-primary/30 flex items-center gap-4 transition-all hover:scale-105 active:scale-95"
                       >
-                        {acceptMutation.isPending ? (
+                        {isAccepting ? (
                           <RefreshCcw size={18} className="animate-spin" />
                         ) : (
                           <><Rocket size={18} /> Initialize Fork Sequence</>
                         )}
                       </button>
+
                     </div>
                   ) : (
                     <div className="space-y-10">

@@ -1,6 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import api from "../lib/api";
 import { 
   Trophy, 
   Award, 
@@ -17,18 +15,14 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { EngineeringRadarChart } from "../components/EngineeringRadarChart";
+import { useGetUserProfileQuery } from "../store/api/usersApiSlice";
 
 const Profile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
 
-  const { data: profile, isLoading, error } = useQuery({
-    queryKey: ["profile", username],
-    queryFn: async () => {
-      const response = await api.get(`/users/profile/${username}`);
-      return response.data;
-    },
-    enabled: !!username
+  const { data: profile, isLoading, error } = useGetUserProfileQuery(username, {
+    skip: !username,
   });
 
   if (isLoading) return (

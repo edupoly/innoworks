@@ -112,6 +112,6 @@ const BranchPicker = memo(({ owner, repo, onSelect, selectedBranch }) => {
       </div>
     </div>
   );
-};
+});
 
 export default BranchPicker;
