@@ -206,7 +206,7 @@ const NotificationDropdown = () => {
             </div>
 
             <Link
-              to="/dashboard"
+              to="/dashboard?tab=timeline"
               onClick={() => setIsOpen(false)}
               className="block w-full py-2.5 text-center text-[10px] font-bold bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground border-t border-border/50 uppercase tracking-wider"
             >

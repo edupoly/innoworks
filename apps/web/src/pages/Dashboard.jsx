@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector, useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../lib/api";
 import { 
   Trophy, 
@@ -46,8 +46,22 @@ const item = {
 const Dashboard = () => {
   const { user: authUser, isLoading, error } = useMe();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("kanban"); // 'kanban', 'management', 'timeline'
+  const [activeTab, setActiveTab] = useState(tabParam || "kanban"); // 'kanban', 'management', 'timeline'
+
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
   const [editData, setEditData] = useState({ bio: "", skills: "" });
 
   const profile = authUser;
@@ -313,13 +327,14 @@ const Dashboard = () => {
           { id: "management", label: "Managed Nodes", icon: Layers },
           { id: "timeline", label: "Activity Stream", icon: History }
         ].map(tab => (
-          <button 
+          <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id)}
             className={`pb-5 border-b-2 flex items-center gap-3 px-2 transition-all shrink-0 ${
               activeTab === tab.id ? "border-primary text-primary opacity-100" : "border-transparent text-muted-foreground hover:text-foreground opacity-50"
             }`}
           >
+
             <tab.icon size={16} /> {tab.label}
           </button>
         ))}

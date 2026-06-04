@@ -81,7 +81,7 @@ app.use(cors({
       normalizedOrigin.endsWith('.up.railway.app') ||
       normalizedOrigin.includes('localhost')
     ) {
-      callback(null, true);
+      callback(null, origin); // Return actual origin instead of true
     } else {
       console.warn(`🔒 CORS Blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));

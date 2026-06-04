@@ -38,8 +38,11 @@ export const EngineeringRadarChart = ({ stats, size = 320 }) => {
   }).join(" ");
 
   return (
-    <div className="relative group p-6 bg-secondary/10 backdrop-blur-3xl rounded-[3rem] border border-border/50 shadow-2xl">
-      <svg width={size} height={size} className="drop-shadow-2xl overflow-visible">
+    <div className="relative group p-6 bg-secondary/10 backdrop-blur-3xl rounded-[3rem] border border-border/50 shadow-2xl w-full max-w-[450px] aspect-square flex items-center justify-center mx-auto">
+      <svg 
+        viewBox={`0 0 ${size} ${size}`} 
+        className="w-full h-full drop-shadow-2xl overflow-visible"
+      >
         {/* Grid circles */}
         {[20, 40, 60, 80, 100].map((r) => (
           <circle
