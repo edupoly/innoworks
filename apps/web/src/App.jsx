@@ -19,7 +19,7 @@ import ProjectDetails from "./pages/ProjectDetails";
 import CreateProject from "./pages/CreateProject";
 import { setCredentials, setLoading } from "./store/slices/authSlice";
 import api from "./lib/api.js";
-import { Github, Rocket, Search, ShieldCheck, Zap, Sparkles } from "lucide-react";
+import { Github, Rocket, Search, ShieldCheck, Zap, Sparkles, LayoutDashboard } from "lucide-react";
 import { motion } from "framer-motion";
 
 // Protected Route Component to prevent unauthorized access and handle loading
@@ -60,165 +60,180 @@ const Home = () => {
   };
 
   return (
-    <div className="flex flex-col items-center bg-background overflow-hidden selection:bg-primary/30">
-      {/* Dynamic Background Elements */}
+    <div className="flex flex-col bg-background overflow-hidden selection:bg-primary/20 scroll-smooth">
+      {/* Dynamic Ambient Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-            x: [0, 50, 0],
-            y: [0, 30, 0]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[120px]"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.3, 1],
-            rotate: [0, -45, 0],
-            x: [0, -30, 0],
-            y: [0, 50, 0]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[100px]"
-        />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-primary/5 rounded-full blur-[180px] animate-pulse"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-indigo-500/5 rounded-full blur-[160px] animate-pulse" style={{ animationDelay: '5s' }}></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.1] mix-blend-overlay"></div>
       </div>
 
       {/* Hero Section */}
-      <section className="w-full min-h-screen flex flex-col items-center justify-center text-center px-4 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
+      <section className="relative z-10 w-full min-h-screen flex flex-col items-center justify-center pt-20 pb-20 px-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, ease: [0, 0.71, 0.2, 1.01] }}
-          className="relative mb-12"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-10 inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-secondary/80 border border-border/50 text-primary text-[10px] font-black uppercase tracking-[0.25em] backdrop-blur-2xl shadow-xl shadow-black/5"
         >
-          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150"></div>
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            className="relative px-6 py-2 rounded-full bg-muted/50 border border-primary/20 text-primary text-xs font-black uppercase tracking-[0.2em] backdrop-blur-xl shadow-2xl flex items-center gap-3"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            <Sparkles size={14} className="fill-primary" />
-            <span>The Era of Elite Engineering</span>
-          </motion.div>
+          <Sparkles size={14} className="fill-primary" />
+          The Standard for Student Engineering
         </motion.div>
-        
+
         <motion.h1 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-7xl md:text-9xl font-black mb-10 tracking-tighter max-w-6xl leading-[0.85] text-foreground"
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="text-7xl md:text-[9rem] font-black mb-10 tracking-tighter leading-[0.85] text-foreground max-w-[90rem]"
         >
           Forge Your <br />
-          <span className="bg-clip-text text-transparent bg-gradient-to-br from-primary via-indigo-500 to-blue-600 drop-shadow-2xl">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-indigo-600 to-blue-500">
             Digital Legacy
           </span>
         </motion.h1>
-        
+
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-muted-foreground text-lg md:text-2xl max-w-3xl mb-16 leading-relaxed font-medium tracking-tight"
+          transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="text-muted-foreground text-lg md:text-2xl max-w-3xl mb-16 font-medium leading-relaxed tracking-tight"
         >
-          Innoworks is the premier orbital station for high-velocity developers. Solve mission-critical challenges, earn verified XP, and dominate the global leaderboard.
+          Innoworks is the premier orbital station for high-velocity developers. Solve mission-critical challenges, earn verified XP, and dominate the global rankings.
         </motion.p>
-        
+
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col sm:flex-row gap-6"
         >
-          <button
-            onClick={handleLogin}
-            className="group relative btn-primary flex items-center justify-center gap-4 px-12 py-6 text-lg font-black uppercase tracking-widest shadow-[0_20px_50px_rgba(99,102,241,0.3)] hover:shadow-primary/40 hover:-translate-y-1 transition-all rounded-[2rem] overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></div>
-            <Github size={24} className="group-hover:rotate-12 transition-transform" />
-            Connect GitHub
-          </button>
+          {isAuthenticated ? (
+            <Link
+              to="/dashboard"
+              className="group btn-primary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/30 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1"
+            >
+              <LayoutDashboard size={22} />
+              Command Center
+            </Link>
+          ) : (
+            <button
+              onClick={handleLogin}
+              className="group btn-primary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-primary/30 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1"
+            >
+              <Github size={22} className="group-hover:rotate-12 transition-transform duration-500" />
+              Connect GitHub
+            </button>
+          )}
+
           <Link
             to="/projects"
-            className="group btn-secondary flex items-center justify-center gap-4 px-12 py-6 text-lg font-black uppercase tracking-widest hover:-translate-y-1 transition-all rounded-[2rem] border border-border/50 bg-secondary/50 backdrop-blur-2xl"
+            className="group btn-secondary px-14 py-7 text-sm font-black uppercase tracking-widest rounded-[2rem] border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
           >
-            <Search size={24} className="group-hover:scale-110 transition-transform" />
+            <Search size={22} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
             Explore Missions
           </Link>
         </motion.div>
 
+        {/* Ecosystem Logos (Ultra Subtle) */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.4 }}
-          transition={{ duration: 2, delay: 1 }}
-          className="mt-32 flex flex-wrap justify-center gap-16"
+          transition={{ duration: 3, delay: 1 }}
+          className="mt-40 flex flex-wrap justify-center gap-20 text-muted-foreground grayscale hover:grayscale-0 transition-all duration-1000"
         >
-          <div className="flex items-center gap-3 font-black text-sm uppercase tracking-[0.3em]"><Github size={20} /> GitHub Ecosystem</div>
-          <div className="flex items-center gap-3 font-black text-sm uppercase tracking-[0.3em]"><ShieldCheck size={20} /> Zero Trust Security</div>
-          <div className="flex items-center gap-3 font-black text-sm uppercase tracking-[0.3em]"><Zap size={20} /> Real-time Sync</div>
-        </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div 
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-20"
-        >
-          <div className="w-1 h-12 bg-gradient-to-b from-primary to-transparent rounded-full"></div>
+          <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em]"><Github size={20} /> GitHub Verified</div>
+          <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em]"><ShieldCheck size={20} /> Zero-Trust Security</div>
+          <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em]"><Zap size={20} /> Real-Time Sync</div>
         </motion.div>
       </section>
 
-      {/* Features Grid */}
-      <section className="w-full py-40 px-4 relative z-10">
+      {/* Bento-style Features Section */}
+      <section className="relative z-10 w-full py-40 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 grid-rows-2 gap-8 h-[900px] md:h-[700px]">
+            {/* Feature 1: Large */}
+            <motion.div 
+              whileHover={{ y: -8 }}
+              className="md:col-span-2 row-span-1 bg-card border border-border/50 rounded-[3.5rem] p-16 shadow-2xl relative overflow-hidden group transition-all duration-500"
+            >
+              <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] translate-x-1/2 -translate-y-1/2 group-hover:bg-primary/10 transition-colors"></div>
+              <div className="w-20 h-20 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-10 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                <Rocket size={40} />
+              </div>
+              <h3 className="text-4xl font-black mb-6 tracking-tight">Orbital PR Velocity</h3>
+              <p className="text-muted-foreground text-xl max-w-lg font-medium leading-relaxed">
+                Our proprietary workflow engine synchronizes with your local Git environment to provide instant validation and seamless merges for all student-led missions.
+              </p>
+            </motion.div>
+
+            {/* Feature 2: Small (Vertical) */}
+            <motion.div 
+              whileHover={{ y: -8 }}
+              className="md:col-span-1 row-span-2 bg-primary p-16 rounded-[3.5rem] shadow-2xl shadow-primary/20 text-primary-foreground flex flex-col justify-end relative overflow-hidden group transition-all duration-500"
+            >
+              <div className="absolute top-12 right-12 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-transform duration-1000">
+                <Zap size={180} />
+              </div>
+              <h3 className="text-4xl font-black mb-6 tracking-tight">Quantum XP System</h3>
+              <p className="text-primary-foreground/90 text-xl font-medium leading-relaxed">
+                Every line of code is measured and rewarded. Accumulate verified reputation that translates directly into professional engineering credibility.
+              </p>
+            </motion.div>
+
+            {/* Feature 3: Small */}
+            <motion.div 
+              whileHover={{ y: -8 }}
+              className="md:col-span-1 row-span-1 bg-secondary/50 backdrop-blur-2xl p-16 rounded-[3.5rem] border border-border/50 shadow-2xl group flex flex-col justify-center transition-all duration-500"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
+                <ShieldCheck size={32} />
+              </div>
+              <h3 className="text-2xl font-black mb-4 tracking-tight">Immutable Trust</h3>
+              <p className="text-muted-foreground text-base font-medium leading-relaxed">
+                Cryptographically signed reviews ensure peer-to-peer verification remains the gold standard.
+              </p>
+            </motion.div>
+
+            {/* Feature 4: Small */}
+            <motion.div 
+              whileHover={{ y: -8 }}
+              className="md:col-span-1 row-span-1 bg-card border border-border/50 rounded-[3.5rem] p-16 shadow-2xl group flex flex-col justify-center transition-all duration-500"
+            >
+               <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
+                <Zap size={32} />
+              </div>
+              <h3 className="text-2xl font-black mb-4 tracking-tight">Live Intelligence</h3>
+              <p className="text-muted-foreground text-base font-medium leading-relaxed">
+                Real-time repository analytics provide deep insights into project health and contributor velocity.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Stats Section */}
+      <section className="relative z-10 w-full py-40 border-y border-border/50 bg-secondary/20 backdrop-blur-3xl overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 relative">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-16 text-center">
             {[
-              { 
-                icon: Rocket, 
-                title: "Orbital Velocity", 
-                desc: "Streamlined PR workflows and automated environment provisioning for high-impact contributors.",
-                color: "blue"
-              },
-              { 
-                icon: ShieldCheck, 
-                title: "Immutable Proof", 
-                desc: "Every contribution is cryptographiclly linked to your profile, earning you unforgeable reputation points.",
-                color: "indigo",
-                featured: true
-              },
-              { 
-                icon: Zap, 
-                title: "Quantum Sync", 
-                desc: "Real-time synchronization with GitHub hooks ensures your metrics are always up-to-the-millisecond.",
-                color: "violet"
-              }
-            ].map((f, i) => (
+              { label: "XP Distributed", value: "2.8M+" },
+              { label: "Missions Active", value: "850+" },
+              { label: "Peer Reviews", value: "15.2K" },
+              { label: "Top Percentile", value: "0.01%" }
+            ].map((s, i) => (
               <motion.div 
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.2 }}
-                whileHover={{ y: -10 }}
-                className={`group p-12 rounded-[3rem] border transition-all duration-500 shadow-2xl ${
-                  f.featured 
-                    ? "bg-primary text-primary-foreground border-primary shadow-primary/20" 
-                    : "bg-card/50 backdrop-blur-3xl border-white/5 hover:border-primary/20 shadow-black/20"
-                }`}
+                transition={{ duration: 0.8, delay: i * 0.1 }}
               >
-                <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center mb-10 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 ${
-                  f.featured ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
-                }`}>
-                  <f.icon size={40} />
-                </div>
-                <h3 className="text-3xl font-black mb-6 tracking-tight">{f.title}</h3>
-                <p className={`text-lg leading-relaxed font-medium ${f.featured ? "text-white/80" : "text-muted-foreground"}`}>
-                  {f.desc}
+                <p className="text-6xl font-black mb-3 tracking-tighter text-foreground">
+                  {s.value}
+                </p>
+                <div className="w-10 h-1 bg-primary/20 mx-auto mb-4 rounded-full"></div>
+                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-primary/70">
+                  {s.label}
                 </p>
               </motion.div>
             ))}
@@ -226,55 +241,43 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Social Proof / Stats */}
-      <section className="w-full py-32 border-y border-white/5 bg-white/[0.02] backdrop-blur-3xl relative z-10">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-          {[
-            { label: "XP Distributed", value: "2.4M+" },
-            { label: "Missions Completed", value: "12.8K" },
-            { label: "Active Nodes", value: "4.2K" },
-            { label: "Global Ranking", value: "#1" }
-          ].map((s, i) => (
-            <motion.div 
-              key={i}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-            >
-              <p className="text-4xl md:text-6xl font-black mb-2 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40">
-                {s.value}
-              </p>
-              <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-primary/60">
-                {s.label}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="w-full py-60 px-4 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="max-w-5xl mx-auto p-20 rounded-[4rem] bg-gradient-to-br from-primary to-indigo-700 text-center relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(99,102,241,0.5)]"
-        >
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay"></div>
+      {/* Final Call to Action */}
+      <section className="relative z-10 w-full py-64 px-6">
+        <div className="max-w-6xl mx-auto rounded-[5rem] bg-foreground p-24 text-center relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent"></div>
+          <div className="absolute top-0 right-0 w-[50%] h-full bg-primary/5 blur-[120px] rounded-full translate-x-1/2 scale-150"></div>
           <div className="relative z-10">
-            <h2 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter">Ready to Deploy?</h2>
-            <p className="text-white/80 text-xl mb-12 max-w-2xl mx-auto font-medium">
-              Join the elite ranks of student engineers building the next generation of software infrastructure.
+            <h2 className="text-6xl md:text-[8rem] font-black text-background mb-10 tracking-tighter leading-[0.85]">Ready to <br />Deploy?</h2>
+            <p className="text-background/60 text-2xl mb-16 max-w-3xl mx-auto font-medium leading-relaxed tracking-tight">
+              Join the elite ranks of student engineers building the next generation of software infrastructure. Your mission begins now.
             </p>
             <button
               onClick={handleLogin}
-              className="px-16 py-6 bg-white text-primary rounded-[2rem] text-xl font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl"
+              className="px-20 py-8 bg-primary text-primary-foreground rounded-[2.5rem] text-sm font-black uppercase tracking-[0.4em] hover:scale-105 active:scale-95 transition-all shadow-[0_30px_60px_rgba(99,102,241,0.4)] border border-white/10"
             >
-              Initialize Sync
+              Initialize Node
             </button>
           </div>
-        </motion.div>
+        </div>
       </section>
+
+      {/* Footer (Elite Minimalism) */}
+      <footer className="relative z-10 py-20 border-t border-border/50 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="flex items-center gap-4">
+             <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center font-black text-white text-sm shadow-xl shadow-primary/20">IW</div>
+             <span className="font-black tracking-tighter text-3xl">Innoworks</span>
+          </div>
+          <div className="flex flex-col items-center md:items-end gap-2">
+            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+              © 2026 Innoworks Orbital. All rights reserved.
+            </p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary/40">
+              Forged in the silicon fires for the engineering elite.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
@@ -296,9 +299,31 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/projects/:id" element={<ProjectDetails />} />
+          
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <Projects />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/leaderboard"
+            element={
+              <ProtectedRoute>
+                <Leaderboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedRoute>
+                <ProjectDetails />
+              </ProtectedRoute>
+            }
+          />
           
           <Route
             path="/projects/new"

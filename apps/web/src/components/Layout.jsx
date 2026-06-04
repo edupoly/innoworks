@@ -65,11 +65,11 @@ const Layout = () => {
       
       if (lastKeyPressed === "g") {
         let matched = false;
-        if (key === "p") {
+        if (key === "p" && isAuthenticated) {
           e.preventDefault();
           navigate("/projects");
           matched = true;
-        } else if (key === "l") {
+        } else if (key === "l" && isAuthenticated) {
           e.preventDefault();
           navigate("/leaderboard");
           matched = true;

@@ -32,7 +32,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
 
   // Fetch projects matching query
   useEffect(() => {
-    if (!query) {
+    if (!query || !isAuthenticated) {
       setProjects([]);
       return;
     }
@@ -50,13 +50,13 @@ const CommandPalette = ({ isOpen, onClose }) => {
     }, 300);
 
     return () => clearTimeout(delayDebounce);
-  }, [query]);
+  }, [query, isAuthenticated]);
 
   // Command palette navigation items
   const navigationItems = [
-    { name: "Explore Active Challenges", icon: Code2, action: () => navigate("/projects"), shortcut: "G P" },
-    { name: "Global Leaderboard", icon: Trophy, action: () => navigate("/leaderboard"), shortcut: "G L" },
     ...(isAuthenticated ? [
+      { name: "Explore Active Challenges", icon: Code2, action: () => navigate("/projects"), shortcut: "G P" },
+      { name: "Global Leaderboard", icon: Trophy, action: () => navigate("/leaderboard"), shortcut: "G L" },
       { name: "My Developer Dashboard", icon: LayoutDashboard, action: () => navigate("/dashboard"), shortcut: "G D" },
       { name: "Post a Challenge", icon: Terminal, action: () => navigate("/projects/new"), shortcut: "C P" },
       { name: "Sign Out", icon: LogOut, action: () => {

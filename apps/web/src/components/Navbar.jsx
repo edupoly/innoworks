@@ -249,7 +249,7 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden md:flex items-center gap-1 pl-8">
-          {navLinks.map((link) => (
+          {isAuthenticated && navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
