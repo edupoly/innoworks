@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { User } from '../models/User.js';
 import { sendNotification } from './notifications.js';
 
@@ -101,6 +102,16 @@ export const evaluateBadges = async (user) => {
       name: 'First Contribution',
       description: 'Awarded for solving your very first open-source issue.',
       icon: '🚀'
+    });
+  }
+
+  // Badge: Platform Pioneer (First Project Posted)
+  const projectCount = await mongoose.model('Project').countDocuments({ owner: user._id });
+  if (!hasBadge('Platform Pioneer') && projectCount >= 1) {
+    badgeUnlocked.push({
+      name: 'Platform Pioneer',
+      description: 'Awarded for posting your very first project challenge on the platform.',
+      icon: '🏗️'
     });
   }
 

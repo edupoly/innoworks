@@ -6,6 +6,7 @@ import { authenticate, verifyProjectOwnership } from '../middleware/auth.js';
 import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue } from '../lib/github.js';
 import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';
+import { evaluateBadges } from '../lib/gamification.js';
 import axios from 'axios';
 
 const router = Router();
@@ -313,6 +314,9 @@ router.post("/", authenticate, async (req, res) => {
       forks,
       openIssuesCount
     });
+
+    // Award Platform Pioneer badge if it's their first project
+    await evaluateBadges(user);
 
     res.status(201).json(project);
   } catch (error) {

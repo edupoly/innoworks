@@ -1,31 +1,33 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "../lib/api.js";
+import { useSelector, useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../lib/api";
 import { 
   Trophy, 
-  ChevronRight, 
+  Sparkles, 
+  Award, 
   Clock, 
-  Award,
+  ChevronRight, 
+  Plus, 
+  Github, 
+  Activity, 
   AlertCircle,
-  Trash2,
-  ExternalLink,
-  Github,
-  ShieldCheck,
-  Edit3,
-  X,
-  Save,
-  Layers,
-  Sparkles,
   Kanban,
-  KanbanSquare,
-  Activity,
   History,
+  Layers,
+  CheckCircle2,
+  X,
+  Edit3,
+  Save,
   Rocket,
-  Plus
+  Zap,
+  Star,
+  Terminal,
+  ShieldCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { useMe } from "../hooks/useAuth";
 
 const container = {
   hidden: { opacity: 0 },
@@ -57,87 +59,78 @@ const EngineeringRadarChart = ({ stats }) => {
     { label: "Consistency", value: consistencyScore },
     { label: "Communication", value: communicationScore },
     { label: "Perfection", value: perfectionScore },
-    { label: "Adaptability", value: adaptabilityScore }
+    { label: "Adaptability", value: adaptabilityScore },
   ];
 
-  // SVG parameters
-  const size = 300;
+  const size = 320;
   const center = size / 2;
-  const radius = 100;
-  const totalLevels = 4;
+  const radius = size * 0.35;
 
-  // Calculate coordinates for vertices
   const getCoordinates = (index, value) => {
-    const angle = (Math.PI * 2 / 6) * index - Math.PI / 2;
-    const distance = (value / 100) * radius;
-    const x = center + distance * Math.cos(angle);
-    const y = center + distance * Math.sin(angle);
-    return { x, y };
+    const angle = (Math.PI * 2 * index) / metrics.length - Math.PI / 2;
+    const r = (radius * value) / 100;
+    return {
+      x: center + r * Math.cos(angle),
+      y: center + r * Math.sin(angle),
+    };
   };
 
-  // Draw concentric polygon rings for grid
-  const rings = Array.from({ length: totalLevels }, (_, i) => {
-    const value = (100 / totalLevels) * (i + 1);
-    const points = metrics.map((_, idx) => {
-      const { x, y } = getCoordinates(idx, value);
-      return `${x},${y}`;
-    }).join(" ");
-    return points;
-  });
-
-  // Calculate coordinates for user stats polygon path
-  const userStatsPoints = metrics.map((m, idx) => {
-    const { x, y } = getCoordinates(idx, m.value);
-    return `${x},${y}`;
+  const points = metrics.map((m, i) => {
+    const coords = getCoordinates(i, m.value);
+    return `${coords.x},${coords.y}`;
   }).join(" ");
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-card border border-border/50 rounded-3xl relative">
-      <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Engineering Profile</h3>
-      
-      <svg width={size} height={size} className="overflow-visible">
-        {/* Ring Grid */}
-        {rings.map((points, idx) => (
-          <polygon
-            key={idx}
-            points={points}
+    <div className="relative group p-4 bg-white/[0.03] backdrop-blur-3xl rounded-[3rem] border border-white/5 shadow-2xl">
+      <svg width={size} height={size} className="drop-shadow-2xl">
+        {/* Grid circles */}
+        {[20, 40, 60, 80, 100].map((r) => (
+          <circle
+            key={r}
+            cx={center}
+            cy={center}
+            r={(radius * r) / 100}
             fill="none"
-            className="stroke-border"
-            strokeWidth={1}
+            stroke="currentColor"
+            className="text-white/5"
+            strokeWidth="1"
           />
         ))}
-
-        {/* Web Axes lines */}
-        {metrics.map((_, idx) => {
-          const outer = getCoordinates(idx, 100);
+        
+        {/* Axis lines */}
+        {metrics.map((_, i) => {
+          const coords = getCoordinates(i, 100);
           return (
             <line
-              key={idx}
+              key={i}
               x1={center}
               y1={center}
-              x2={outer.x}
-              y2={outer.y}
-              className="stroke-border"
-              strokeWidth={1}
+              x2={coords.x}
+              y2={coords.y}
+              stroke="currentColor"
+              className="text-white/5"
+              strokeWidth="1"
             />
           );
         })}
 
-        {/* User stats area */}
-        <polygon
-          points={userStatsPoints}
-          fill="rgba(99, 102, 241, 0.2)"
-          className="stroke-primary"
-          strokeWidth={2}
-          strokeLinejoin="round"
+        {/* Data polygon */}
+        <motion.polygon
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          points={points}
+          fill="rgba(99, 102, 241, 0.25)"
+          stroke="#6366f1"
+          strokeWidth="3"
+          className="transition-all duration-700 ease-out"
         />
 
-        {/* Score nodes */}
-        {metrics.map((m, idx) => {
-          const coord = getCoordinates(idx, m.value);
+        {/* Data points */}
+        {metrics.map((m, i) => {
+          const coord = getCoordinates(i, m.value);
           return (
             <circle
-              key={idx}
+              key={i}
               cx={coord.x}
               cy={coord.y}
               r={4}
@@ -148,22 +141,19 @@ const EngineeringRadarChart = ({ stats }) => {
         })}
 
         {/* Metric labels */}
-        {metrics.map((m, idx) => {
-          const textCoord = getCoordinates(idx, 120);
-          // Adjust alignments based on position
-          let textAnchor = "middle";
-          if (idx === 1 || idx === 2) textAnchor = "start";
-          if (idx === 4 || idx === 5) textAnchor = "end";
-
+        {metrics.map((m, i) => {
+          const coords = getCoordinates(i, 120);
+          const textAnchor = coords.x > center ? "start" : coords.x < center ? "end" : "middle";
           return (
             <text
-              key={idx}
-              x={textCoord.x}
-              y={textCoord.y + 4}
+              key={i}
+              x={coords.x}
+              y={coords.y}
               textAnchor={textAnchor}
-              className="text-[10px] font-black uppercase fill-muted-foreground select-none"
+              className="text-[10px] font-black uppercase tracking-widest fill-muted-foreground transition-colors group-hover:fill-primary"
+              dy="0.35em"
             >
-              {m.label} ({m.value})
+              {m.label}
             </text>
           );
         })}
@@ -172,30 +162,20 @@ const EngineeringRadarChart = ({ stats }) => {
   );
 };
 
-import { useMe } from "../hooks/useAuth";
-
 const Dashboard = () => {
-  const { user: authUser } = useMe();
+  const { user: authUser, isLoading, error } = useMe();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("kanban"); // 'kanban', 'timeline', 'badges'
+  const [activeTab, setActiveTab] = useState("kanban"); // 'kanban', 'management', 'timeline'
   const [editData, setEditData] = useState({ bio: "", skills: "" });
 
-  const { data: profile, isLoading, error } = useQuery({
-    queryKey: ["profile", authUser?.username],
-    queryFn: async () => {
-      if (!authUser?.username) return null;
-      const response = await api.get(`/users/profile/${authUser.username}`);
-      return response.data;
-    },
-    enabled: !!authUser?.username,
-  });
+  const profile = authUser;
 
   useEffect(() => {
     if (profile) {
       setEditData({
         bio: profile.bio || "",
-        skills: profile.skills?.join(", ") || ""
+        skills: profile.skills?.join(", ") || "",
       });
     }
   }, [profile]);
@@ -203,7 +183,7 @@ const Dashboard = () => {
   const updateProfileMutation = useMutation({
     mutationFn: (data) => api.put("/users/profile", data),
     onSuccess: () => {
-      queryClient.invalidateQueries(["profile", authUser?.username]);
+      queryClient.invalidateQueries(["me"]);
       setIsEditing(false);
     },
   });
@@ -211,7 +191,6 @@ const Dashboard = () => {
   const deleteProjectMutation = useMutation({
     mutationFn: (projectId) => api.delete(`/projects/${projectId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["profile", authUser?.username]);
       queryClient.invalidateQueries(["me"]);
     },
   });
@@ -228,7 +207,6 @@ const Dashboard = () => {
   };
 
   // Status mapping and statistics
-  const acceptedCount = profile?.acceptedProjects?.length || 0;
   const submissions = profile?.submissions || [];
   
   const pendingCount = submissions.filter(s => ['PENDING', 'TESTING', 'UNDER_REVIEW'].includes(s.status)).length;
@@ -242,72 +220,71 @@ const Dashboard = () => {
   ];
 
   // Organize Kanban Columns
-  // Col 1: Accepted / Planned (Accepted but not yet submitted)
   const submittedProjectIds = new Set(submissions.map(s => (s.project?._id || s.project)?.toString()));
   const acceptedProjectsDetails = (profile?.acceptedProjects || []).filter(p => p && !submittedProjectIds.has(p._id || p));
 
-  // Col 2: Active / Testing (PENDING, TESTING, UNDER_REVIEW)
   const reviewingSubmissions = submissions.filter(s => ['PENDING', 'TESTING', 'UNDER_REVIEW'].includes(s.status));
-
-  // Col 3: Changes Requested (CHANGES_REQUESTED)
   const changesRequiredSubmissions = submissions.filter(s => s.status === 'CHANGES_REQUESTED');
-
-  // Col 4: Completed / Merged (APPROVED, MERGED)
   const completedSubmissions = submissions.filter(s => ['APPROVED', 'MERGED'].includes(s.status));
-
-  // Col 5: Owned Projects
   const ownedProjects = profile?.ownedProjects || [];
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center py-32">
       <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p className="text-muted-foreground font-bold">Synchronizing engineering data...</p>
+      <p className="text-muted-foreground font-bold font-mono text-xs uppercase tracking-widest">Synchronizing engineering data...</p>
     </div>
   );
 
   if (error) return (
     <div className="py-20 text-center">
       <AlertCircle size={48} className="mx-auto text-destructive mb-4" />
-      <h2 className="text-2xl font-bold mb-2">Failed to load dashboard</h2>
-      <p className="text-muted-foreground">Please try refreshing the page.</p>
+      <h2 className="text-2xl font-black mb-2 tracking-tight">System Desync</h2>
+      <p className="text-muted-foreground mb-8">Failed to establish link with command center.</p>
+      <button onClick={() => window.location.reload()} className="btn-primary px-8">Reinitialize</button>
     </div>
   );
 
   return (
-    <div className="py-12 max-w-7xl mx-auto px-4">
+    <div className="py-12 max-w-7xl mx-auto px-4 md:px-6">
+      {/* Header Section */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12"
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16"
       >
-        <div className="flex items-center gap-5">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-primary to-blue-400 p-[3px] shadow-lg shadow-primary/20">
-            <div className="w-full h-full rounded-[21px] bg-background flex items-center justify-center overflow-hidden">
-               {profile?.avatarUrl ? (
-                 <img src={profile.avatarUrl} alt={profile.username} className="w-full h-full object-cover" />
-               ) : (
-                 <Activity size={32} className="text-primary" />
-               )}
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-tr from-primary via-indigo-500 to-blue-400 p-[3px] shadow-2xl shadow-primary/20 animate-glow">
+              <div className="w-full h-full rounded-[1.8rem] bg-background flex items-center justify-center overflow-hidden border-4 border-background">
+                 {profile?.avatarUrl ? (
+                   <img src={profile.avatarUrl} alt={profile.username} className="w-full h-full object-cover" />
+                 ) : (
+                   <Activity size={32} className="text-primary" />
+                 )}
+              </div>
+            </div>
+            <div className="absolute -bottom-2 -right-2 bg-primary text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-lg border-2 border-background">
+              LVL {profile?.level || 1}
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight">{profile?.username}'s Space</h1>
-            <p className="text-muted-foreground flex items-center gap-2 mt-1.5 font-bold uppercase text-xs tracking-wider">
+            <h1 className="text-4xl font-black tracking-tighter mb-2">Command Center</h1>
+            <p className="text-muted-foreground flex items-center gap-2 font-black uppercase text-[10px] tracking-[0.2em] opacity-70">
               <Award size={14} className="text-primary" />
-              <span>Level {profile?.level || 1} • {profile?.roles?.join(" & ") || 'Developer'}</span>
+              <span>{profile?.username} • Strategic Contributor</span>
             </p>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-4">
           <button 
             onClick={() => setIsEditing(!isEditing)}
-            className="btn-secondary px-5 py-2.5 flex items-center gap-2"
+            className="group btn-secondary px-6 py-3 flex items-center gap-3 rounded-2xl border border-border/50 bg-background/50 backdrop-blur-xl hover:border-primary/30 transition-all"
           >
-            {isEditing ? <><X size={18} /> Cancel</> : <><Edit3 size={18} /> Edit Profile</>}
+            {isEditing ? <><X size={18} /> Discard</> : <><Edit3 size={18} className="group-hover:rotate-12 transition-transform" /> Preferences</>}
           </button>
-          <Link to="/projects/new" className="btn-primary px-5 py-2.5 shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center gap-2">
-            <Plus size={18} /> Post Challenge
+          <Link to="/projects/new" className="btn-primary px-8 py-3 shadow-[0_15px_30px_-5px_rgba(99,102,241,0.3)] hover:shadow-primary/40 flex items-center gap-3 rounded-2xl font-black uppercase tracking-widest text-xs">
+            <Plus size={20} /> New Mission
           </Link>
         </div>
       </motion.header>
@@ -316,57 +293,51 @@ const Dashboard = () => {
       <AnimatePresence>
         {isEditing && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden mb-12"
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: "auto", marginBottom: "3rem" }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            className="overflow-hidden"
           >
-            <div className="bg-card border border-primary/20 rounded-3xl p-8 shadow-xl shadow-primary/5">
-              <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                <Edit3 size={20} className="text-primary" />
-                Customize Developer Profile
+            <div className="bg-card border border-primary/20 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden text-foreground">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+              <h2 className="text-2xl font-black mb-8 flex items-center gap-3 tracking-tight">
+                <Edit3 size={24} className="text-primary" />
+                Engineering Profile
               </h2>
-              <form onSubmit={handleUpdateProfile} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Professional Bio</label>
+              <form onSubmit={handleUpdateProfile} className="space-y-8 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Professional Summary</label>
                     <textarea
-                      rows={3}
-                      className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-medium resize-none text-sm"
-                      placeholder="Tell the community about yourself..."
+                      rows={4}
+                      className="w-full px-5 py-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all font-medium resize-none text-sm outline-none text-foreground"
+                      placeholder="High-level overview of your expertise..."
                       value={editData.bio}
                       onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Expertise & Skills</label>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Tech Stack (CSV)</label>
                     <input
                       type="text"
-                      className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm"
-                      placeholder="React, Node.js, GraphQL, etc. (comma separated)"
+                      className="w-full px-5 py-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all font-bold text-sm outline-none text-foreground"
+                      placeholder="React, Rust, AWS, etc."
                       value={editData.skills}
                       onChange={(e) => setEditData({ ...editData, skills: e.target.value })}
                     />
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase mt-2">Separate skills with commas</p>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase mt-2 opacity-50">Comma-separated values</p>
                   </div>
                 </div>
-                <div className="flex justify-end gap-3">
-                  <button 
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    className="px-6 py-2.5 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Discard
-                  </button>
+                <div className="flex justify-end gap-4">
                   <button 
                     disabled={updateProfileMutation.isLoading}
                     type="submit"
-                    className="btn-primary px-8 py-2.5 flex items-center gap-2 shadow-lg shadow-primary/20"
+                    className="btn-primary px-10 py-4 flex items-center gap-3 shadow-xl shadow-primary/20 rounded-2xl font-black uppercase tracking-widest text-xs"
                   >
                     {updateProfileMutation.isLoading ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
-                      <><Save size={18} /> Update Profile</>
+                      <><Save size={18} /> Synchronize Profile</>
                     )}
                   </button>
                 </div>
@@ -380,14 +351,15 @@ const Dashboard = () => {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-12 p-6 bg-muted/20 rounded-3xl border border-border/50"
+          className="mb-16 p-8 bg-white/[0.02] backdrop-blur-3xl rounded-[2.5rem] border border-white/5 relative group"
         >
-          <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">Professional Bio</h3>
-          <p className="text-base font-semibold leading-relaxed italic text-foreground/80">"{profile.bio}"</p>
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 rounded-full group-hover:bg-primary transition-colors"></div>
+          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-4">Transmission_Bio</h3>
+          <p className="text-xl font-bold leading-relaxed text-foreground/90 italic">"{profile.bio}"</p>
           {profile.skills?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-3 mt-8">
               {profile.skills.map((skill, i) => (
-                <span key={i} className="px-2.5 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-wider rounded-md border border-primary/20">
+                <span key={i} className="px-4 py-1.5 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl border border-primary/10">
                   {skill}
                 </span>
               ))}
@@ -397,9 +369,9 @@ const Dashboard = () => {
       )}
 
       {/* Ranks & Engineering Metrics Dashboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-16">
         {/* Stats Summary Grid */}
-        <div className="lg:col-span-2 flex flex-col justify-between gap-6">
+        <div className="lg:col-span-2 flex flex-col justify-between gap-10">
           <motion.div 
             variants={container}
             initial="hidden"
@@ -407,37 +379,37 @@ const Dashboard = () => {
             className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full"
           >
             {stats.map((stat, i) => (
-              <motion.div variants={item} key={i} className="bg-card p-6 rounded-3xl border border-border/50 shadow-sm flex items-center gap-5 group">
-                <div className={`w-14 h-14 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-115 transition-transform duration-300`}>
-                  <stat.icon size={26} strokeWidth={2.5} />
+              <motion.div variants={item} key={i} className="bg-card p-8 rounded-[2rem] border border-border/50 shadow-sm flex items-center gap-6 group hover:border-primary/20 transition-all">
+                <div className={`w-16 h-16 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
+                  <stat.icon size={28} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
-                  <p className="text-3xl font-black tracking-tight">{stat.value}</p>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1 opacity-60">{stat.label}</p>
+                  <p className="text-4xl font-black tracking-tighter text-foreground">{stat.value}</p>
                 </div>
               </motion.div>
             ))}
           </motion.div>
 
           {/* Badges Preview Section */}
-          <div className="bg-card p-6 rounded-3xl border border-border/50 w-full h-full flex flex-col justify-between">
+          <div className="bg-card/30 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/5 w-full h-full flex flex-col justify-between shadow-2xl">
             <div>
-              <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Achievements Unlocked</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-8">Achievements_Log</h3>
               {profile?.badges?.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
                   {profile.badges.map((badge, idx) => (
-                    <div key={idx} className="p-4 bg-muted/40 border border-border/50 rounded-2xl flex flex-col items-center text-center group hover:border-yellow-500/40 hover:bg-yellow-500/5 transition-all">
-                      <div className="w-10 h-10 rounded-full bg-yellow-500/10 text-yellow-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform text-lg">
-                        {badge.icon || <Trophy size={20} className="fill-yellow-500/10" />}
+                    <div key={idx} className="p-5 bg-white/[0.02] border border-white/5 rounded-3xl flex flex-col items-center text-center group hover:border-yellow-500/20 hover:bg-yellow-500/5 transition-all">
+                      <div className="w-12 h-12 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-xl shadow-inner">
+                        {badge.icon || <Trophy size={22} />}
                       </div>
-                      <p className="text-xs font-bold text-foreground mb-1">{badge.name}</p>
-                      <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">{badge.description}</p>
+                      <p className="text-xs font-black text-foreground mb-1 tracking-tight">{badge.name}</p>
+                      <p className="text-[9px] text-muted-foreground leading-relaxed font-bold uppercase tracking-tighter opacity-60">{badge.description}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="py-8 text-center text-muted-foreground text-xs font-semibold">
-                  Solve issues and review code to earn badges!
+                <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+                  Awaiting Achievement Unlocks...
                 </div>
               )}
             </div>
@@ -445,37 +417,28 @@ const Dashboard = () => {
         </div>
 
         {/* Interactive Engineering Radar Chart */}
-        <div className="w-full flex justify-center">
+        <div className="w-full flex justify-center lg:justify-end">
           <EngineeringRadarChart stats={profile} />
         </div>
       </div>
 
       {/* Tab Selectors */}
-      <div className="flex border-b border-border/50 mb-8 gap-6 text-sm font-bold select-none">
-        <button 
-          onClick={() => setActiveTab("kanban")}
-          className={`pb-4 border-b-2 flex items-center gap-2 px-1 ${
-            activeTab === "kanban" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Kanban size={16} /> My Contributions
-        </button>
-        <button 
-          onClick={() => setActiveTab("management")}
-          className={`pb-4 border-b-2 flex items-center gap-2 px-1 ${
-            activeTab === "management" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Layers size={16} /> Managed Projects
-        </button>
-        <button 
-          onClick={() => setActiveTab("timeline")}
-          className={`pb-4 border-b-2 flex items-center gap-2 px-1 ${
-            activeTab === "timeline" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <History size={16} /> Activity History
-        </button>
+      <div className="flex border-b border-border/50 mb-12 gap-10 text-xs font-black uppercase tracking-[0.2em] overflow-x-auto no-scrollbar pb-1">
+        {[
+          { id: "kanban", label: "Contribution Deck", icon: Kanban },
+          { id: "management", label: "Managed Nodes", icon: Layers },
+          { id: "timeline", label: "Activity Stream", icon: History }
+        ].map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`pb-5 border-b-2 flex items-center gap-3 px-2 transition-all shrink-0 ${
+              activeTab === tab.id ? "border-primary text-primary opacity-100" : "border-transparent text-muted-foreground hover:text-foreground opacity-50"
+            }`}
+          >
+            <tab.icon size={16} /> {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Tabs Content */}
@@ -483,129 +446,153 @@ const Dashboard = () => {
         {activeTab === "kanban" && (
           <motion.div
             key="kanban"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            exit={{ opacity: 0, y: -20 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
           >
             {/* Column 1: Planned / Accepted */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Accepted Challenge</span>
-                <span className="text-[10px] font-black bg-muted text-foreground px-2 py-0.5 rounded-full">{acceptedProjectsDetails.length}</span>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-muted animate-pulse"></div>
+                  Accepted
+                </span>
+                <span className="text-[9px] font-black bg-muted text-foreground px-2.5 py-1 rounded-lg border border-border/50">{acceptedProjectsDetails.length}</span>
               </div>
-              <div className="space-y-3.5">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
                 {acceptedProjectsDetails.length > 0 ? (
                   acceptedProjectsDetails.map((project) => (
-                    <div key={project._id || project} className="bg-card p-5 border border-border/50 rounded-2xl space-y-4 hover:border-primary/40 transition-colors group">
-                      <p className="font-bold text-sm leading-relaxed group-hover:text-primary transition-colors">{project.title || "Challenge"}</p>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-orange-500 font-bold bg-orange-500/5 px-2 py-0.5 rounded border border-orange-500/10">{project.bounty || 100} XP</span>
-                        <Link to={`/projects/${project._id || project}`} className="font-black uppercase tracking-wider text-primary hover:underline flex items-center gap-0.5">
-                          Start <ChevronRight size={10} />
+                    <motion.div 
+                      whileHover={{ y: -5 }}
+                      key={project._id || project} 
+                      className="bg-card p-6 border border-border/50 rounded-3xl space-y-6 hover:border-primary/40 transition-all group shadow-xl hover:shadow-primary/5"
+                    >
+                      <p className="font-black text-sm leading-tight group-hover:text-primary transition-colors tracking-tight text-foreground">{project.title || "Elite Mission"}</p>
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-primary font-black bg-primary/5 px-3 py-1.5 rounded-xl border border-primary/10 tracking-widest uppercase">{project.difficulty || 'Easy'}</span>
+                        <Link to={`/projects/${project._id || project}`} className="font-black uppercase tracking-[0.2em] text-primary hover:underline flex items-center gap-1.5 group/btn">
+                          Execute <ChevronRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
                         </Link>
                       </div>
-                    </div>
+                    </motion.div>
                   ))
                 ) : (
-                  <div className="py-8 text-center text-muted-foreground text-xs border-2 border-dashed border-border rounded-2xl bg-muted/10 font-semibold">
-                    No active challenges.
+                  <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-2 border-dashed border-border rounded-3xl opacity-30">
+                    Station_Idle
                   </div>
                 )}
               </div>
             </div>
 
             {/* Column 2: In Review / Testing */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                <span className="text-xs font-black uppercase tracking-widest text-blue-500">In Review & Tests</span>
-                <span className="text-[10px] font-black bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full">{reviewingSubmissions.length}</span>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  Testing
+                </span>
+                <span className="text-[9px] font-black bg-blue-500/10 text-blue-500 px-2.5 py-1 rounded-lg border border-blue-500/20">{reviewingSubmissions.length}</span>
               </div>
-              <div className="space-y-3.5">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
                 {reviewingSubmissions.length > 0 ? (
                   reviewingSubmissions.map((sub) => (
-                    <div key={sub._id} className="bg-card p-5 border border-border/50 rounded-2xl space-y-4">
+                    <motion.div 
+                      whileHover={{ y: -5 }}
+                      key={sub._id} 
+                      className="bg-card p-6 border border-border/50 rounded-3xl space-y-6 hover:border-blue-500/40 transition-all shadow-xl hover:shadow-blue-500/5"
+                    >
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded border border-blue-500/20">{sub.status}</span>
-                        <span className="text-[10px] font-bold text-muted-foreground">{new Date(sub.createdAt).toLocaleDateString()}</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-blue-500/10 text-blue-500 rounded-lg border border-blue-500/20">{sub.status}</span>
+                        <span className="text-[9px] font-black text-muted-foreground opacity-50">{new Date(sub.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <p className="font-bold text-sm leading-relaxed">{sub.project?.title || "Project Solution"}</p>
-                      <div className="flex items-center gap-2">
+                      <p className="font-black text-sm leading-tight tracking-tight text-foreground">{sub.project?.title || "Quantum Module"}</p>
+                      <div className="flex items-center gap-3">
                         {sub.prNumber && (
-                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[10px] font-black text-muted-foreground hover:text-foreground flex items-center gap-1 bg-muted px-2.5 py-1 rounded border border-border">
+                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-xl border border-border">
                             <Github size={12} /> PR #{sub.prNumber}
                           </a>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   ))
                 ) : (
-                  <div className="py-8 text-center text-muted-foreground text-xs border-2 border-dashed border-border rounded-2xl bg-muted/10 font-semibold">
-                    No active reviews.
+                  <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-2 border-dashed border-border rounded-3xl opacity-30">
+                    No_Active_Reviews
                   </div>
                 )}
               </div>
             </div>
 
             {/* Column 3: Changes Requested */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                <span className="text-xs font-black uppercase tracking-widest text-orange-500">Action Required</span>
-                <span className="text-[10px] font-black bg-orange-500/10 text-orange-500 px-2 py-0.5 rounded-full">{changesRequiredSubmissions.length}</span>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                  Actions
+                </span>
+                <span className="text-[9px] font-black bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-lg border border-orange-500/20">{changesRequiredSubmissions.length}</span>
               </div>
-              <div className="space-y-3.5">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
                 {changesRequiredSubmissions.length > 0 ? (
                   changesRequiredSubmissions.map((sub) => (
-                    <div key={sub._id} className="bg-card p-5 border border-orange-500/30 dark:border-orange-500/20 rounded-2xl space-y-4">
+                    <motion.div 
+                      whileHover={{ y: -5 }}
+                      key={sub._id} 
+                      className="bg-card p-6 border border-orange-500/30 rounded-3xl space-y-6 hover:border-orange-500/50 transition-all shadow-xl hover:shadow-orange-500/5"
+                    >
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-orange-500/10 text-orange-500 rounded border border-orange-500/20">Refactor</span>
-                        <span className="text-[10px] font-bold text-muted-foreground">{new Date(sub.createdAt).toLocaleDateString()}</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-orange-500/10 text-orange-500 rounded-lg border border-orange-500/20">Refactor</span>
+                        <AlertCircle size={14} className="text-orange-500" />
                       </div>
-                      <p className="font-bold text-sm leading-relaxed">{sub.project?.title || "Project Solution"}</p>
-                      <div className="flex justify-between items-center text-[10px] pt-1">
-                        <a href={sub.prUrl} target="_blank" rel="noreferrer" className="font-black text-primary hover:underline flex items-center gap-0.5">
-                          View Feedback <ExternalLink size={10} />
-                        </a>
-                        <Link to={`/projects/${sub.project?._id}`} className="text-muted-foreground hover:text-foreground font-bold">Resubmit</Link>
-                      </div>
-                    </div>
+                      <p className="font-black text-sm leading-tight tracking-tight text-foreground">{sub.project?.title || "Code Module"}</p>
+                      <Link to={`/projects/${sub.project?._id}`} className="block text-center w-full py-3 bg-orange-500/10 text-orange-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-orange-500 hover:text-white transition-all">
+                        Fix Discrepancies
+                      </Link>
+                    </motion.div>
                   ))
                 ) : (
-                  <div className="py-8 text-center text-muted-foreground text-xs border-2 border-dashed border-border rounded-2xl bg-muted/10 font-semibold">
-                    No actions pending.
+                  <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-2 border-dashed border-border rounded-3xl opacity-30">
+                    All_Systems_Nominal
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Column 4: Completed / Merged */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                <span className="text-xs font-black uppercase tracking-widest text-emerald-500">Merged / Completed</span>
-                <span className="text-[10px] font-black bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full">{completedSubmissions.length}</span>
+            {/* Column 4: Merged / Completed */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                  Deployed
+                </span>
+                <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-lg border border-emerald-500/20">{completedSubmissions.length}</span>
               </div>
-              <div className="space-y-3.5">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
                 {completedSubmissions.length > 0 ? (
                   completedSubmissions.map((sub) => (
-                    <div key={sub._id} className="bg-card p-5 border border-emerald-500/20 rounded-2xl space-y-4 hover:border-emerald-500/40 transition-colors group">
+                    <motion.div 
+                      whileHover={{ y: -5 }}
+                      key={sub._id} 
+                      className="bg-card p-6 border border-emerald-500/30 rounded-3xl space-y-6 hover:border-emerald-500/50 transition-all shadow-xl hover:shadow-emerald-500/5"
+                    >
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 rounded border border-emerald-500/20">{sub.status}</span>
-                        <span className="text-[10px] font-bold text-muted-foreground">{new Date(sub.createdAt).toLocaleDateString()}</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20">Archived</span>
+                        <CheckCircle2 size={14} className="text-emerald-500" />
                       </div>
-                      <p className="font-bold text-sm leading-relaxed group-hover:text-emerald-500 transition-colors">{sub.project?.title || "Project Solution"}</p>
-                      <div className="flex items-center justify-between text-[11px] pt-1">
-                        <span className="text-emerald-600 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">+200 XP Bounty</span>
-                        {sub.prNumber && (
-                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground">
-                            <Github size={14} />
-                          </a>
-                        )}
+                      <p className="font-black text-sm leading-tight tracking-tight text-foreground">{sub.project?.title || "Project Solution"}</p>
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="flex -space-x-2">
+                           <div className="w-6 h-6 rounded-full bg-primary border-2 border-background"></div>
+                           <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-background"></div>
+                        </div>
+                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">+200 XP Earned</span>
                       </div>
-                    </div>
+                    </motion.div>
                   ))
                 ) : (
-                  <div className="py-8 text-center text-muted-foreground text-xs border-2 border-dashed border-border rounded-2xl bg-muted/10 font-semibold">
-                    No solutions completed.
+                  <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-2 border-dashed border-border rounded-3xl opacity-30">
+                    Mission_Pending
                   </div>
                 )}
               </div>
@@ -616,86 +603,97 @@ const Dashboard = () => {
         {activeTab === "management" && (
           <motion.div
             key="management"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="space-y-4 max-w-2xl"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            <div className="flex items-center justify-between pb-2 border-b border-border/50">
-              <span className="text-xs font-black uppercase tracking-widest text-primary">Managed Challenges</span>
-              <span className="text-[10px] font-black bg-primary/10 text-primary px-2 py-0.5 rounded-full">{ownedProjects.length}</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {ownedProjects.length > 0 ? (
-                ownedProjects.map((project) => (
-                  <div key={project._id} className="bg-card p-6 border border-primary/20 rounded-2xl space-y-4 group relative">
-                    <div className="flex justify-between items-start">
-                      <Link to={`/projects/${project._id}`} className="font-bold text-base leading-relaxed hover:text-primary transition-colors line-clamp-2">{project.title}</Link>
-                      <button 
-                        onClick={() => handleDeleteProject(project._id)}
-                        className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                        title="Delete Project"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+            {ownedProjects.length > 0 ? (
+              ownedProjects.map((project) => (
+                <div key={project._id} className="bg-card border border-border/50 rounded-3xl p-8 space-y-6 hover:border-primary/30 transition-all shadow-xl">
+                  <div className="flex justify-between items-start">
+                    <div className="p-3 bg-primary/5 rounded-2xl">
+                      <Terminal size={24} className="text-primary" />
                     </div>
-                    <div className="flex items-center justify-between text-xs pt-2">
-                      <span className="text-muted-foreground font-black uppercase tracking-widest">{project.difficulty}</span>
-                      <Link to={`/projects/${project._id}`} className="btn-primary py-2 px-4 text-[10px] font-black uppercase tracking-wider">Manage Submissions</Link>
+                    <div className="flex gap-2">
+                       <button 
+                         onClick={() => navigate(`/projects/${project._id}`)}
+                         className="p-2 rounded-xl bg-muted/50 text-muted-foreground hover:text-primary transition-colors"
+                       >
+                         <Edit3 size={18} />
+                       </button>
+                       <button 
+                         onClick={() => handleDeleteProject(project._id)}
+                         className="p-2 rounded-xl bg-muted/50 text-muted-foreground hover:text-red-500 transition-colors"
+                       >
+                         <X size={18} />
+                       </button>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="col-span-full py-12 text-center text-muted-foreground text-sm border-2 border-dashed border-border rounded-2xl bg-muted/10 font-semibold">
-                  No challenges posted yet.
+                  <div>
+                    <h3 className="text-xl font-black mb-2 tracking-tight text-foreground">{project.title}</h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2 font-medium leading-relaxed">{project.description}</p>
+                  </div>
+                  <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        <Activity size={12} className="text-blue-500" />
+                        {project.contributors?.length || 0} Nodes
+                      </div>
+                    </div>
+                    <Link to={`/projects/${project._id}`} className="btn-secondary px-4 py-2 text-[10px] font-black uppercase rounded-xl">
+                      Manage Briefing
+                    </Link>
+                  </div>
                 </div>
-              )}
-            </div>
+              ))
+            ) : (
+              <div className="col-span-full py-20 text-center border-2 border-dashed border-border rounded-[3rem] bg-muted/5">
+                <ShieldCheck size={40} className="mx-auto text-muted-foreground/30 mb-4" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">No Nodes Under Management</p>
+              </div>
+            )}
           </motion.div>
         )}
 
         {activeTab === "timeline" && (
           <motion.div
             key="timeline"
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="bg-card p-8 rounded-3xl border border-border/50 space-y-6"
+            exit={{ opacity: 0, y: -20 }}
+            className="max-w-3xl mx-auto w-full space-y-6"
           >
-            <h3 className="text-base font-bold flex items-center gap-2 border-b border-border/50 pb-4">
-              <Activity size={18} className="text-primary" />
-              Activity Feed & Timelines
-            </h3>
-
             {submissions.length > 0 ? (
-              <div className="relative border-l border-border pl-6 space-y-8 ml-3 py-2">
-                {submissions.map((sub) => (
-                  <div key={sub._id} className="relative">
-                    {/* Ring timeline bullet */}
-                    <div className="absolute -left-[31px] top-1.5 w-4.5 h-4.5 rounded-full bg-background border-4 border-primary shadow-sm" />
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-foreground">{sub.project?.title || "Open Source Solution"}</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-border" />
-                        <span className="text-[10px] font-bold text-muted-foreground">{new Date(sub.createdAt).toLocaleString()}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground font-semibold leading-relaxed">
-                        Solution branch "{sub.branchName}" validated and raised PR. Status is currenty{" "}
-                        <span className="font-bold text-primary">{sub.status}</span>.
-                      </p>
-                      {sub.testOutput && (
-                        <pre className="mt-3 p-4 bg-muted/50 border border-border/50 text-[10px] font-mono leading-relaxed text-muted-foreground rounded-xl max-w-xl max-h-[100px] overflow-y-auto">
-                          {sub.testOutput}
-                        </pre>
-                      )}
+              submissions.map((sub, idx) => (
+                <div key={sub._id} className="relative pl-10 pb-8 last:pb-0 group">
+                  {idx !== submissions.length - 1 && (
+                    <div className="absolute left-[11px] top-10 bottom-0 w-0.5 bg-border/50 group-hover:bg-primary/30 transition-colors"></div>
+                  )}
+                  <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-background border-2 border-primary flex items-center justify-center z-10 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                  </div>
+                  <div className="bg-card border border-border/50 rounded-3xl p-6 hover:border-primary/20 transition-all shadow-xl shadow-black/5">
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10">
+                        {sub.status.replace('_', ' ')}
+                      </span>
+                      <span className="text-[10px] font-bold text-muted-foreground opacity-50">{new Date(sub.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <p className="font-bold text-base mb-2 text-foreground">{sub.project?.title || "Project Solution"}</p>
+                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-4">Transmission ID: {sub._id.slice(-8)}</p>
+                    <div className="flex items-center gap-3">
+                       <a href={sub.prUrl} target="_blank" rel="noreferrer" className="btn-secondary px-4 py-2 text-[10px] font-black uppercase rounded-xl flex items-center gap-2">
+                         <Github size={12} /> View Source
+                       </a>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))
             ) : (
-              <div className="py-12 text-center text-muted-foreground text-sm font-semibold">
-                No activity logs available yet. Accept a challenge!
+              <div className="py-20 text-center border-2 border-dashed border-border rounded-[3rem] bg-muted/5">
+                <History size={40} className="mx-auto text-muted-foreground/30 mb-4" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Awaiting Data Streams</p>
               </div>
             )}
           </motion.div>

@@ -42,6 +42,34 @@ const ProjectDetails = () => {
   const { user: authUser } = useMe();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  // 1. Fetch live repository intelligence using high-performance GraphQL endpoint
+  const { data: intelligence, isLoading: loadingIntel, error: intelError } = useQuery({
+    queryKey: ["projectIntelligence", id],
+    queryFn: async () => {
+      const response = await api.get(`/projects/${id}/intelligence`);
+      return response.data;
+    },
+    refetchInterval: 60000 // Refetch every minute
+  });
+
+  // 2. Fetch basic project details
+  const { data: project, isLoading: loadingProject } = useQuery({
+    queryKey: ["project", id],
+    queryFn: async () => {
+      const response = await api.get(`/projects/${id}`);
+      return response.data;
+    },
+  });
+
+  // 3. Fetch submissions for this project
+  const { data: projectSubmissions } = useQuery({
+    queryKey: ["projectSubmissions", id],
+    queryFn: async () => {
+      const response = await api.get(`/submissions/project/${id}`);
+      return response.data;
+    },
+  });
   
   // Navigation tabs
   const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'stats', 'dev_flow', 'test_flow'
@@ -131,34 +159,6 @@ const ProjectDetails = () => {
       closeIssueMutation.mutate(issueNumber);
     }
   };
-
-  // 1. Fetch live repository intelligence using high-performance GraphQL endpoint
-  const { data: intelligence, isLoading: loadingIntel, error: intelError } = useQuery({
-    queryKey: ["projectIntelligence", id],
-    queryFn: async () => {
-      const response = await api.get(`/projects/${id}/intelligence`);
-      return response.data;
-    },
-    refetchInterval: 60000 // Refetch every minute
-  });
-
-  // 2. Fetch basic project details
-  const { data: project, isLoading: loadingProject } = useQuery({
-    queryKey: ["project", id],
-    queryFn: async () => {
-      const response = await api.get(`/projects/${id}`);
-      return response.data;
-    },
-  });
-
-  // 3. Fetch submissions for this project
-  const { data: projectSubmissions } = useQuery({
-    queryKey: ["projectSubmissions", id],
-    queryFn: async () => {
-      const response = await api.get(`/submissions/project/${id}`);
-      return response.data;
-    },
-  });
 
   const activeSubmissions = projectSubmissions?.filter(s => s.status !== 'MERGED' && s.status !== 'REJECTED') || [];
   const submissionHistory = projectSubmissions?.filter(s => s.status === 'MERGED' || s.status === 'REJECTED') || [];

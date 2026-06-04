@@ -3,6 +3,7 @@ import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
 import { Project } from '../models/Project.js';
+import { Submission } from '../models/Submission.js';
 import { authenticate } from '../middleware/auth.js';
 import { getRedisConnection } from '../lib/redis.js';
 
@@ -34,13 +35,47 @@ router.get("/me", authenticate, async (req, res) => {
     const user = await User.findById(req.user.userId).select("-githubAccessToken").lean();
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Ensure unique accepted projects
-    if (user.acceptedProjects) {
-      user.acceptedProjects = Array.from(new Set(user.acceptedProjects.map(id => id.toString())));        
+    // Fetch user submissions with deep populated project info
+    const submissions = await Submission.find({ user: user._id })
+      .populate('project')
+      .sort({ createdAt: -1 });
+
+    // Unique submissions mapping
+    const uniqueSubmissions = [];
+    const seenProjects = new Set();
+
+    for (const sub of submissions) {
+      if (!sub.project) continue;
+      const projectId = sub.project._id.toString();
+      if (!seenProjects.has(projectId)) {
+        uniqueSubmissions.push(sub);
+        seenProjects.add(projectId);
+      }
     }
 
-    res.json(user);
+    // Projects owned by this user
+    const ownedProjects = await Project.find({ owner: user._id })
+      .sort({ createdAt: -1 });
+
+    // Ensure valid accepted projects and populate them
+    const uniqueAcceptedIds = Array.from(new Set(
+      (user.acceptedProjects || [])
+        .map(id => id.toString())
+    ));
+
+    const populatedAccepted = await Project.find({ 
+      _id: { $in: uniqueAcceptedIds },
+      status: 'OPEN'
+    }).select('title difficulty bounty repoUrl branchName');
+
+    res.json({
+      ...user,
+      submissions: uniqueSubmissions,
+      ownedProjects,
+      acceptedProjects: populatedAccepted
+    });
   } catch (error) {
+    console.error("❌ Auth Me Error:", error.message);
     res.status(500).json({ message: "Server error" });
   }
 });

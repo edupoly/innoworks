@@ -155,20 +155,22 @@ router.get("/profile/:username", async (req, res) => {
     const ownedProjects = await Project.find({ owner: user._id })
       .sort({ createdAt: -1 });
 
-    // Ensure valid accepted projects
-    const validProjects = await Project.find({ _id: { $in: user.acceptedProjects || [] } }).select('_id');
-    const validProjectIds = new Set(validProjects.map(p => p._id.toString()));
-    const uniqueAccepted = Array.from(new Set(
+    // Ensure valid accepted projects and populate them
+    const uniqueAcceptedIds = Array.from(new Set(
       (user.acceptedProjects || [])
         .map(id => id.toString())
-        .filter(id => validProjectIds.has(id))
     ));
+    
+    const populatedAccepted = await Project.find({ 
+      _id: { $in: uniqueAcceptedIds },
+      status: 'OPEN' // Only show open projects as "accepted"
+    }).select('title difficulty bounty repoUrl branchName');
 
     res.json({ 
       ...user, 
       submissions: uniqueSubmissions, 
       ownedProjects, 
-      acceptedProjects: uniqueAccepted 
+      acceptedProjects: populatedAccepted 
     });
   } catch (error) {
     console.error("❌ Fetch Public Profile Error:", error.message);
