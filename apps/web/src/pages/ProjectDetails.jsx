@@ -919,25 +919,18 @@ const ProjectDetails = () => {
                  <h3 className="text-sm font-black uppercase tracking-[0.3em]">Live Feed</h3>
                </div>
                
-               <div className="space-y-10 py-4">
-                 {[1, 2, 3].map((_, i) => (
-                   <div key={i} className="flex gap-6 relative">
-                     {i < 2 && <div className="absolute left-[15px] top-[40px] bottom-[-40px] w-px bg-border/50"></div>}
-                     <div className="w-8 h-8 rounded-full bg-muted border border-border/50 flex items-center justify-center shrink-0 relative z-10">
-                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                     </div>
-                     <div className="space-y-2 flex-1">
-                        <p className="text-sm font-bold leading-relaxed">System process initialized for mission <span className="text-primary">#{project?._id.slice(-6)}</span>.</p>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">T-minus {i*4}h ago • Log_Entry_{i+100}</p>
-                     </div>
-                   </div>
-                 ))}
+               <div className="space-y-10 py-10 text-center">
+                 <Activity size={48} className="mx-auto text-muted-foreground opacity-20 mb-4" />
+                 <div className="space-y-2">
+                   <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Aggregating Global Activity...</p>
+                   <p className="text-[10px] font-medium text-muted-foreground/60 max-w-xs mx-auto">No recent events detected for this mission. New commits and reviews will appear here in real-time.</p>
+                 </div>
                </div>
              </div>
              
              <div className="bg-primary/5 border border-primary/20 rounded-[2.5rem] p-8 space-y-6">
                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">System Notice</h4>
-                <p className="text-xs font-bold leading-relaxed text-foreground/70">Activity logs are currently being aggregated from GitHub Webhooks. Some high-latency events may take up to 300s to propagate.</p>
+                <p className="text-xs font-bold leading-relaxed text-foreground/70">Activity logs are aggregated from GitHub Webhooks. High-latency events may take up to 300s to propagate across the cluster.</p>
              </div>
           </motion.div>
         )}

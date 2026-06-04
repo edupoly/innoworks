@@ -173,7 +173,7 @@ const Leaderboard = () => {
   const restOfUsers = users?.slice(3) || [];
 
   return (
-    <div className="py-20 max-w-6xl mx-auto px-4 selection:bg-primary/30 relative noise-bg">
+    <div className="py-20 max-w-6xl mx-auto px-4 selection:bg-primary/30 relative">
       <div className="relative z-10">
         <div className="text-center mb-24">
           <motion.div
@@ -184,7 +184,7 @@ const Leaderboard = () => {
             <Zap size={12} className="fill-primary" />
             Live Analytics Sync
           </motion.div>
-          <h1 className="text-6xl md:text-[5rem] font-black tracking-tighter mb-8 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70 leading-[1]">
+          <h1 className="text-6xl md:text-[5rem] font-black tracking-tighter mb-8 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 leading-[1]">
             Engineering Elite
           </h1>
           <p className="text-muted-foreground text-xl max-w-xl mx-auto font-medium leading-relaxed">
@@ -193,7 +193,7 @@ const Leaderboard = () => {
         </div>
 
         <div className="flex justify-center mb-24">
-          <div className="bg-secondary/50 p-2 rounded-[2.5rem] flex gap-1.5 border border-border/50 backdrop-blur-2xl shadow-xl shadow-black/5">
+          <div className="bg-card/50 backdrop-blur-2xl p-2 rounded-[2.5rem] flex gap-1.5 border border-border/50 shadow-2xl shadow-black/5">
             {periods.map((p) => {
               const isSel = period === p.id;
               return (
@@ -202,8 +202,8 @@ const Leaderboard = () => {
                   onClick={() => setPeriod(p.id)}
                   className={`flex items-center gap-3 px-10 py-4 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${
                     isSel 
-                      ? "bg-background text-primary shadow-2xl shadow-primary/20 border border-primary/20" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      ? "bg-primary text-primary-foreground shadow-2xl shadow-primary/20 border border-primary/20" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                   }`}
                 >
                   <p.icon size={16} className={isSel ? "animate-pulse" : ""} />
