@@ -700,7 +700,7 @@ const ProjectDetails = () => {
                              </a>
                            )}
                            
-                           {sub.status === 'APPROVED' && (
+                           {['PENDING', 'UNDER_REVIEW', 'APPROVED', 'CHANGES_REQUESTED'].includes(sub.status) && sub.prNumber && (
                              <>
                                <button onClick={() => handleMerge(sub._id)} disabled={mergeMutation.isPending} className="px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all">
                                  {mergeMutation.isPending ? 'Merging...' : 'Merge PR'}
@@ -1275,7 +1275,31 @@ const ProjectDetails = () => {
                     </div>
                   </div>
 
-                  {/* PR Activity */}
+                  {/* Master Commit History */}
+                  <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+                    <div className="flex items-center gap-3 mb-10">
+                       <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><History size={18} /></div>
+                       <h3 className="text-sm font-black uppercase tracking-[0.3em]">Master Commit History</h3>
+                    </div>
+                    <div className="space-y-6">
+                      {intelligence?.commitAnalytics?.recentCommits?.length > 0 ? intelligence.commitAnalytics.recentCommits.slice(0, 10).map((commit, i) => (
+                        <div key={i} className="flex items-start gap-4 p-4 bg-muted/20 border border-border/50 rounded-2xl hover:border-primary/20 transition-all group">
+                          <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center font-mono text-[10px] font-bold text-primary border border-border/50 shrink-0 group-hover:scale-110 transition-transform">
+                            {commit.sha.substring(0, 7)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-foreground truncate">{commit.message}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">@{commit.author} • {new Date(commit.date).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                      )) : (
+                        <p className="text-xs font-bold text-muted-foreground text-center py-10 uppercase tracking-widest opacity-40">Scanning for commit records...</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* PR Activity History */}
                   <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full"></div>
                     <div className="flex items-center gap-3 mb-10">
