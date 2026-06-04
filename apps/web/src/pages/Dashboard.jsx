@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
+import { EngineeringRadarChart } from "../components/EngineeringRadarChart";
 
 const container = {
   hidden: { opacity: 0 },
@@ -40,126 +41,6 @@ const container = {
 const item = {
   hidden: { opacity: 0, y: 15 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 350, damping: 25 } }
-};
-
-// Custom SVG Radar Chart component for professional grade engineering metrics
-const EngineeringRadarChart = ({ stats }) => {
-  const {
-    collaborationScore = 0,
-    innovationScore = 0,
-    consistencyScore = 0,
-    communicationScore = 0,
-    perfectionScore = 0,
-    adaptabilityScore = 0
-  } = stats || {};
-
-  const metrics = [
-    { label: "Collaboration", value: collaborationScore },
-    { label: "Innovation", value: innovationScore },
-    { label: "Consistency", value: consistencyScore },
-    { label: "Communication", value: communicationScore },
-    { label: "Perfection", value: perfectionScore },
-    { label: "Adaptability", value: adaptabilityScore },
-  ];
-
-  const size = 320;
-  const center = size / 2;
-  const radius = size * 0.35;
-
-  const getCoordinates = (index, value) => {
-    const angle = (Math.PI * 2 * index) / metrics.length - Math.PI / 2;
-    const r = (radius * value) / 100;
-    return {
-      x: center + r * Math.cos(angle),
-      y: center + r * Math.sin(angle),
-    };
-  };
-
-  const points = metrics.map((m, i) => {
-    const coords = getCoordinates(i, m.value);
-    return `${coords.x},${coords.y}`;
-  }).join(" ");
-
-  return (
-    <div className="relative group p-4 bg-white/[0.03] backdrop-blur-3xl rounded-[3rem] border border-white/5 shadow-2xl">
-      <svg width={size} height={size} className="drop-shadow-2xl">
-        {/* Grid circles */}
-        {[20, 40, 60, 80, 100].map((r) => (
-          <circle
-            key={r}
-            cx={center}
-            cy={center}
-            r={(radius * r) / 100}
-            fill="none"
-            stroke="currentColor"
-            className="text-white/5"
-            strokeWidth="1"
-          />
-        ))}
-        
-        {/* Axis lines */}
-        {metrics.map((_, i) => {
-          const coords = getCoordinates(i, 100);
-          return (
-            <line
-              key={i}
-              x1={center}
-              y1={center}
-              x2={coords.x}
-              y2={coords.y}
-              stroke="currentColor"
-              className="text-white/5"
-              strokeWidth="1"
-            />
-          );
-        })}
-
-        {/* Data polygon */}
-        <motion.polygon
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          points={points}
-          fill="rgba(99, 102, 241, 0.25)"
-          stroke="#6366f1"
-          strokeWidth="3"
-          className="transition-all duration-700 ease-out"
-        />
-
-        {/* Data points */}
-        {metrics.map((m, i) => {
-          const coord = getCoordinates(i, m.value);
-          return (
-            <circle
-              key={i}
-              cx={coord.x}
-              cy={coord.y}
-              r={4}
-              className="fill-primary stroke-background"
-              strokeWidth={1.5}
-            />
-          );
-        })}
-
-        {/* Metric labels */}
-        {metrics.map((m, i) => {
-          const coords = getCoordinates(i, 120);
-          const textAnchor = coords.x > center ? "start" : coords.x < center ? "end" : "middle";
-          return (
-            <text
-              key={i}
-              x={coords.x}
-              y={coords.y}
-              textAnchor={textAnchor}
-              className="text-[10px] font-black uppercase tracking-widest fill-muted-foreground transition-colors group-hover:fill-primary"
-              dy="0.35em"
-            >
-              {m.label}
-            </text>
-          );
-        })}
-      </svg>
-    </div>
-  );
 };
 
 const Dashboard = () => {
@@ -245,7 +126,10 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="py-12 max-w-7xl mx-auto px-4 md:px-6">
+    <div className="py-20 max-w-7xl mx-auto px-4 md:px-6 relative selection:bg-primary/30">
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse"></div>
+      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px] -z-10 animate-pulse" style={{ animationDelay: '2s' }}></div>
+      
       {/* Header Section */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}

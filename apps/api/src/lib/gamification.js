@@ -8,14 +8,16 @@ export const XP_VALUES = {
   ISSUE_SOLVED: 50,
   PR_APPROVED: 100,
   PR_MERGED: 200,
-  TESTING_REVIEW: 30
+  TESTING_REVIEW: 30,
+  PROJECT_POSTED: 150
 };
 
 // Reputation score weights
 export const REPUTATION_WEIGHTS = {
   MERGED_PR: 50,
   APPROVED_PR: 20,
-  SUBMITTED_REVIEW: 10
+  SUBMITTED_REVIEW: 10,
+  POSTED_PROJECT: 30
 };
 
 /**
@@ -56,6 +58,10 @@ export const awardXP = async (userId, xpAmount, actionReason) => {
       user.innovationScore += 15;
       user.adaptabilityScore += 10;
       user.contributionStats.issuesCount += 1;
+    } else if (actionReason === 'PROJECT_POSTED') {
+      user.reputationScore += REPUTATION_WEIGHTS.POSTED_PROJECT;
+      user.innovationScore += 20;
+      user.communicationScore += 10;
     }
 
     if (actionReason === 'PR_MERGED' || actionReason === 'PR_APPROVED' || actionReason === 'PR_CREATED') {
@@ -149,6 +155,25 @@ export const evaluateBadges = async (user) => {
       name: 'Open Source Champion',
       description: 'A legendary leader of the Innoworks student community.',
       icon: '🏆'
+    });
+  }
+
+  // Badge 6: Bug Hunter
+  if (!hasBadge('Bug Hunter') && user.communicationScore >= 60 && user.adaptabilityScore >= 50) {
+    badgeUnlocked.push({
+      name: 'Bug Hunter',
+      description: 'Consistently identifying issues and providing quality feedback.',
+      icon: '🐛'
+    });
+  }
+
+  // Badge 7: Community Pillar
+  const reviewCount = await mongoose.model('Review').countDocuments({ reviewer: user._id });
+  if (!hasBadge('Community Pillar') && reviewCount >= 5) {
+    badgeUnlocked.push({
+      name: 'Community Pillar',
+      description: 'A dedicated peer reviewer helping others level up.',
+      icon: '🏛️'
     });
   }
 

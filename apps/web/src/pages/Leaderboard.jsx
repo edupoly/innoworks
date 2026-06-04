@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../lib/api.js";
-import { Trophy, Medal, Crown, TrendingUp, User, Calendar, Award } from "lucide-react";
+import { Trophy, Medal, Crown, TrendingUp, User, Calendar, Award, Star, Zap, Activity, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const Leaderboard = () => {
   const [period, setPeriod] = useState("all_time"); // 'all_time', 'weekly', 'monthly'
@@ -23,44 +24,96 @@ const Leaderboard = () => {
 
   if (isLoading) return (
     <div className="flex flex-col items-center justify-center py-32">
-      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p className="text-muted-foreground font-semibold">Calculating developer standings...</p>
+      <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"></div>
+      <p className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px] animate-pulse">Calculating developer standings...</p>
     </div>
   );
 
+  const topThree = users?.slice(0, 3) || [];
+  const restOfUsers = users?.slice(3) || [];
+
   return (
-    <div className="py-12 max-w-5xl mx-auto px-4">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-black tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground/90 to-primary">
-          Developer Standings
+    <div className="py-20 max-w-6xl mx-auto px-4 selection:bg-primary/30">
+      <div className="text-center mb-20 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -z-10"></div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-6"
+        >
+          <Zap size={12} className="fill-primary" />
+          Live Standings Sync
+        </motion.div>
+        <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/60">
+          Engineering Elite
         </h1>
-        <p className="text-muted-foreground text-base max-w-md mx-auto">
+        <p className="text-muted-foreground text-lg max-w-xl mx-auto font-medium leading-relaxed">
           Unlocking open source contribution leaderboards. See the top engineering minds of our student community.
         </p>
       </div>
 
       {/* Period Selection Tabs */}
-      <div className="flex justify-center mb-10">
-        <div className="bg-muted p-1 rounded-2xl flex gap-1 border border-border/40 select-none">
+      <div className="flex justify-center mb-20">
+        <div className="bg-muted/50 p-1.5 rounded-[2rem] flex gap-1 border border-border/40 backdrop-blur-xl">
           {periods.map((p) => {
             const isSel = period === p.id;
             return (
               <button
                 key={p.id}
                 onClick={() => setPeriod(p.id)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                className={`flex items-center gap-2.5 px-8 py-3.5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all duration-500 ${
                   isSel 
-                    ? "bg-background text-primary shadow-sm border border-border/50" 
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-background text-primary shadow-2xl shadow-primary/20 border border-primary/20" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
-                <p.icon size={13} />
+                <p.icon size={14} className={isSel ? "animate-pulse" : ""} />
                 {p.label}
               </button>
             );
           })}
         </div>
       </div>
+
+      {/* Podium Showcase */}
+      {topThree.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 items-end px-4">
+          {/* Rank 2 */}
+          {topThree[1] && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="order-2 md:order-1"
+            >
+              <PodiumCard user={topThree[1]} rank={2} color="text-slate-400" bgColor="bg-slate-400/10" borderColor="border-slate-400/20" />
+            </motion.div>
+          )}
+
+          {/* Rank 1 */}
+          {topThree[0] && (
+            <motion.div
+              initial={{ opacity: 0, scale: 1, y: 20 }}
+              animate={{ opacity: 1, scale: 1.05, y: 0 }}
+              className="order-1 md:order-2 z-10"
+            >
+              <PodiumCard user={topThree[0]} rank={1} color="text-yellow-500" bgColor="bg-yellow-500/10" borderColor="border-yellow-500/30" featured />
+            </motion.div>
+          )}
+
+          {/* Rank 3 */}
+          {topThree[2] && ( Rest of the card... )
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="order-3 md:order-3"
+            >
+              <PodiumCard user={topThree[2]} rank={3} color="text-amber-600" bgColor="bg-amber-600/10" borderColor="border-amber-600/20" />
+            </motion.div>
+          )}
+        </div>
+      )}
 
       {/* Rankings List */}
       <AnimatePresence mode="wait">
@@ -71,111 +124,149 @@ const Leaderboard = () => {
           exit={{ opacity: 0, y: -15 }}
           className="grid grid-cols-1 gap-4"
         >
-          {users?.map((user, index) => {
-            const isGold = index === 0;
-            const isSilver = index === 1;
-            const isBronze = index === 2;
-
-            return (
-              <div
-                key={user._id || user.id}
-                className={`bg-card rounded-2xl p-6 border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:scale-[1.005] hover:shadow-md ${
-                  isGold ? "border-yellow-500/35 bg-yellow-500/5 dark:bg-yellow-500/5" :
-                  isSilver ? "border-slate-400/30 bg-slate-400/5" :
-                  isBronze ? "border-amber-600/30 bg-amber-600/5" :
-                  "border-border/50"
-                }`}
-              >
-                <div className="flex items-center gap-6">
-                  <div className="w-8 text-xl font-black text-center shrink-0">
-                    {isGold ? (
-                      <Crown className="text-yellow-500 mx-auto fill-yellow-500/20" size={24} />
-                    ) : isSilver ? (
-                      <Medal className="text-muted-foreground mx-auto fill-slate-400/10" size={22} />
-                    ) : isBronze ? (
-                      <Medal className="text-amber-600 mx-auto fill-amber-600/10" size={22} />
-                    ) : (
-                      <span className="text-muted-foreground/40">{index + 1}</span>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-blue-400 p-[2px] shrink-0 shadow-sm">
-                      <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                        {user.avatarUrl ? (
-                          <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
-                        ) : (
-                          <User size={20} className="text-primary" />
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold flex items-center gap-1.5">
-                        {user.username}
-                        {user.badges?.length > 0 && (
-                          <span className="text-[9px] font-black uppercase bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded">
-                            {user.badges[0].icon || "🏆"} {user.badges[0].name}
-                          </span>
-                        )}
-                      </h3>
-                      <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground mt-1">
-                        <TrendingUp size={12} className="text-green-500" />
-                        <span>Level {user.level || 1} • {user.xp || 0} XP</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 sm:gap-8 justify-between sm:justify-end pl-14 sm:pl-0">
-                  <div className="text-right">
-                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Reputation</p>
-                    <p className="text-xl font-black text-primary">{user.reputationScore || 0}</p>
-                  </div>
-                  
-                  {period === 'all_time' && (
-                    <div className="hidden lg:grid grid-cols-6 gap-4 border-l border-border pl-8 text-[11px] font-bold text-center">
-                      <div className="w-10">
-                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Cons</p>
-                        <p className="font-extrabold">{user.consistencyScore || 0}%</p>
-                      </div>
-                      <div className="w-10">
-                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Perf</p>
-                        <p className="font-extrabold">{user.perfectionScore || 0}%</p>
-                      </div>
-                      <div className="w-10">
-                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Collab</p>
-                        <p className="font-extrabold">{user.collaborationScore || 0}%</p>
-                      </div>
-                      <div className="w-10">
-                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Comm</p>
-                        <p className="font-extrabold">{user.communicationScore || 0}%</p>
-                      </div>
-                      <div className="w-10">
-                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Adapt</p>
-                        <p className="font-extrabold">{user.adaptabilityScore || 0}%</p>
-                      </div>
-                      <div className="w-10">
-                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Inno</p>
-                        <p className="font-extrabold">{user.innovationScore || 0}%</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {restOfUsers.map((user, index) => (
+            <LeaderboardRow key={user._id || user.id} user={user} rank={index + 4} period={period} />
+          ))}
         </motion.div>
       </AnimatePresence>
 
       {(!users || users.length === 0) && (
-        <div className="text-center py-20 bg-muted/20 rounded-3xl border border-dashed border-border/50 max-w-lg mx-auto">
-          <Trophy size={48} className="mx-auto text-primary opacity-25 mb-4" />
-          <h2 className="text-lg font-bold mb-1">Standings list is empty</h2>
-          <p className="text-sm text-muted-foreground">Start contributing or checking submissions to register your score on the leaderboard!</p>
+        <div className="text-center py-32 bg-muted/20 rounded-[3rem] border border-dashed border-border/50 max-w-xl mx-auto backdrop-blur-sm">
+          <Trophy size={64} className="mx-auto text-primary opacity-20 mb-6" />
+          <h2 className="text-2xl font-black mb-2 tracking-tight">Standings Arena Empty</h2>
+          <p className="text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed">
+            The mission leaderboard is awaiting data. Start contributing or checking submissions to register your score!
+          </p>
         </div>
       )}
     </div>
   );
 };
+
+const PodiumCard = ({ user, rank, color, bgColor, borderColor, featured }) => (
+  <div className={`relative bg-card border ${borderColor} rounded-[3rem] p-10 text-center shadow-2xl transition-all hover:shadow-primary/5 group ${featured ? 'md:pb-16' : ''}`}>
+    {featured && <div className="absolute inset-x-0 -top-8 flex justify-center">
+      <div className="px-6 py-2 bg-yellow-500 text-black text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-2xl animate-bounce">Grand Champion</div>
+    </div>}
+    
+    <div className={`absolute -top-5 -left-5 w-12 h-12 ${bgColor} ${color} rounded-2xl flex items-center justify-center font-black text-xl border ${borderColor} shadow-xl backdrop-blur-xl rotate-[-12deg] group-hover:rotate-0 transition-transform duration-500`}>
+      #{rank}
+    </div>
+
+    <div className={`relative mx-auto w-32 h-32 rounded-[2.5rem] bg-gradient-to-tr from-primary to-blue-400 p-[3px] mb-8 group-hover:scale-110 transition-transform duration-500 shadow-2xl`}>
+      <div className="w-full h-full rounded-[2.3rem] bg-background flex items-center justify-center overflow-hidden">
+        {user.avatarUrl ? (
+          <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
+        ) : (
+          <User size={48} className="text-primary opacity-20" />
+        )}
+      </div>
+      <div className="absolute -bottom-2 -right-2 bg-background border border-border px-3 py-1 rounded-xl shadow-lg">
+        <span className="text-[10px] font-black text-primary">LVL {user.level}</span>
+      </div>
+    </div>
+
+    <h3 className="text-2xl font-black mb-2 tracking-tight group-hover:text-primary transition-colors">{user.username}</h3>
+    
+    <div className="flex flex-col items-center gap-4 mt-6">
+       <div className="px-4 py-1.5 bg-muted/50 rounded-full border border-border/50 flex items-center gap-2">
+         <Star size={12} className="text-yellow-500 fill-yellow-500" />
+         <span className="text-xs font-black uppercase tracking-widest">{user.xp} XP</span>
+       </div>
+       
+       <div className="grid grid-cols-2 gap-4 w-full pt-6 border-t border-border/50">
+          <div className="text-center">
+            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Reputation</p>
+            <p className="text-lg font-black text-primary">{user.reputationScore}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Badges</p>
+            <p className="text-lg font-black text-foreground">{user.badges?.length || 0}</p>
+          </div>
+       </div>
+    </div>
+    
+    <Link to={`/profile/${user.username}`} className="mt-8 btn-secondary w-full py-4 text-[10px] font-black uppercase rounded-2xl flex items-center justify-center gap-2 group/btn">
+      View Portfolio <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+    </Link>
+  </div>
+);
+
+const LeaderboardRow = ({ user, rank, period }) => (
+  <motion.div
+    initial={{ opacity: 0, x: -10 }}
+    animate={{ opacity: 1, x: 0 }}
+    className="bg-card/50 backdrop-blur-md rounded-3xl p-6 border border-border/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary/30 hover:bg-card transition-all group"
+  >
+    <div className="flex items-center gap-8">
+      <div className="w-10 h-10 rounded-xl bg-muted/80 flex items-center justify-center font-black text-muted-foreground border border-border group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20 transition-colors">
+        {rank}
+      </div>
+      
+      <div className="flex items-center gap-5">
+        <div className="w-14 h-14 rounded-2xl bg-muted p-[2px] shrink-0 border border-border/50 group-hover:border-primary/30 transition-colors overflow-hidden">
+          <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
+        </div>
+        <div>
+          <h3 className="text-lg font-black tracking-tight flex items-center gap-2">
+            {user.username}
+            {user.badges?.length > 0 && (
+              <span className="text-[9px] font-black uppercase bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-lg">
+                {user.badges[0].icon || "🏆"} {user.badges[0].name}
+              </span>
+            )}
+          </h3>
+          <div className="flex items-center gap-3 mt-1.5">
+            <div className="flex items-center gap-1 text-[10px] font-black uppercase text-muted-foreground tracking-wider">
+              <Zap size={10} className="text-primary fill-primary" />
+              Level {user.level}
+            </div>
+            <div className="w-1 h-1 rounded-full bg-border"></div>
+            <div className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">
+              {user.xp} XP
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="flex items-center gap-12 justify-between md:justify-end">
+      {period === 'all_time' && (
+        <div className="hidden lg:flex items-center gap-6 border-r border-border/50 pr-12">
+          <Metric label="Cons" value={user.consistencyScore} />
+          <Metric label="Perf" value={user.perfectionScore} />
+          <Metric label="Collab" value={user.collaborationScore} />
+          <Metric label="Inno" value={user.innovationScore} />
+        </div>
+      )}
+      
+      <div className="text-right">
+        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1">Reputation</p>
+        <p className="text-2xl font-black text-primary tracking-tighter">{user.reputationScore}</p>
+      </div>
+      
+      <Link 
+        to={`/profile/${user.username}`}
+        className="p-3 rounded-2xl bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20"
+      >
+        <ChevronRight size={20} />
+      </Link>
+    </div>
+  </motion.div>
+);
+
+const Metric = ({ label, value }) => (
+  <div className="text-center w-12">
+    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">{label}</p>
+    <div className="relative w-full h-1 bg-muted rounded-full overflow-hidden">
+      <motion.div 
+        initial={{ width: 0 }}
+        animate={{ width: `${value || 0}%` }}
+        className="absolute top-0 left-0 h-full bg-primary"
+      />
+    </div>
+    <p className="text-[10px] font-black mt-1.5">{value || 0}%</p>
+  </div>
+);
 
 export default Leaderboard;

@@ -16,6 +16,7 @@ import {
   Zap
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { EngineeringRadarChart } from "../components/EngineeringRadarChart";
 
 const Profile = () => {
   const { username } = useParams();
@@ -124,6 +125,17 @@ const Profile = () => {
 
         {/* Right Column: Contributions & Experience */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Engineering Metrics Section */}
+          <section>
+            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
+              <Activity size={16} className="text-primary" />
+              Engineering Performance
+            </h3>
+            <div className="flex justify-center bg-card border border-border/50 rounded-[3rem] p-8 shadow-sm">
+              <EngineeringRadarChart stats={profile} size={280} />
+            </div>
+          </section>
+
           {/* Achievements Section */}
           <section>
             <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
