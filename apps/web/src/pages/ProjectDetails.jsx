@@ -527,72 +527,6 @@ const ProjectDetails = () => {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-               <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full"></div>
-                  <div className="flex items-center gap-3 mb-10">
-                     <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><History size={18} /></div>
-                     <h3 className="text-sm font-black uppercase tracking-[0.3em]">Commit Analytics</h3>
-                  </div>
-                  <div className="space-y-6">
-                    {intelligence?.commitAnalytics?.recentCommits?.slice(0, 5).map((commit, i) => (
-                      <div key={i} className="flex items-start gap-4 p-4 bg-muted/20 border border-border/50 rounded-2xl">
-                        <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center font-mono text-[10px] font-bold text-primary border border-border/50 shrink-0">
-                          {commit.sha.substring(0, 7)}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-foreground truncate">{commit.message}</p>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">@{commit.author} • {new Date(commit.date).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-               </div>
-
-               <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full"></div>
-                  <div className="flex items-center gap-3 mb-10">
-                     <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500"><GitPullRequest size={18} /></div>
-                     <h3 className="text-sm font-black uppercase tracking-[0.3em]">Pull Request Activity</h3>
-                  </div>
-                  <div className="space-y-6">
-                    {intelligence?.prAnalytics?.recentPRActivity?.slice(0, 5).map((pr, i) => (
-                      <div key={i} className="flex items-start justify-between gap-4 p-4 bg-muted/20 border border-border/50 rounded-2xl">
-                        <div className="flex items-start gap-4 min-w-0">
-                          <img src={pr.authorAvatar} alt={pr.author} className="w-10 h-10 rounded-xl border border-border/50 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-sm font-bold text-foreground truncate">#{pr.number}: {pr.title}</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">@{pr.author} • {pr.state}</p>
-                          </div>
-                        </div>
-                        <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${pr.state === 'MERGED' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'}`}>
-                          {pr.state}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-               </div>
-            </div>
-
-            <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full"></div>
-               <div className="flex items-center gap-3 mb-10">
-                 <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500"><Users size={18} /></div>
-                 <h3 className="text-sm font-black uppercase tracking-[0.3em]">Engineering Productivity Metrics</h3>
-               </div>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {intelligence?.commitAnalytics?.topContributors?.slice(0, 6).map((contributor, i) => (
-                    <div key={i} className="flex items-center gap-4 p-5 bg-muted/20 border border-border/50 rounded-2xl hover:border-primary/30 transition-all">
-                       <img src={contributor.avatarUrl} alt={contributor.username} className="w-12 h-12 rounded-2xl border border-border/50 shadow-sm" />
-                       <div>
-                         <p className="text-sm font-black tracking-tight">@{contributor.username}</p>
-                         <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{contributor.commitCount} Commits Verified</p>
-                       </div>
-                    </div>
-                  ))}
-               </div>
-            </div>
-
             <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm overflow-hidden relative">
                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full"></div>
                <div className="flex items-center gap-3 mb-10">
@@ -600,7 +534,6 @@ const ProjectDetails = () => {
                   <h3 className="text-sm font-black uppercase tracking-[0.3em]">Repository Velocity</h3>
                </div>
                <div className="h-64 w-full flex items-end justify-between gap-2 pt-10 px-4">
-                  {/* Mock Chart for Visual Depth */}
                   {[40, 70, 45, 90, 65, 80, 55, 75, 95, 60, 85, 100].map((h, i) => (
                     <motion.div 
                       key={i}
@@ -901,32 +834,33 @@ const ProjectDetails = () => {
                           )}
 
                           <div className="p-8 bg-muted/20 border border-border/50 rounded-[2rem] space-y-6">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Personal_Workspace</span>
-                            <span className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 animate-pulse">
-                              <Zap size={10} fill="currentColor" /> Live Node
-                            </span>
-                          </div>
-                          <div className="p-5 bg-background border border-border/50 rounded-2xl font-mono text-xs text-foreground/80 break-all select-all hover:border-primary/50 transition-colors">
-                            {forkStatus.forkFullName}
-                          </div>
-                          <div className="flex flex-wrap gap-4 pt-2">
-                            <a 
-                              href={forkStatus.forkUrl} 
-                              target="_blank" 
-                              rel="noreferrer" 
-                              className="px-6 py-3.5 bg-foreground text-background rounded-xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2.5 transition-all hover:scale-105"
-                            >
-                              <Github size={16} /> Open on GitHub
-                            </a>
-                            <button 
-                              onClick={() => {
-                                navigator.clipboard.writeText(`git clone ${forkStatus.forkUrl}`);
-                              }}
-                              className="px-6 py-3.5 bg-muted text-foreground border border-border/50 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2.5 transition-all hover:bg-muted/80"
-                            >
-                              <Terminal size={16} /> Copy Clone CLI
-                            </button>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Personal_Workspace</span>
+                              <span className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 animate-pulse">
+                                <Zap size={10} fill="currentColor" /> Live Node
+                              </span>
+                            </div>
+                            <div className="p-5 bg-background border border-border/50 rounded-2xl font-mono text-xs text-foreground/80 break-all select-all hover:border-primary/50 transition-colors">
+                              {forkStatus.forkFullName}
+                            </div>
+                            <div className="flex flex-wrap gap-4 pt-2">
+                              <a 
+                                href={forkStatus.forkUrl} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="px-6 py-3.5 bg-foreground text-background rounded-xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2.5 transition-all hover:scale-105"
+                              >
+                                <Github size={16} /> Open on GitHub
+                              </a>
+                              <button 
+                                onClick={() => {
+                                  navigator.clipboard.writeText(`git clone ${forkStatus.forkUrl}`);
+                                }}
+                                className="px-6 py-3.5 bg-muted text-foreground border border-border/50 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2.5 transition-all hover:bg-muted/80"
+                              >
+                                <Terminal size={16} /> Copy Clone CLI
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -1290,51 +1224,111 @@ const ProjectDetails = () => {
         )}
 
         {activeTab === "activity" && (
-          <motion.div key="activity" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-             <div className="lg:col-span-2 bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm space-y-8">
-               <div className="flex items-center gap-3">
-                 <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><Terminal size={16} /></div>
-                 <h3 className="text-sm font-black uppercase tracking-[0.3em]">Live Feed</h3>
-               </div>
-               
-               <div className="space-y-10 py-4">
-                 {intelligence?.overview?.recentActivityFeed?.length > 0 ? (
-                   intelligence.overview.recentActivityFeed.map((event, idx) => (
-                     <div key={idx} className="flex gap-6 relative group">
-                       {idx < intelligence.overview.recentActivityFeed.length - 1 && (
-                         <div className="absolute left-[15px] top-[40px] bottom-[-40px] w-px bg-border/50 group-hover:bg-primary/30 transition-colors"></div>
-                       )}
-                       <div className="w-8 h-8 rounded-full bg-muted border border-border/50 flex items-center justify-center shrink-0 relative z-10">
-                         <div className={`w-2 h-2 rounded-full ${event.type === 'commit' ? 'bg-primary' : event.type === 'pull_request' ? 'bg-indigo-500' : 'bg-emerald-500'} animate-pulse`}></div>
-                       </div>
-                       <div className="space-y-2 flex-1">
-                         <p className="text-sm font-bold leading-relaxed text-foreground">
-                           <span className="text-primary mr-1">@{event.actor || "GitHub User"}</span> 
-                           {event.type === "commit" && `pushed commit: ${event.title}`}
-                           {event.type === "pull_request" && `opened ${event.title}`}
-                           {event.type === "issue" && `opened ${event.title}`}
-                         </p>
-                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                           {new Date(event.date).toLocaleDateString()} • {new Date(event.date).toLocaleTimeString()}
-                         </p>
-                       </div>
-                     </div>
-                   ))
-                 ) : (
-                   <div className="py-10 text-center">
-                     <Activity size={48} className="mx-auto text-muted-foreground opacity-20 mb-4" />
-                     <div className="space-y-2">
-                       <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Aggregating Global Activity...</p>
-                       <p className="text-[10px] font-medium text-muted-foreground/60 max-w-xs mx-auto">No recent events detected for this mission. New commits and reviews will appear here in real-time.</p>
-                     </div>
-                   </div>
-                 )}
-               </div>
-             </div>
-             
-             <div className="bg-primary/5 border border-primary/20 rounded-[2.5rem] p-8 space-y-6">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">System Notice</h4>
-                <p className="text-xs font-bold leading-relaxed text-foreground/70">Activity logs are aggregated from GitHub Webhooks. High-latency events may take up to 300s to propagate across the cluster.</p>
+          <motion.div key="activity" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-12">
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div className="lg:col-span-2 space-y-10">
+                  {/* Unified Live Feed */}
+                  <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+                    <div className="flex items-center justify-between mb-10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20"><Terminal size={20} /></div>
+                        <h3 className="text-sm font-black uppercase tracking-[0.3em]">Live Feed</h3>
+                      </div>
+                      <span className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div> Real-time Sync
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-10">
+                      {intelligence?.overview?.recentActivityFeed?.length > 0 ? (
+                        intelligence.overview.recentActivityFeed.map((event, idx) => (
+                          <div key={idx} className="flex gap-6 relative group">
+                            {idx < intelligence.overview.recentActivityFeed.length - 1 && (
+                              <div className="absolute left-[15px] top-[40px] bottom-[-40px] w-px bg-border/50 group-hover:bg-primary/30 transition-colors"></div>
+                            )}
+                            <div className="w-8 h-8 rounded-full bg-muted border border-border/50 flex items-center justify-center shrink-0 relative z-10">
+                              <div className={`w-2 h-2 rounded-full ${event.type === 'commit' ? 'bg-primary' : event.type === 'pull_request' ? 'bg-indigo-500' : 'bg-emerald-500'} animate-pulse`}></div>
+                            </div>
+                            <div className="space-y-2 flex-1">
+                              <p className="text-sm font-bold leading-relaxed text-foreground">
+                                <span className="text-primary mr-1">@{event.actor || "GitHub User"}</span> 
+                                {event.type === "commit" && `pushed commit: ${event.title}`}
+                                {event.type === "pull_request" && `opened ${event.title}`}
+                                {event.type === "issue" && `opened ${event.title}`}
+                              </p>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                {new Date(event.date).toLocaleDateString()} • {new Date(event.date).toLocaleTimeString()}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="py-20 text-center">
+                          <Activity size={48} className="mx-auto text-muted-foreground opacity-20 mb-4" />
+                          <div className="space-y-2">
+                            <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Aggregating Global Activity...</p>
+                            <p className="text-[10px] font-medium text-muted-foreground/60 max-w-xs mx-auto">No recent events detected for this mission. New commits and reviews will appear here in real-time.</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* PR Activity */}
+                  <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full"></div>
+                    <div className="flex items-center gap-3 mb-10">
+                       <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500"><GitPullRequest size={18} /></div>
+                       <h3 className="text-sm font-black uppercase tracking-[0.3em]">Pull Request History</h3>
+                    </div>
+                    <div className="space-y-6">
+                      {intelligence?.prAnalytics?.recentPRActivity?.length > 0 ? intelligence.prAnalytics.recentPRActivity.slice(0, 10).map((pr, i) => (
+                        <div key={i} className="flex items-start justify-between gap-4 p-5 bg-muted/20 border border-border/50 rounded-2xl hover:border-primary/20 transition-all">
+                          <div className="flex items-start gap-4 min-w-0">
+                            <img src={pr.authorAvatar} alt={pr.author} className="w-10 h-10 rounded-xl border border-border/50 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">#{pr.number}: {pr.title}</p>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">@{pr.author} • {pr.state}</p>
+                            </div>
+                          </div>
+                          <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${pr.state === 'MERGED' ? 'bg-emerald-500/10 text-emerald-500' : pr.state === 'OPEN' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                            {pr.state}
+                          </span>
+                        </div>
+                      )) : (
+                        <p className="text-xs font-bold text-muted-foreground text-center py-10 uppercase tracking-widest opacity-40">No PR activity detected.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-10">
+                  {/* Top Contributors */}
+                  <div className="bg-card border border-border/50 rounded-[2.5rem] p-8 space-y-8 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><Trophy size={16} /></div>
+                      <h3 className="text-sm font-black uppercase tracking-[0.3em]">Top Contributors</h3>
+                    </div>
+                    <div className="space-y-4">
+                       {intelligence?.commitAnalytics?.topContributors?.slice(0, 5).map((contributor, i) => (
+                         <div key={i} className="flex items-center justify-between p-4 bg-muted/20 border border-border/50 rounded-2xl">
+                            <div className="flex items-center gap-3">
+                               <img src={contributor.avatarUrl} className="w-8 h-8 rounded-lg border border-border/50" alt={contributor.username} />
+                               <span className="text-xs font-black tracking-tight">@{contributor.username}</span>
+                            </div>
+                            <span className="text-[10px] font-black text-primary">{contributor.commitCount}</span>
+                         </div>
+                       ))}
+                    </div>
+                  </div>
+
+                  {/* System Notice */}
+                  <div className="bg-primary/5 border border-primary/20 rounded-[2.5rem] p-8 space-y-6 shadow-sm">
+                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Intelligence Notice</h4>
+                     <p className="text-xs font-bold leading-relaxed text-foreground/70">Activity logs are aggregated from GitHub Webhooks. External PRs and commits are synced in real-time across the cluster.</p>
+                  </div>
+                </div>
              </div>
           </motion.div>
         )}
