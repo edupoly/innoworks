@@ -3,7 +3,7 @@ import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { Submission } from '../models/Submission.js';
 import { authenticate, verifyProjectOwnership } from '../middleware/auth.js';
-import { forkRepository, fetchGraphQLRepositoryIntelligence } from '../lib/github.js';
+import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue } from '../lib/github.js';
 import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';
 import axios from 'axios';
@@ -180,27 +180,23 @@ router.post("/:id/issues", authenticate, validateObjectId, async (req, res) => {
   }
 });
 
-// 5. Owner Permissions: Close Issue on GitHub
-router.post("/:id/issues/:number/close", authenticate, validateObjectId, verifyOwnership, async (req, res) => {
-  const { number } = req.params;
+// 5. Close a GitHub Issue (Owner only)
+router.patch("/:id/issues/:issueNumber/close", authenticate, validateObjectId, verifyOwnership, async (req, res) => {
   try {
+    const { issueNumber } = req.params;
     const user = await User.findById(req.user.userId);
+    if (!user || !user.githubAccessToken) {
+      return res.status(401).json({ message: "GitHub authentication required" });
+    }
+
     const { owner, repo } = parseRepoUrl(req.project.repoUrl);
 
-    await axios.patch(
-      `https://api.github.com/repos/${owner}/${repo}/issues/${number}`,
-      { state: 'closed' },
-      {
-        headers: {
-          Authorization: `token ${user.githubAccessToken}`,
-          Accept: "application/vnd.github.v3+json",
-        }
-      }
-    );
+    await closeIssue(user.githubAccessToken, owner, repo, issueNumber);
 
-    res.json({ message: `Issue #${number} successfully closed on GitHub.` });
+    res.json({ message: `Issue #${issueNumber} closed successfully` });
   } catch (error) {
-    res.status(500).json({ message: "Failed to close issue: " + error.message });
+    console.error("❌ Close GitHub Issue Error:", error.message);
+    res.status(500).json({ message: "Failed to close issue on GitHub: " + error.message });
   }
 });
 

@@ -119,6 +119,19 @@ const ProjectDetails = () => {
     }
   };
 
+  const closeIssueMutation = useMutation({
+    mutationFn: (issueNumber) => api.patch(`/projects/${id}/issues/${issueNumber}/close`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["projectIntelligence", id]);
+    },
+  });
+
+  const handleCloseIssue = (issueNumber) => {
+    if (window.confirm(`Are you sure you want to close issue #${issueNumber}?`)) {
+      closeIssueMutation.mutate(issueNumber);
+    }
+  };
+
   // 1. Fetch live repository intelligence using high-performance GraphQL endpoint
   const { data: intelligence, isLoading: loadingIntel, error: intelError } = useQuery({
     queryKey: ["projectIntelligence", id],
@@ -1709,14 +1722,25 @@ const ProjectDetails = () => {
                     </div>
                     <div className="flex items-center justify-between text-[10px]">
                       <span className="text-muted-foreground">Reported on {new Date(issue.date || issue.createdAt).toLocaleDateString()}</span>
-                      <a 
-                        href={`${intelligence.overview.repositoryUrl}/issues/${issue.number || issue.title.split('#')[1]?.split(':')[0] || ""}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary hover:underline font-bold"
-                      >
-                        View on GitHub
-                      </a>
+                      <div className="flex items-center gap-3">
+                        {authUser?._id === project?.owner?._id && (
+                          <button
+                            onClick={() => handleCloseIssue(issue.number || issue.title.split('#')[1]?.split(':')[0])}
+                            disabled={closeIssueMutation.isLoading}
+                            className="text-red-500 hover:text-red-600 font-bold uppercase tracking-widest disabled:opacity-50"
+                          >
+                            {closeIssueMutation.isLoading ? "Closing..." : "Close Issue"}
+                          </button>
+                        )}
+                        <a
+                          href={`${intelligence.overview.repositoryUrl}/issues/${issue.number || issue.title.split('#')[1]?.split(':')[0] || ""}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline font-bold"
+                        >
+                          View on GitHub
+                        </a>
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -138,6 +138,28 @@ export const mergePullRequest = async (accessToken, owner, repo, pullNumber, com
   }
 };
 
+/**
+ * Close a GitHub Issue
+ */
+export const closeIssue = async (accessToken, owner, repo, issueNumber) => {
+  try {
+    const response = await axios.patch(
+      `https://api.github.com/repos/${owner}/${repo}/issues/${issueNumber}`,
+      { state: "closed" },
+      {
+        headers: {
+          Authorization: `token ${accessToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("❌ GitHub Close Issue Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to close issue");
+  }
+};
+
 // --- GITHUB REPOSITORY INTELLIGENCE VIA GRAPHQL ---
 
 /**
