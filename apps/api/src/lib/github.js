@@ -167,6 +167,29 @@ export const closeIssue = async (accessToken, owner, repo, issueNumber) => {
   }
 };
 
+/**
+ * Create a GitHub Issue
+ */
+export const createIssue = async (accessToken, owner, repo, title, body, labels) => {
+  try {
+    const response = await axios.post(
+      `https://api.github.com/repos/${owner}/${repo}/issues`,
+      { title, body, labels },
+      {
+        headers: {
+          Authorization: `token ${accessToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("❌ GitHub Create Issue Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to create issue");
+  }
+};
+
+
 // --- GITHUB REPOSITORY INTELLIGENCE VIA GRAPHQL ---
 
 /**

@@ -26,6 +26,8 @@ const issueSchema = new mongoose.Schema({
     color: String
   }],
   milestone: { type: String },
+  githubIssueNumber: { type: Number },
+  githubIssueUrl: { type: String },
   template: { 
     type: String, 
     enum: ['Bug', 'Feature', 'Docs', 'Security', 'General'],

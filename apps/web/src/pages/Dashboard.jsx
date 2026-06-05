@@ -201,31 +201,6 @@ const Dashboard = () => {
         </div>
       </motion.header>
 
-      {/* Profile Completion Warning */}
-      {(!profile?.email || !profile?.phone) && !isEditing && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} 
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-10 p-5 bg-yellow-500/10 border border-yellow-500/20 rounded-[1.5rem] flex items-center justify-between gap-4 shadow-sm"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-yellow-500/20 text-yellow-600 flex items-center justify-center shrink-0 border border-yellow-500/30">
-              <AlertTriangle size={20} />
-            </div>
-            <div>
-              <h4 className="text-sm font-black text-yellow-600 tracking-tight">Incomplete Identity Record</h4>
-              <p className="text-xs font-medium text-yellow-700/80 mt-0.5">Please provide your email and mobile number to receive critical mission updates.</p>
-            </div>
-          </div>
-          <button 
-            onClick={() => setIsEditing(true)}
-            className="px-5 py-2.5 bg-yellow-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-yellow-500/20 hover:bg-yellow-600 transition-colors whitespace-nowrap shrink-0"
-          >
-            Update Profile
-          </button>
-        </motion.div>
-      )}
-
       <AnimatePresence>
         {showWizard && <SetupWizard onClose={() => setShowWizard(false)} />}
       </AnimatePresence>

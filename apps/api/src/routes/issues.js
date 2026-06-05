@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { Issue } from '../models/Issue.js';
+import { Project } from '../models/Project.js';
+import { User } from '../models/User.js';
 import { authenticate } from '../middleware/auth.js';
 import { authorize, logAudit } from '../middleware/rbac.js';
+import { createIssue as createGithubIssue, parseRepoUrl } from '../lib/github.js';
 
 const router = Router();
 
@@ -30,10 +33,46 @@ router.get("/:projectId", async (req, res) => {
 router.post("/:projectId", authenticate, authorize('Developer'), async (req, res) => {
   try {
     const { projectId } = req.params;
+    const { title, description, labels, ...restBody } = req.body;
+
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    let githubIssueNumber;
+    let githubIssueUrl;
+
+    if (user.githubAccessToken) {
+      try {
+        const { owner, repo } = parseRepoUrl(project.repoUrl);
+        // Format labels if they are objects
+        const githubLabels = labels ? labels.map(l => typeof l === 'string' ? l : l.name) : [];
+        const githubResponse = await createGithubIssue(user.githubAccessToken, owner, repo, title, description, githubLabels);
+        githubIssueNumber = githubResponse.number;
+        githubIssueUrl = githubResponse.html_url;
+      } catch (ghError) {
+        console.error("❌ Failed to replicate issue to GitHub:", ghError.message);
+        // We log the error but still create the internal issue if github replication fails, or maybe we want to require it?
+        // "has to replicate in github too real time". We'll just continue if it fails but log it. Or should we throw? 
+        // We'll throw to ensure strict adherence.
+        // But if the user wants it to just work, we should probably let it pass internally or return 500. Let's return 500 if github fails.
+        return res.status(500).json({ message: `Failed to create issue on GitHub: ${ghError.message}` });
+      }
+    } else {
+       return res.status(403).json({ message: "GitHub access token missing. Please re-authenticate." });
+    }
+
     const issueData = {
-      ...req.body,
+      ...restBody,
+      title,
+      description,
+      labels,
       project: projectId,
       author: req.user.userId,
+      githubIssueNumber,
+      githubIssueUrl,
       timeline: [{
         action: 'CREATED',
         actor: req.user.userId,
@@ -42,7 +81,7 @@ router.post("/:projectId", authenticate, authorize('Developer'), async (req, res
     };
 
     const issue = await Issue.create(issueData);
-    await logAudit(req, 'CREATE_ISSUE', 'Issue', issue._id, { title: issue.title });
+    await logAudit(req, 'CREATE_ISSUE', 'Issue', issue._id, { title: issue.title, githubIssueNumber });
 
     res.status(201).json(issue);
   } catch (error) {

@@ -18,34 +18,77 @@ router.post("/:projectId/upload", authenticate, authorize('Team'), async (req, r
     const project = await Project.findById(projectId);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
+    // Admins and Project Owners upload as 'Approved' immediately
+    const isAutoApproved = req.user.role === 'Admin' || project.owner.toString() === req.user.userId;
+
     const asset = {
       filename,
       url,
       assetType,
       uploadedBy: req.user.userId,
-      status: 'Pending'
+      status: isAutoApproved ? 'Approved' : 'Pending'
     };
 
     project.dockerAssets.push(asset);
     await project.save();
 
-    // Create approval request
-    const request = await ApprovalRequest.create({
-      type: 'Docker',
-      referenceId: project._id, // Reference the project, asset index can be used in metadata
-      project: projectId,
-      requestedBy: req.user.userId,
-      changeSummary: `Uploaded ${assetType}: ${filename}`
-    });
+    if (!isAutoApproved) {
+      // Create approval request for Team members
+      const request = await ApprovalRequest.create({
+        type: 'Docker',
+        referenceId: project._id, 
+        project: projectId,
+        requestedBy: req.user.userId,
+        changeSummary: `Uploaded ${assetType}: ${filename}`
+      });
+      await logAudit(req, 'UPLOAD_DOCKER_ASSET', 'Project', projectId, { assetType, filename, status: 'Pending' });
+      return res.status(201).json({ message: "Docker asset uploaded and pending approval", asset });
+    }
 
-    await logAudit(req, 'UPLOAD_DOCKER_ASSET', 'Project', projectId, { assetType, filename });
-
-    res.status(201).json({ message: "Docker asset uploaded and pending approval", asset });
+    await logAudit(req, 'UPLOAD_DOCKER_ASSET', 'Project', projectId, { assetType, filename, status: 'Approved' });
+    res.status(201).json({ message: "Docker asset successfully registered", asset });
   } catch (error) {
     console.error("❌ Docker Upload Error:", error.message);
     res.status(500).json({ message: "Failed to upload Docker asset" });
   }
 });
+
+/**
+ * PUT /docker/:projectId/assets/:assetId/approve
+ * Approve a pending Docker asset
+ */
+router.put("/:projectId/assets/:assetId/approve", authenticate, authorize('Project Owner'), async (req, res) => {
+  try {
+    const { projectId, assetId } = req.params;
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    // Authorization check for PO
+    if (req.user.role !== 'Admin' && project.owner.toString() !== req.user.userId) {
+      return res.status(403).json({ message: "Access denied. Only the Project Owner can approve assets." });
+    }
+
+    const asset = project.dockerAssets.id(assetId);
+    if (!asset) return res.status(404).json({ message: "Asset not found" });
+
+    asset.status = 'Approved';
+    await project.save();
+
+    // Close the related ApprovalRequest if it exists
+    await ApprovalRequest.findOneAndUpdate(
+      { project: projectId, type: 'Docker', status: 'Pending' }, // Minimalistic search
+      { status: 'Approved', reviewedBy: req.user.userId, reviewedAt: Date.now() }
+    );
+
+    await logAudit(req, 'APPROVE_DOCKER_ASSET', 'Project', projectId, { assetId, filename: asset.filename });
+
+    res.json({ message: "Docker asset approved", asset });
+  } catch (error) {
+    console.error("❌ Docker Approve Error:", error.message);
+    res.status(500).json({ message: "Failed to approve Docker asset" });
+  }
+});
+
 
 /**
  * GET /docker/:projectId

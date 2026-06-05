@@ -14,10 +14,18 @@ export const dockerApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, { projectId }) => [{ type: 'Docker', id: projectId }],
     }),
+    approveDockerAsset: builder.mutation({
+      query: ({ projectId, assetId }) => ({
+        url: `/docker/${projectId}/assets/${assetId}/approve`,
+        method: 'PUT',
+      }),
+      invalidatesTags: (result, error, { projectId }) => [{ type: 'Docker', id: projectId }],
+    }),
   }),
 });
 
 export const {
   useGetDockerAssetsQuery,
   useUploadDockerAssetMutation,
+  useApproveDockerAssetMutation,
 } = dockerApiSlice;
