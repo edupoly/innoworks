@@ -26,9 +26,8 @@ const LeaderboardRow = memo(({ user, rank, period }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
       className="bg-card/50 backdrop-blur-sm rounded-[2.5rem] p-8 border border-border/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary/30 hover:bg-card transition-all group"
     >
       <div className="flex items-center gap-8">
@@ -266,9 +265,12 @@ const Leaderboard = () => {
           </div>
         )}
 
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="wait">
           <motion.div 
             key={`${period}-${debouncedSearch}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="grid grid-cols-1 gap-4"
           >
             {debouncedSearch 

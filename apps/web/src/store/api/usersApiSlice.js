@@ -8,9 +8,15 @@ export const usersApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Leaderboard'],
       async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
         const socket = initiateSocket();
+        let lastUpdate = 0;
+        const THROTTLE_MS = 2000; // Only update every 2s for real-time feel without overhead
+
         try {
           await cacheDataLoaded;
           const handleUpdate = (update) => {
+            const now = Date.now();
+            if (now - lastUpdate < THROTTLE_MS) return;
+            
             updateCachedData((draft) => {
               const userIndex = draft.findIndex(u => (u._id || u.id) === update.userId);
               if (userIndex !== -1) {
@@ -18,6 +24,7 @@ export const usersApiSlice = apiSlice.injectEndpoints({
                 draft.sort((a, b) => (b.xp || 0) - (a.xp || 0));
               }
             });
+            lastUpdate = now;
           };
           socket.on('leaderboardUpdate', handleUpdate);
         } catch {}
