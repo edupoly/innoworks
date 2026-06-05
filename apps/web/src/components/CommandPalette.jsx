@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "./ThemeProvider";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../store/slices/authSlice";
-import api from "../lib/api";
+import { useGetProjectsQuery } from "../store/api/projectsApiSlice";
+import { useDebounce } from "../hooks/useDebounce";
 
 const CommandPalette = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -14,10 +15,16 @@ const CommandPalette = ({ isOpen, onClose }) => {
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [projects, setProjects] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef(null);
+
+  const { data: allProjects = [], isLoading } = useGetProjectsQuery(
+    { search: debouncedQuery, sort: 'recent' },
+    { skip: !debouncedQuery || !isAuthenticated }
+  );
+
+  const projects = useMemo(() => allProjects.slice(0, 5), [allProjects]);
 
   // Keyboard shortcut listener for opening
   useEffect(() => {
@@ -27,37 +34,6 @@ const CommandPalette = ({ isOpen, onClose }) => {
       setSelectedIndex(0);
     }
   }, [isOpen]);
-
-  // Fetch projects matching query
-  useEffect(() => {
-    if (!query || !isAuthenticated) {
-      setProjects([]);
-      setIsLoading(false);
-      return;
-    }
-
-    let isCurrent = true;
-    const delayDebounce = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const response = await api.get(`/projects?search=${encodeURIComponent(query)}`);
-        if (isCurrent) {
-          setProjects(response.data.slice(0, 5));
-        }
-      } catch (err) {
-        console.error("Failed to query projects for command palette:", err);
-      } finally {
-        if (isCurrent) {
-          setIsLoading(false);
-        }
-      }
-    }, 300);
-
-    return () => {
-      isCurrent = false;
-      clearTimeout(delayDebounce);
-    };
-  }, [query, isAuthenticated]);
 
   // Command palette navigation items
   const navigationItems = useMemo(() => [

@@ -135,4 +135,6 @@ const RepoPicker = memo(({ onSelect, selectedRepo }) => {
   );
 });
 
+RepoPicker.displayName = "RepoPicker";
+
 export default RepoPicker;

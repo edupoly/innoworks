@@ -74,37 +74,16 @@ const ThemeToggle = () => {
   );
 };
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGetNotificationsQuery, useMarkNotificationsReadMutation, useMarkNotificationReadMutation } from "../store/api/usersApiSlice";
 
 const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
-  const { data: notifications = [] } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: async () => {
-      const response = await api.get("/users/notifications");
-      return response.data;
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
-  });
-
-  const markAllReadMutation = useMutation({
-    mutationFn: () => api.put("/users/notifications/read-all"),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    }
-  });
-
-  const readSingleMutation = useMutation({
-    mutationFn: (id) => api.put(`/users/notifications/${id}/read`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    }
-  });
+  const { data: notifications = [] } = useGetNotificationsQuery();
+  const [markAllRead] = useMarkNotificationsReadMutation();
+  const [readSingle] = useMarkNotificationReadMutation();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -118,12 +97,20 @@ const NotificationDropdown = () => {
 
   const handleMarkAllRead = async (e) => {
     e.stopPropagation();
-    markAllReadMutation.mutate();
+    try {
+      await markAllRead().unwrap();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleReadSingle = async (n) => {
     if (!n.read) {
-      readSingleMutation.mutate(n._id);
+      try {
+        await readSingle(n._id).unwrap();
+      } catch (err) {
+        console.error(err);
+      }
     }
     setIsOpen(false);
     if (n.link) {

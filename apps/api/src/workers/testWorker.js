@@ -2,6 +2,7 @@ import { Worker } from "bullmq";
 import { Submission } from '../models/Submission.js';
 import { User } from '../models/User.js';
 import { getRedisConnection } from '../lib/redis.js';
+import { awardXP } from '../lib/gamification.js';
 import { exec } from 'child_process';
 import util from 'util';
 import path from 'path';
@@ -41,10 +42,14 @@ export const testWorker = new Worker(
         // Check if package.json exists
         const files = await fs.readdir(tempDir);
         if (files.includes('package.json')) {
-          await execAsync(`npm install`, { cwd: tempDir, timeout: 60000 });
-          testOutput += "Dependencies installed.\n";
+          testOutput += "Executing tests in isolated Docker sandbox...\n";
           
-          const { stdout, stderr } = await execAsync(`npm test`, { cwd: tempDir, timeout: 60000 });
+          // Use Docker to sandbox the execution. Mount tempDir to /app and run npm install & test.
+          // --network none prevents malicious network access during tests (if acceptable).
+          // For now, we'll allow network for npm install.
+          const dockerCommand = `docker run --rm -v "${tempDir}:/app" -w /app node:18-alpine sh -c "npm install && npm test"`;
+          
+          const { stdout, stderr } = await execAsync(dockerCommand, { timeout: 120000 }); // 2 min timeout for docker
           testOutput += stdout + "\n" + stderr;
           success = true;
         } else {
@@ -71,21 +76,19 @@ export const testWorker = new Worker(
           project.difficulty === 'Hard' ? 5 : 
           project.difficulty === 'Medium' ? 3 : 2;
 
-        // Fetch user to update with proper validation (using .save() for pre-save hooks)
+        // Use centralized gamification logic
+        await awardXP(submission.user, bounty, 'PR_MERGED');
+        
+        // We still add the performance points manually as awardXP handles the base XP and broadcast
         const user = await User.findById(submission.user);
         if (user) {
-          user.xp += bounty;
-          
-          // Increment scores deterministically
-          user.consistencyScore += scoreMultiplier;
-          user.perfectionScore += scoreMultiplier;
-          user.collaborationScore += scoreMultiplier;
-          user.communicationScore += scoreMultiplier;
-          user.adaptabilityScore += scoreMultiplier;
-          user.innovationScore += scoreMultiplier;
-
-          await user.save(); // This triggers the pre-save hook to cap scores at 100
-          console.log(`✅ Scores updated for @${user.username}: +${bounty} XP, +${scoreMultiplier} performance points.`);
+           user.consistencyScore += scoreMultiplier;
+           user.perfectionScore += scoreMultiplier;
+           user.collaborationScore += scoreMultiplier;
+           user.communicationScore += scoreMultiplier;
+           user.adaptabilityScore += scoreMultiplier;
+           user.innovationScore += scoreMultiplier;
+           await user.save();
         }
 
       } else {

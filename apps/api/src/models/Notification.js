@@ -8,4 +8,6 @@ const notificationSchema = new mongoose.Schema({
   link: { type: String },
 }, { timestamps: true });
 
+notificationSchema.index({ user: 1, createdAt: -1 });
+
 export const Notification = mongoose.model('Notification', notificationSchema);

@@ -10,6 +10,11 @@ import { clearCache } from '../middleware/cache.js';
 
 const router = Router();
 
+// Helper to prevent ReDoS by escaping regex metacharacters
+const escapeRegex = (string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 // Handle webhook event verification
 router.post("/", async (req, res) => {
   if (!githubApp) {
@@ -44,7 +49,7 @@ if (githubApp) {
     console.log(`📡 GitHub Push Webhook: repo=${repoUrl}, ref=${payload.ref}`);
 
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
       if (!project) return;
 
       // Update basic repository counts
@@ -81,7 +86,7 @@ if (githubApp) {
     console.log(`📡 GitHub Issue Webhook: action=${action}, repo=${repoUrl}, issue=${issueNum}`);
 
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
       if (!project) return;
 
       // Update open issues count
@@ -128,7 +133,7 @@ if (githubApp) {
     console.log(`📡 GitHub Issue Comment Webhook: repo=${repoUrl}, author=${commentAuthor}`);
 
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
       if (!project) return;
 
       // Find if this comment relates to a pull request submission
@@ -170,7 +175,7 @@ if (githubApp) {
     console.log(`📡 GitHub PR Webhook: action=${action}, repo=${repoUrl}, pr=${prNumber}`);
 
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
       if (!project) return;
 
       const headBranch = payload.pull_request.head.ref;
@@ -304,7 +309,7 @@ if (githubApp) {
     console.log(`📡 GitHub PR Review Webhook: repo=${repoUrl}, pr=${prNumber}, state=${state}`);
 
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
       if (!project) return;
 
       const submission = await Submission.findOne({
@@ -377,7 +382,7 @@ if (githubApp) {
     if (action !== "created") return;
 
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
       if (!project) return;
 
       const submission = await Submission.findOne({
@@ -409,7 +414,7 @@ if (githubApp) {
     const repoUrl = payload.repository.html_url;
     const relName = payload.release.name || payload.release.tag_name;
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
       if (!project) return;
 
       // Notify owner and developer team of new release
@@ -428,7 +433,7 @@ if (githubApp) {
   githubApp.webhooks.on("star", async ({ payload }) => {
     const repoUrl = payload.repository.html_url;
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
       if (!project) return;
 
       project.stars = payload.repository.stargazers_count;
@@ -442,7 +447,7 @@ if (githubApp) {
   githubApp.webhooks.on("fork", async ({ payload }) => {
     const repoUrl = payload.repository.html_url;
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(repoUrl, 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
       if (!project) return;
 
       project.forks = payload.repository.forks_count;

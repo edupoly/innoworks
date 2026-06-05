@@ -1,58 +1,25 @@
-import { useEffect, useState, memo } from "react";
+import { useEffect, memo } from "react";
 import { GitBranch, CheckCircle2, AlertCircle, RefreshCcw } from "lucide-react";
 import { motion } from "framer-motion";
-import api from "../lib/api";
+import { useGetRepoBranchesQuery } from "../store/api/authApiSlice";
 
 const BranchPicker = memo(({ owner, repo, onSelect, selectedBranch }) => {
-  const [branches, setBranches] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const skip = !owner || !repo;
+  const { data: branches = [], isLoading, isFetching, error, refetch } = useGetRepoBranchesQuery(
+    { owner, repo },
+    { skip }
+  );
 
   useEffect(() => {
-    let isCurrent = true;
-
-    if (!owner || !repo) {
-      setBranches([]);
-      setError("");
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchBranches = async () => {
-      setIsLoading(true);
-      setError("");
-      setBranches([]);
-
-      try {
-        const response = await api.get(`/auth/repos/${owner}/${repo}/branches`);
-        if (!isCurrent) return;
-
-        const fetchedBranches = response.data;
-        setBranches(fetchedBranches);
-        
-        const isCurrentBranchValid = fetchedBranches.some(b => b.name === selectedBranch);
-        
-        if (!isCurrentBranchValid && fetchedBranches.length > 0) {
-          const defaultBranch = fetchedBranches.find(b => b.name === 'main' || b.name === 'master') || fetchedBranches[0];
-          onSelect(defaultBranch.name);
-        }
-      } catch (error) {
-        if (!isCurrent) return;
-        console.error("Failed to fetch branches:", error);
-        setError(error.response?.data?.message || "Strategic link failed. Could not load branch data.");
-      } finally {
-        if (isCurrent) {
-          setIsLoading(false);
-        }
+    if (!skip && branches.length > 0) {
+      const isCurrentBranchValid = branches.some(b => b.name === selectedBranch);
+      if (!isCurrentBranchValid) {
+        const defaultBranch = branches.find(b => b.name === 'main' || b.name === 'master') || branches[0];
+        onSelect(defaultBranch.name);
       }
-    };
+    }
+  }, [branches, selectedBranch, onSelect, skip]);
 
-    fetchBranches();
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [owner, repo, selectedBranch, onSelect]);
 
   if (!owner || !repo) {
     return (
@@ -113,5 +80,7 @@ const BranchPicker = memo(({ owner, repo, onSelect, selectedBranch }) => {
     </div>
   );
 });
+
+BranchPicker.displayName = "BranchPicker";
 
 export default BranchPicker;

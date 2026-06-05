@@ -167,3 +167,6 @@ export const EngineeringRadarChart = memo(({ stats, size = 320 }) => {
     </div>
   );
 });
+
+EngineeringRadarChart.displayName = "EngineeringRadarChart";
+

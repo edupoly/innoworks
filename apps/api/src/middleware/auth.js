@@ -33,16 +33,10 @@ export const authenticate = async (req, res, next) => {
       throw new Error("Invalid token payload: missing userId");
     }
 
-    // Fetch latest user data including role and permissions
-    const user = await User.findById(decoded.userId).select("role permissions");
-    if (!user) {
-      return res.status(401).json({ message: "Authentication required: User no longer exists" });
-    }
-
     req.user = {
       ...decoded,
-      role: user.role,
-      permissions: user.permissions
+      role: decoded.role || 'Developer',
+      permissions: decoded.permissions || []
     };
     next();
   } catch (error) {

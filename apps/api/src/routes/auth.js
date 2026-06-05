@@ -248,7 +248,11 @@ router.get("/github/callback", async (req, res) => {
     );
 
     // Generate JWT
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+    const token = jwt.sign({ 
+      userId: user.id, 
+      role: user.role,
+      permissions: user.permissions 
+    }, JWT_SECRET, {
       expiresIn: "1d",
     });
     const refreshToken = jwt.sign({ userId: user.id }, JWT_REFRESH_SECRET, {

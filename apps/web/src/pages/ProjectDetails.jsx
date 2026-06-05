@@ -42,6 +42,7 @@ import {
   Eye,
   GitFork,
   BookOpen,
+  Book,
   Plus,
   GitPullRequest,
   ClipboardList,

@@ -9,30 +9,33 @@ import {
   ExternalLink,
   ShieldCheck,
   AlertCircle,
-  Play
+  Play,
+  X,
+  Send
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetDockerAssetsQuery, useUploadDockerAssetMutation } from "../../store/api/dockerApiSlice";
 import { useSelector } from "react-redux";
+import { DOCKER_ASSET_TYPES } from "../../lib/constants";
 
 const ProjectAssets = ({ projectId, project }) => {
   const [activeSubTab, setActiveSubTab] = useState("docker"); // 'docker', 'youtube'
   const { user } = useSelector((state) => state.auth);
+  const [isUploadingModal, setIsUploadingModal] = useState(false);
+  const [assetForm, setAssetForm] = useState({ filename: "", url: "", assetType: "Dockerfile" });
   
   const { data: dockerAssets, isLoading: loadingDocker } = useGetDockerAssetsQuery(projectId);
   const [uploadDocker, { isLoading: isUploading }] = useUploadDockerAssetMutation();
 
   const isTeamMember = user && (user.role === 'Admin' || user.role === 'Project Owner' || user.role === 'Team');
 
-  const handleUpload = async () => {
-    const filename = prompt("Enter asset filename (e.g., docker-compose.yml):");
-    const url = prompt("Enter asset URL (e.g., Gist or S3 link):");
-    const assetType = prompt("Enter asset type (Dockerfile, docker-compose, k8s, script):");
-
-    if (filename && url && assetType) {
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (assetForm.filename && assetForm.url && assetForm.assetType) {
        try {
-         await uploadDocker({ projectId, filename, url, assetType }).unwrap();
-         alert("Asset uploaded and pending review.");
+         await uploadDocker({ projectId, ...assetForm }).unwrap();
+         setIsUploadingModal(false);
+         setAssetForm({ filename: "", url: "", assetType: "Dockerfile" });
        } catch (err) {
          console.error(err);
        }
@@ -68,7 +71,7 @@ const ProjectAssets = ({ projectId, project }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-8"
+            className="space-y-8 relative"
           >
             <div className="flex items-center justify-between">
                <div>
@@ -77,8 +80,7 @@ const ProjectAssets = ({ projectId, project }) => {
                </div>
                {isTeamMember && (
                  <button 
-                  onClick={handleUpload}
-                  disabled={isUploading}
+                  onClick={() => setIsUploadingModal(true)}
                   className="btn-primary px-6 py-3 flex items-center gap-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
                  >
                    <Plus size={16} /> Upload Asset
@@ -86,8 +88,69 @@ const ProjectAssets = ({ projectId, project }) => {
                )}
             </div>
 
+            <AnimatePresence>
+              {isUploadingModal && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <form onSubmit={handleUpload} className="bg-card border border-primary/30 rounded-[2.5rem] p-10 space-y-8 shadow-xl shadow-primary/5">
+                     <div className="flex items-center justify-between">
+                        <h4 className="text-lg font-black tracking-tight">Register New Asset</h4>
+                        <button type="button" onClick={() => setIsUploadingModal(false)} className="p-2 hover:bg-muted rounded-xl transition-all"><X size={20} /></button>
+                     </div>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Filename</label>
+                           <input 
+                            required
+                            value={assetForm.filename}
+                            onChange={e => setAssetForm({...assetForm, filename: e.target.value})}
+                            className="w-full px-6 py-4 bg-muted/20 border border-border/50 rounded-2xl font-bold text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            placeholder="e.g., docker-compose.yml"
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Asset URL</label>
+                           <input 
+                            required
+                            value={assetForm.url}
+                            onChange={e => setAssetForm({...assetForm, url: e.target.value})}
+                            className="w-full px-6 py-4 bg-muted/20 border border-border/50 rounded-2xl font-bold text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            placeholder="https://gist.github.com/..."
+                           />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Asset Type</label>
+                           <select 
+                            value={assetForm.assetType}
+                            onChange={e => setAssetForm({...assetForm, assetType: e.target.value})}
+                            className="w-full px-4 py-4 bg-muted/20 border border-border/50 rounded-2xl text-xs font-black uppercase tracking-widest text-primary focus:outline-none"
+                           >
+                              {DOCKER_ASSET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                           </select>
+                        </div>
+                     </div>
+                     <div className="flex justify-end">
+                        <button 
+                          type="submit"
+                          disabled={isUploading}
+                          className="btn-primary px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 flex items-center gap-3"
+                        >
+                          {isUploading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <><Send size={18} /> Register Asset</>}
+                        </button>
+                     </div>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {dockerAssets?.length > 0 ? (
+              {loadingDocker ? (
+                 [...Array(3)].map((_, i) => <div key={i} className="h-32 bg-muted/10 rounded-[2.5rem] animate-pulse"></div>)
+              ) : dockerAssets?.length > 0 ? (
                 dockerAssets.map((asset, i) => (
                   <div key={i} className="bg-card border border-border/50 rounded-[2.5rem] p-8 shadow-sm hover:border-primary/30 transition-all group">
                     <div className="flex items-center gap-4 mb-8">

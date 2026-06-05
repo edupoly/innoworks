@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "../store/slices/authSlice";
-import api from "../lib/api.js";
-import { useQueryClient } from "@tanstack/react-query";
+import { authApiSlice } from "../store/api/authApiSlice";
 
 const AuthCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const queryClient = useQueryClient();
   const [debugInfo, setDebugInfo] = useState("Initializing...");
 
   useEffect(() => {
@@ -55,14 +53,14 @@ const AuthCallback = () => {
           }
 
           try {
-            const response = await api.get('/auth/me');
+            // Force fetch user profile using RTK Query imperative dispatch
+            const result = await dispatch(authApiSlice.endpoints.getMe.initiate(undefined, { forceRefetch: true })).unwrap();
             setDebugInfo("User fetched, updating store and navigating...");
-            queryClient.setQueryData(["me"], response.data);
-            dispatch(setCredentials({ user: response.data, token }));
+            dispatch(setCredentials({ user: result, token }));
             navigate("/dashboard", { replace: true });
           } catch (error) {
             console.error("AuthCallback: Profile fetch failed", error);
-            setDebugInfo(`Profile fetch failed: ${error.response?.data?.message || error.message}. Redirecting home...`);
+            setDebugInfo(`Profile fetch failed: ${error?.data?.message || error.message}. Redirecting home...`);
             // Remove tokens since they are invalid or profile fetch failed
             localStorage.removeItem("token");
             localStorage.removeItem("refreshToken");
@@ -79,7 +77,7 @@ const AuthCallback = () => {
     };
 
     runAuth();
-  }, [searchParams, navigate, dispatch, queryClient]);
+  }, [searchParams, navigate, dispatch]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">

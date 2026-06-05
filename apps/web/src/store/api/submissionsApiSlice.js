@@ -26,7 +26,7 @@ export const submissionsApiSlice = apiSlice.injectEndpoints({
       ],
     }),
     submitReview: builder.mutation({
-      query: ({ id, projectId, ...review }) => ({
+      query: ({ id, ...review }) => ({
         url: `/submissions/${id}/reviews`,
         method: 'POST',
         body: review,

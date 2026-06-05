@@ -2,14 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Rocket, Send, AlertCircle, CheckCircle2, RefreshCcw } from "lucide-react";
 import { motion } from "framer-motion";
-import api from "../lib/api";
 import RepoPicker from "../components/RepoPicker";
 import BranchPicker from "../components/BranchPicker";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCreateProjectMutation } from "../store/api/projectsApiSlice";
 
 const CreateProject = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -23,18 +21,7 @@ const CreateProject = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const createMutation = useMutation({
-    mutationFn: (newProject) => api.post("/projects", newProject),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-      setSuccess(true);
-      setTimeout(() => navigate("/projects"), 2000);
-    },
-    onError: (err) => {
-      setError(err.response?.data?.message || "Failed to create project. Please try again.");
-    }
-  });
+  const [createProject, { isLoading: isCreating }] = useCreateProjectMutation();
 
   const handleRepoSelect = (repo) => {
     setSelectedRepo(repo);
@@ -42,7 +29,7 @@ const CreateProject = () => {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedRepo) {
       setError("Please select a repository for this challenge.");
@@ -50,14 +37,20 @@ const CreateProject = () => {
     }
 
     setError("");
-    createMutation.mutate({
-      ...formData,
-      repoUrl: selectedRepo.html_url,
-      branchName: branchName,
-      requiredSkills: formData.requiredSkills.split(",").map(s => s.trim()).filter(s => s !== ""),
-      techStack: formData.techStack.split(",").map(s => s.trim()).filter(s => s !== ""),
-      bounty: Number(formData.bounty),
-    });
+    try {
+      await createProject({
+        ...formData,
+        repoUrl: selectedRepo.html_url,
+        branchName: branchName,
+        requiredSkills: formData.requiredSkills.split(",").map(s => s.trim()).filter(s => s !== ""),
+        techStack: formData.techStack.split(",").map(s => s.trim()).filter(s => s !== ""),
+        bounty: Number(formData.bounty),
+      }).unwrap();
+      setSuccess(true);
+      setTimeout(() => navigate("/projects"), 2000);
+    } catch (err) {
+      setError(err.data?.message || "Failed to create project. Please try again.");
+    }
   };
 
   if (success) {
@@ -195,11 +188,11 @@ const CreateProject = () => {
 
           <div className="pt-6 border-t border-border/50">
             <button
-              disabled={createMutation.isPending || !selectedRepo || !branchName}
+              disabled={isCreating || !selectedRepo || !branchName}
               type="submit"
               className="w-full btn-primary py-4 text-lg flex items-center justify-center gap-3 shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              {createMutation.isPending ? (
+              {isCreating ? (
                 <RefreshCcw size={20} className="animate-spin" />
               ) : (
                 <>

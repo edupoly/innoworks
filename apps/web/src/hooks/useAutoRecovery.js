@@ -119,7 +119,7 @@ export const useAutoRecovery = () => {
       clearInterval(sleepInterval);
       clearInterval(backgroundRefreshInterval);
     };
-  }, [queryClient, dispatch, isInactive]);
+  }, [queryClient, dispatch, isInactive, triggerRefetch]);
 
   return { isInactive };
 };

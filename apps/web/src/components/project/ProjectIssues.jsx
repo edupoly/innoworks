@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { 
   AlertCircle, 
   MessageSquare, 
@@ -10,7 +10,8 @@ import {
   Send,
   Filter,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Kanban
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetIssuesQuery, useCreateIssueMutation, useUpdateIssueMutation } from "../../store/api/issuesApiSlice";
@@ -23,6 +24,14 @@ const ProjectIssues = ({ projectId }) => {
   
   const { data: issues, isLoading } = useGetIssuesQuery(projectId);
   const [createIssue, { isLoading: isSubmitting }] = useCreateIssueMutation();
+
+  const filteredIssues = useMemo(() => {
+    if (!issues) return [];
+    if (filter === 'all') return issues;
+    if (filter === 'open') return issues.filter(i => i.status === 'Open' || i.status === 'In Progress');
+    if (filter === 'closed') return issues.filter(i => i.status === 'Resolved' || i.status === 'Closed');
+    return issues;
+  }, [issues, filter]);
 
   const [newIssue, setNewIssue] = useState({
     title: "",
@@ -178,8 +187,8 @@ const ProjectIssues = ({ projectId }) => {
       <div className="space-y-4">
         {isLoading ? (
            [...Array(3)].map((_, i) => <div key={i} className="h-32 bg-muted/10 rounded-[2.5rem] animate-pulse"></div>)
-        ) : issues?.length > 0 ? (
-          issues.map(issue => (
+        ) : filteredIssues?.length > 0 ? (
+          filteredIssues.map(issue => (
             <div key={issue._id} className="bg-card border border-border/50 rounded-[2.5rem] p-8 hover:border-primary/30 transition-all group shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
                <div className="flex items-start gap-5">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${issue.status === 'Closed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>

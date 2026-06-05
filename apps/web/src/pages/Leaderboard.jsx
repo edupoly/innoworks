@@ -20,6 +20,7 @@ const Metric = memo(({ label, value }) => {
     </div>
   );
 });
+Metric.displayName = "Metric";
 
 const LeaderboardRow = memo(({ user, rank, period }) => {
   if (!user || !user.username) return null;
@@ -83,6 +84,7 @@ const LeaderboardRow = memo(({ user, rank, period }) => {
     </div>
   );
 });
+LeaderboardRow.displayName = "LeaderboardRow";
 
 const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) => {
   if (!user || !user.username) return null;
@@ -138,6 +140,7 @@ const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) 
     </div>
   );
 });
+PodiumCard.displayName = "PodiumCard";
 
 const Leaderboard = () => {
   const [period, setPeriod] = useState("all_time");
