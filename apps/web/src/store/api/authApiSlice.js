@@ -18,7 +18,9 @@ export const authApiSlice = apiSlice.injectEndpoints({
             // Invalidate the repos cache to trigger a refetch
             dispatch(authApiSlice.util.invalidateTags(['Repos']));
           });
-        } catch {}
+        } catch (err) {
+          console.error("Repos socket sync error:", err);
+        }
         await cacheEntryRemoved;
         socket.off('reposUpdated');
       }

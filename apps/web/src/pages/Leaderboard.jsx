@@ -160,6 +160,9 @@ const Leaderboard = () => {
     { id: "monthly", label: "Monthly Challenge", icon: Award }
   ];
 
+  const topThree = useMemo(() => filteredUsers.slice(0, 3), [filteredUsers]);
+  const restOfUsers = useMemo(() => filteredUsers.slice(3), [filteredUsers]);
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-40">
@@ -168,9 +171,6 @@ const Leaderboard = () => {
       </div>
     );
   }
-
-  const topThree = useMemo(() => filteredUsers.slice(0, 3), [filteredUsers]);
-  const restOfUsers = useMemo(() => filteredUsers.slice(3), [filteredUsers]);
 
   return (
     <div className="py-20 max-w-6xl mx-auto px-4 selection:bg-primary/30 relative">

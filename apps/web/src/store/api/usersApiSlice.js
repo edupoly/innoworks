@@ -30,7 +30,9 @@ export const usersApiSlice = apiSlice.injectEndpoints({
             });
           };
           socket.on('leaderboardUpdate', handleUpdate);
-        } catch {}
+        } catch (err) {
+          console.error("Leaderboard socket sync error:", err);
+        }
         await cacheEntryRemoved;
         socket.off('leaderboardUpdate');
       }
@@ -50,7 +52,9 @@ export const usersApiSlice = apiSlice.injectEndpoints({
             });
           };
           socket.on('notification', handleNotification);
-        } catch {}
+        } catch (err) {
+          console.error("Leaderboard socket sync error:", err);
+        }
         await cacheEntryRemoved;
         socket.off('notification');
       }

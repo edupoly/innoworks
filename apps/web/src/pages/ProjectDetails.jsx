@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { useQueryClient } from "@tanstack/react-query";
 import { 
   useGetProjectQuery, 
   useGetProjectIntelligenceQuery, 
@@ -62,6 +63,7 @@ import { setCredentials } from "../store/slices/authSlice";
 import { useMe } from "../hooks/useAuth";
 
 const ProjectDetails = () => {
+  const queryClient = useQueryClient();
   const { id } = useParams();
   const { user: authUser } = useMe();
   const navigate = useNavigate();
@@ -305,7 +307,7 @@ const ProjectDetails = () => {
 
   const handleCreateIssue = (e) => {
     e.preventDefault();
-    createIssueMutation.mutate({ title: issueTitle, body: issueBody });
+    handleAddIssue(e);
   };
 
   if (loadingProject || loadingIntel) return (
