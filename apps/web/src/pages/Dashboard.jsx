@@ -18,13 +18,15 @@ import {
   Edit3,
   Save,
   Terminal,
-  ShieldCheck
+  ShieldCheck,
+  Rocket
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
 import { EngineeringRadarChart } from "../components/EngineeringRadarChart";
 import { useUpdateProfileMutation } from "../store/api/usersApiSlice";
 import { useDeleteProjectMutation } from "../store/api/projectsApiSlice";
+import SetupWizard from "../components/SetupWizard";
 
 const container = {
   hidden: { opacity: 0 },
@@ -46,6 +48,7 @@ const Dashboard = () => {
   const tabParam = searchParams.get("tab");
   
   const [isEditing, setIsEditing] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [activeTab, setActiveTab] = useState(tabParam || "kanban"); // 'kanban', 'management', 'timeline'
 
   useEffect(() => {
@@ -178,6 +181,12 @@ const Dashboard = () => {
         </div>
         <div className="flex flex-wrap gap-4">
           <button 
+            onClick={() => setShowWizard(true)}
+            className="px-6 py-3 bg-primary/10 text-primary border border-primary/20 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center gap-2"
+          >
+            <Rocket size={16} /> Ignition Guide
+          </button>
+          <button 
             onClick={() => setIsEditing(!isEditing)}
             className="group btn-secondary px-6 py-3 flex items-center gap-3 rounded-2xl border border-border/50 bg-background/50 backdrop-blur-xl hover:border-primary/30 transition-all"
           >
@@ -188,6 +197,10 @@ const Dashboard = () => {
           </Link>
         </div>
       </motion.header>
+
+      <AnimatePresence>
+        {showWizard && <SetupWizard onClose={() => setShowWizard(false)} />}
+      </AnimatePresence>
 
       {/* Edit Profile Panel */}
       <AnimatePresence>

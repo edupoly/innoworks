@@ -10,8 +10,14 @@ const badgeSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema({
   githubId: { type: String, required: true, unique: true },
   githubAccessToken: { type: String },
+  githubUsername: { type: String },
+  githubProfileUrl: { type: String },
+  githubEmail: { type: String },
   username: { type: String, required: true, unique: true },
-  email: { type: String },
+  email: { type: String, lowercase: true },
+  phone: { type: String },
+  country: { type: String },
+  timezone: { type: String },
   avatarUrl: { type: String },
   bio: { type: String, default: '' },
   profileUrl: { type: String },
@@ -24,9 +30,15 @@ const userSchema = new mongoose.Schema({
   },
   roles: { 
     type: [String], 
-    enum: ['PROJECT_OWNER', 'DEVELOPER', 'TESTER'],
+    enum: ['PROJECT_OWNER', 'DEVELOPER', 'TESTER', 'ADMIN', 'TEAM'],
     default: ['DEVELOPER'] 
   },
+  role: {
+    type: String,
+    enum: ['Admin', 'Project Owner', 'Team', 'Developer'],
+    default: 'Developer'
+  },
+  permissions: [String],
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
   reputationScore: { type: Number, default: 0 },

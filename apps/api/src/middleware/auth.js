@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { getRedisConnection } from "../lib/redis.js";
+import { User } from "../models/User.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
@@ -31,7 +32,18 @@ export const authenticate = async (req, res, next) => {
     if (!decoded.userId) {
       throw new Error("Invalid token payload: missing userId");
     }
-    req.user = decoded;
+
+    // Fetch latest user data including role and permissions
+    const user = await User.findById(decoded.userId).select("role permissions");
+    if (!user) {
+      return res.status(401).json({ message: "Authentication required: User no longer exists" });
+    }
+
+    req.user = {
+      ...decoded,
+      role: user.role,
+      permissions: user.permissions
+    };
     next();
   } catch (error) {
     console.error("❌ JWT Verification Error:", error.message);

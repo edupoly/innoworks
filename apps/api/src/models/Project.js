@@ -25,6 +25,15 @@ const projectSchema = new mongoose.Schema({
   forks: { type: Number, default: 0 },
   contributorsCount: { type: Number, default: 0 },
   openIssuesCount: { type: Number, default: 0 },
+  wikiPages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'WikiPage' }],
+  dockerAssets: [{
+    filename: String,
+    url: String,
+    assetType: { type: String, enum: ['Dockerfile', 'docker-compose', 'k8s', 'script'] },
+    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    status: { type: String, enum: ['Pending', 'Approved'], default: 'Pending' },
+    uploadedAt: { type: Date, default: Date.now }
+  }],
 }, { timestamps: true });
 
 projectSchema.index({ status: 1 });

@@ -7,6 +7,7 @@ import { authenticate } from '../middleware/auth.js';
 import { validateObjectId } from '../middleware/validate.js';
 import { cacheMiddleware, clearCache } from '../middleware/cache.js';
 import { getTopUsers } from '../lib/leaderboard.js';
+import { maskSensitiveData } from '../middleware/rbac.js';
 
 const router = Router();
 
@@ -103,10 +104,15 @@ router.put("/notifications/:id/read", authenticate, validateObjectId, async (req
 // 5. Update user's profile metadata and roles
 router.put("/profile", authenticate, async (req, res) => {
   try {
-    const { bio, skills, roles } = req.body;
+    const { bio, skills, roles, email, phone, country, timezone } = req.body;
     
     const updateData = {};
     if (bio !== undefined) updateData.bio = bio;
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (country !== undefined) updateData.country = country;
+    if (timezone !== undefined) updateData.timezone = timezone;
+
     if (skills !== undefined) {
       updateData.skills = Array.isArray(skills) 
         ? skills 
@@ -114,7 +120,7 @@ router.put("/profile", authenticate, async (req, res) => {
     }
     if (roles !== undefined && Array.isArray(roles)) {
       // Validate roles enum values
-      const validRoles = roles.filter(role => ['PROJECT_OWNER', 'DEVELOPER', 'TESTER'].includes(role));
+      const validRoles = roles.filter(role => ['PROJECT_OWNER', 'DEVELOPER', 'TESTER', 'ADMIN', 'TEAM'].includes(role));
       if (validRoles.length > 0) {
         updateData.roles = validRoles;
       }
@@ -142,10 +148,25 @@ router.put("/profile", authenticate, async (req, res) => {
 // 6. Retrieve comprehensive user profile (portfolios, analytics, submissions)
 router.get("/profile/:username", cacheMiddleware(60), async (req, res) => {
   try {
-    const user = await User.findOne({ 
+    const rawUser = await User.findOne({ 
       username: { $regex: new RegExp(`^${req.params.username}$`, "i") } 
     }).lean();
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!rawUser) return res.status(404).json({ message: "User not found" });
+
+    // Handle authentication for masking
+    let viewer = null;
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    if (authHeader) {
+      try {
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+        viewer = await User.findById(decoded.userId).select("role").lean();
+      } catch (e) {
+        // Ignore auth error for public view
+      }
+    }
+    
+    const user = maskSensitiveData(rawUser, viewer);
 
     // Fetch user submissions with deep populated project info
     const submissions = await Submission.find({ user: user._id })

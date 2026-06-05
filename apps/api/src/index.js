@@ -12,6 +12,10 @@ import projectRoutes from './routes/projects.js';
 import webhookRoutes from './routes/webhooks.js';
 import submissionRoutes from './routes/submissions.js';
 import userRoutes from './routes/users.js';
+import adminRoutes from './routes/admin.js';
+import wikiRoutes from './routes/wiki.js';
+import issueRoutes from './routes/issues.js';
+import dockerRoutes from './routes/docker.js';
 import "./workers/testWorker.js";
 import connectDB from "./lib/mongodb.js";
 import mongoose from "mongoose";
@@ -124,6 +128,10 @@ app.use("/auth", authRoutes);
 app.use("/projects", projectRoutes);
 app.use("/submissions", submissionRoutes);
 app.use("/users", userRoutes);
+app.use("/admin", adminRoutes);
+app.use("/wiki", wikiRoutes);
+app.use("/issues", issueRoutes);
+app.use("/docker", dockerRoutes);
 
 const PORT = process.env.PORT || 4000;
 

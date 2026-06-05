@@ -231,10 +231,13 @@ router.get("/github/callback", async (req, res) => {
     let user = await User.findOneAndUpdate(
       { githubId: githubUser.id.toString() },
       {
+        githubUsername: githubUser.login,
         username: githubUser.login,
         avatarUrl: githubUser.avatar_url,
         email: githubUser.email,
+        githubEmail: githubUser.email,
         githubAccessToken: accessToken,
+        githubProfileUrl: githubUser.html_url,
         profileUrl: githubUser.html_url,
         repositories: repos,
         $set: {

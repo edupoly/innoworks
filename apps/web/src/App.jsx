@@ -20,6 +20,10 @@ import Leaderboard from "./pages/Leaderboard";
 import ProjectDetails from "./pages/ProjectDetails";
 import CreateProject from "./pages/CreateProject";
 import AuthCallback from "./pages/AuthCallback";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import WikiHome from "./pages/wiki/WikiHome";
+import WikiPage from "./pages/wiki/WikiPage";
+import EditWiki from "./pages/wiki/EditWiki";
 
 // High-fidelity loading fallback for Suspense
 const PageLoader = () => (
@@ -47,6 +51,20 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated && !token) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+// Admin Route Component
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
+  const token = localStorage.getItem("token");
+
+  if (loading) return <PageLoader />;
+
+  if (!isAuthenticated || !token || user?.role !== 'Admin') {
     return <Navigate to="/" replace />;
   }
 
@@ -381,7 +399,19 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
           <Route path="/profile/:username" element={<Profile />} />
+          <Route path="/projects/:projectId/wiki" element={<WikiHome />} />
+          <Route path="/projects/:projectId/wiki/new" element={<ProtectedRoute><EditWiki /></ProtectedRoute>} />
+          <Route path="/projects/:projectId/wiki/:slug" element={<WikiPage />} />
+          <Route path="/projects/:projectId/wiki/:slug/edit" element={<ProtectedRoute><EditWiki /></ProtectedRoute>} />
         </Route>
 
         {/* Auth Callback variants */}

@@ -54,11 +54,14 @@ import {
   Cpu,
   RefreshCcw,
   Zap,
-  Check
+  Check,
+  AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import RepoPicker from "../components/RepoPicker";
 import BranchPicker from "../components/BranchPicker";
+import ProjectAssets from "../components/project/ProjectAssets";
+import ProjectIssues from "../components/project/ProjectIssues";
 import { setCredentials } from "../store/slices/authSlice";
 import { useMe } from "../hooks/useAuth";
 
@@ -363,6 +366,13 @@ const ProjectDetails = () => {
           <div className="flex items-center gap-4">
             {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? (
               <div className="flex items-center gap-3">
+                <Link 
+                  to={`/projects/${id}/wiki`}
+                  className="p-4 text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 rounded-2xl transition-all"
+                  title="Project Wiki"
+                >
+                  <Book size={20} />
+                </Link>
                 <button 
                   onClick={handleDelete}
                   className="p-4 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/50 rounded-2xl transition-all"
@@ -378,6 +388,13 @@ const ProjectDetails = () => {
               </div>
             ) : (
               <div className="flex flex-wrap items-center gap-4">
+                <Link 
+                  to={`/projects/${id}/wiki`}
+                  className="p-4 text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 rounded-2xl transition-all"
+                  title="Project Wiki"
+                >
+                  <Book size={20} />
+                </Link>
                 <button
                   onClick={() => { if (!isAccepted) acceptProjectHandler(); setActiveTab("dev_flow"); }}
                   className={`px-8 py-4 font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl flex items-center gap-2.5 transition-all shadow-xl ${activeTab === "dev_flow" ? "bg-indigo-600 text-white shadow-indigo-600/30" : "bg-indigo-600/10 text-indigo-600 border border-indigo-600/20 hover:bg-indigo-600/20"}`}
@@ -402,13 +419,15 @@ const ProjectDetails = () => {
         {[
           { id: "overview", label: "Overview", icon: Target },
           { id: "stats", label: "Analytics", icon: Activity },
-          { id: "issues", label: "Issues", icon: AlertCircle },
+          { id: "signals", label: "Signals", icon: AlertTriangle },
+          { id: "assets", label: "Assets", icon: Layers },
           ...((project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? 
-            [{ id: "management", label: "Submissions", icon: Layers }] : 
+            [{ id: "management", label: "Submissions", icon: ClipboardList }] : 
             [{ id: "dev_flow", label: "Develop", icon: Terminal }, { id: "test_flow", label: "QA & Test", icon: Cpu }]
           ),
           { id: "activity", label: "Activity", icon: History }
-        ].map(tab => (
+        ]
+.map(tab => (
           <button 
             key={tab.id}
             onClick={() => setActiveTab(tab.id)} 
@@ -552,114 +571,15 @@ const ProjectDetails = () => {
           </motion.div>
         )}
 
-        {activeTab === "issues" && (
-          <motion.div key="issues" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-             <div className="lg:col-span-2 space-y-8">
-                <div className="bg-card border border-border/50 rounded-[2.5rem] p-10 shadow-sm">
-                   <div className="flex items-center justify-between mb-10">
-                     <div className="flex items-center gap-3">
-                       <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20"><AlertCircle size={20} /></div>
-                       <h3 className="text-sm font-black uppercase tracking-[0.3em]">Open Issues</h3>
-                     </div>
-                     <button 
-                       onClick={() => setIsAddingIssue(!isAddingIssue)}
-                       className="px-6 py-3 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center gap-2"
-                     >
-                       {isAddingIssue ? <X size={14} /> : <Plus size={14} />} New Issue
-                     </button>
-                   </div>
+        {activeTab === "signals" && (
+          <motion.div key="signals" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
+            <ProjectIssues projectId={id} />
+          </motion.div>
+        )}
 
-                   <AnimatePresence>
-                     {isAddingIssue && (
-                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mb-10 overflow-hidden">
-                         <form onSubmit={handleCreateIssue} className="p-8 bg-muted/20 border border-border/50 rounded-[2rem] space-y-6">
-                            <div className="space-y-3">
-                              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Issue Title</label>
-                              <input required type="text" value={issueTitle} onChange={(e)=>setIssueTitle(e.target.value)} className="w-full p-4 bg-background border border-border/50 rounded-xl font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Brief summary of the issue" />
-                            </div>
-                            <div className="space-y-3">
-                              <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Description</label>
-                              <textarea required rows={4} value={issueBody} onChange={(e)=>setIssueBody(e.target.value)} className="w-full p-5 bg-background border border-border/50 rounded-2xl font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Provide details, logs, or reproduction steps..." />
-                            </div>
-                            <button type="submit" disabled={isCreatingIssue} className="w-full btn-primary py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl">
-                              {isCreatingIssue ? <RefreshCcw size={16} className="animate-spin" /> : 'Create GitHub Issue'}
-                            </button>
-                         </form>
-                       </motion.div>
-                     )}
-                   </AnimatePresence>
-                   
-                   <div className="space-y-6">
-                     {intelligence?.issueAnalytics?.openIssuesList?.length > 0 ? (
-                       intelligence.issueAnalytics.openIssuesList.map(issue => (
-                         <div key={issue.number} className="p-6 bg-muted/20 border border-border/50 rounded-[1.5rem] flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-red-500/30 transition-all group">
-                           <div className="flex items-start gap-4">
-                             <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center font-black text-xs text-muted-foreground border border-border/50 shrink-0">
-                               #{issue.number}
-                             </div>
-                             <div>
-                               <p className="text-sm font-bold text-foreground leading-tight mb-2">{issue.title}</p>
-                               <div className="flex flex-wrap gap-2">
-                                 {issue.labels.map((label, idx) => (
-                                   <span key={idx} className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-border" style={{ backgroundColor: `#${label.color}20`, color: `#${label.color}` }}>
-                                     {label.name}
-                                   </span>
-                                 ))}
-                                 <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-wider ml-1">Opened {new Date(issue.createdAt).toLocaleDateString()}</span>
-                               </div>
-                             </div>
-                           </div>
-                           
-                           <div className="flex items-center gap-3">
-                             {!(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
-                               <button 
-                                 onClick={() => { setSelectedIssue(issue); setActiveTab("dev_flow"); }}
-                                 className="px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all opacity-0 group-hover:opacity-100"
-                               >
-                                 Work on this
-                               </button>
-                             )}
-
-                             {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) && (
-                               <button 
-                                 onClick={() => handleCloseIssue(issue.number)}
-                                 disabled={isClosingIssue}
-                                 className="px-4 py-2 text-red-500 hover:bg-red-500/10 border border-red-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all opacity-0 group-hover:opacity-100"
-                               >
-                                 Close Issue
-                               </button>
-                             )}
-                           </div>
-                         </div>
-                       ))
-                     ) : (
-                       <div className="py-20 text-center bg-muted/5 border border-dashed border-border/50 rounded-[2rem] space-y-4">
-                         <CheckCircle2 size={48} className="mx-auto text-emerald-500 opacity-20" />
-                         <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Zero known discrepancies. Master node stable.</p>
-                       </div>
-                     )}
-                   </div>
-                </div>
-             </div>
-             
-             <div className="space-y-8">
-                <div className="bg-card border border-border/50 rounded-[2.5rem] p-8 space-y-6 shadow-sm">
-                   <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Issue Statistics</h4>
-                   <div className="space-y-4">
-                     {[
-                       { label: "Bug Reports", value: intelligence?.issueAnalytics?.bugIssues, color: "text-red-500" },
-                       { label: "Feature Requests", value: intelligence?.issueAnalytics?.featureRequests, color: "text-primary" },
-                       { label: "Good First Issues", value: intelligence?.issueAnalytics?.goodFirstIssues, color: "text-emerald-500" },
-                       { label: "Documentation", value: intelligence?.issueAnalytics?.documentationIssues, color: "text-indigo-500" }
-                     ].map((s, i) => (
-                       <div key={i} className="flex items-center justify-between p-4 bg-muted/20 border border-border/50 rounded-2xl transition-all hover:border-primary/20">
-                         <span className="text-[10px] font-bold text-muted-foreground uppercase">{s.label}</span>
-                         <span className={`text-sm font-black ${s.color}`}>{s.value || 0}</span>
-                       </div>
-                     ))}
-                   </div>
-                </div>
-             </div>
+        {activeTab === "assets" && (
+          <motion.div key="assets" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
+            <ProjectAssets projectId={id} project={project} />
           </motion.div>
         )}
 
