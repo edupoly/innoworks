@@ -6,17 +6,24 @@ import { Notification } from '../models/Notification.js';
 import { authenticate } from '../middleware/auth.js';
 import { validateObjectId } from '../middleware/validate.js';
 import { cacheMiddleware, clearCache } from '../middleware/cache.js';
+import { getTopUsers } from '../lib/leaderboard.js';
 
 const router = Router();
 
 // 1. Get leaderboards (All Time, Weekly, Monthly)
-router.get("/leaderboard", cacheMiddleware(300), async (req, res) => {
+router.get("/leaderboard", cacheMiddleware(10), async (req, res) => {
   const { period } = req.query; // 'weekly', 'monthly', 'all_time' (default)
 
   try {
-    // In a production app, we would filter by a createdAt/updatedAt timestamp range on an activity collection,
-    // or keep separate weeklyXp and monthlyXp fields. For this production-grade architecture, we can sort 
-    // by overall XP and reputationScore, and dynamically simulate filters or return ranks cleanly.
+    // Attempt to get from Redis for All Time (the most common)
+    if (!period || period === 'all_time') {
+      const topUsers = await getTopUsers(25);
+      if (topUsers) {
+        return res.json(topUsers);
+      }
+    }
+
+    // Fallback to MongoDB for other periods or if Redis is empty
     let users = [];
     if (period === 'weekly') {
       users = await User.find()

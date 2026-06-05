@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { User } from '../models/User.js';
 import { Project } from '../models/Project.js';
 import { sendNotification } from './notifications.js';
+import { broadcast, emitToUser } from './socket.js';
+import { updateUserRank } from './leaderboard.js';
 
 // Scoring config
 export const XP_VALUES = {
@@ -77,8 +79,28 @@ export const awardXP = async (userId, xpAmount, actionReason) => {
 
     // Save triggers pre-save hook which caps scores and calculates levels
     await user.save();
+    
+    // Update Redis leaderboard
+    await updateUserRank(user._id, user.xp);
 
     console.log(`🏆 Awarded ${xpAmount} XP to @${user.username}. Total: ${user.xp} XP (Level ${user.level})`);
+
+    // Broadcast leaderboard update to everyone
+    broadcast('leaderboardUpdate', {
+      userId: user._id,
+      username: user.username,
+      xp: user.xp,
+      level: user.level,
+      reputationScore: user.reputationScore
+    });
+
+    // Notify user specifically about their profile update
+    emitToUser(user._id, 'profileUpdate', {
+      xp: user.xp,
+      level: user.level,
+      reputationScore: user.reputationScore,
+      stats: user.contributionStats
+    });
 
     // Check if user leveled up
     if (user.level > previousLevel) {
@@ -190,6 +212,9 @@ export const evaluateBadges = async (user) => {
     if (newBadges.length > 0) {
       user.badges.push(...newBadges);
       await user.save();
+
+      // Notify profile update again with new badges
+      emitToUser(user._id, 'profileUpdate', { badges: user.badges });
 
       for (const badge of newBadges) {
         await sendNotification(

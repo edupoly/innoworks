@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
 import { useGetProjectsQuery } from "../store/api/projectsApiSlice";
 import { useGetUserProfileQuery } from "../store/api/usersApiSlice";
+import { useDebounce } from "../hooks/useDebounce";
 
 const container = {
   hidden: { opacity: 0 },
@@ -24,12 +25,13 @@ const Projects = () => {
 
   // Reactive filters states
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 400);
   const [difficulty, setDifficulty] = useState("");
   const [skill, setSkill] = useState("");
   const [sort, setSort] = useState("recent"); // 'recent', 'trending', 'most_active', 'most_contributors', 'bounty'
 
   const { data: projects, isLoading } = useGetProjectsQuery({
-    search,
+    search: debouncedSearch,
     difficulty,
     skill,
     sort

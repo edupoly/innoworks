@@ -25,6 +25,7 @@ export const useAutoRecovery = () => {
         "Submission",
         "Notification",
         "Leaderboard",
+        "Repos",
       ])
     );
   };
@@ -98,13 +99,13 @@ export const useAutoRecovery = () => {
       lastTickRef.current = now;
     }, 10000);
 
-    // 6. Automatic Background Refresh (90s polling when visible and active)
+    // 6. Automatic Background Refresh (5m polling when visible and active)
     const backgroundRefreshInterval = setInterval(() => {
       if (document.visibilityState === "visible" && !isInactive) {
         console.log("useAutoRecovery: Performing scheduled background refresh");
         triggerRefetch();
       }
-    }, 90000);
+    }, 300000);
 
     // Cleanup all event listeners and intervals
     return () => {

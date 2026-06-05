@@ -8,6 +8,7 @@ import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';
 import { evaluateBadges, awardXP, XP_VALUES } from '../lib/gamification.js';
 import { cacheMiddleware, clearCache } from '../middleware/cache.js';
+import { emitToUser } from '../lib/socket.js';
 import axios from 'axios';
 
 const router = Router();
@@ -401,6 +402,12 @@ router.post("/:id/accept", authenticate, validateObjectId, async (req, res) => {
       const { owner, repo } = parseRepoUrl(project.repoUrl);
       if (user.githubAccessToken) {
         await forkRepository(user.githubAccessToken, owner, repo);
+        
+        // Notify the client to refresh repos list
+        emitToUser(user._id, 'reposUpdated', { 
+          message: 'Fork initiated',
+          repo: `${user.username}/${repo}`
+        });
       }
     } catch (forkError) {
       console.error("❌ Auto-fork failed:", forkError.message);

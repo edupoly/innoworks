@@ -5,6 +5,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { createServer } from "http";
 import { initSocket } from "./lib/socket.js";
+import jwt from 'jsonwebtoken';
 
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
@@ -17,6 +18,7 @@ import mongoose from "mongoose";
 
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import rateLimit from 'express-rate-limit';
+import { rebuildLeaderboard } from "./lib/leaderboard.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -27,7 +29,7 @@ app.set('trust proxy', 1);
 // Global Rate Limiting - Increased for better user experience
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // Limit each IP to 500 requests per window
+  max: 1000, // Limit each IP to 1000 requests per window
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many requests from this IP, please try again after 15 minutes" }
@@ -55,7 +57,7 @@ if (FRONTEND_URL.endsWith("/")) FRONTEND_URL = FRONTEND_URL.slice(0, -1);
 
 const io = initSocket(httpServer, {
   cors: {
-    origin: [FRONTEND_URL],
+    origin: [FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"],
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -81,7 +83,7 @@ app.use(cors({
       normalizedOrigin.endsWith('.up.railway.app') ||
       normalizedOrigin.includes('localhost')
     ) {
-      callback(null, origin); // Return actual origin instead of true
+      callback(null, origin);
     } else {
       console.warn(`🔒 CORS Blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
@@ -140,16 +142,6 @@ requiredEnvVars.forEach(envVar => {
   }
 });
 
-if (process.env.NODE_ENV === 'production') {
-  const criticalVars = ['MONGODB_URI', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'JWT_SECRET'];
-  criticalVars.forEach(v => {
-    if (!process.env[v] || process.env[v] === 'secret') {
-      console.error(`❌ FATAL: Critical environment variable "${v}" is missing or insecure in production!`);
-      process.exit(1);
-    }
-  });
-}
-
 app.get("/health", (req, res) => {
   res.json({ 
     status: "ok", 
@@ -167,7 +159,20 @@ app.get("/", (req, res) => {
   });
 });
 
-import jwt from 'jsonwebtoken';
+// Socket Auth Middleware
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    return next(new Error("Authentication error: Token missing"));
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+    socket.userId = decoded.userId;
+    next();
+  } catch (err) {
+    next(new Error("Authentication error: Invalid token"));
+  }
+});
 
 // 404 handler
 app.use(notFound);
@@ -175,40 +180,17 @@ app.use(notFound);
 // Global error handler
 app.use(errorHandler);
 
-io.use((socket, next) => {
-  const token = socket.handshake.auth?.token;
-  if (!token) {
-    return next(new Error("Authentication error"));
-  }
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
-    socket.userId = decoded.userId;
-    next();
-  } catch (err) {
-    next(new Error("Authentication error"));
-  }
-});
-
-io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
-  
-  socket.on("join", (userId) => {
-    if (userId && socket.userId === userId.toString()) {
-      socket.join(userId.toString());
-      console.log(`👤 User socket ${socket.id} joined room: ${userId}`);
-    } else {
-      console.warn(`Unauthorized join attempt from ${socket.id} for user ${userId}`);
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
-});
-
 if (process.env.NODE_ENV !== 'test') {
-  httpServer.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  httpServer.listen(PORT, async () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+    
+    // Build initial leaderboard cache
+    try {
+      await rebuildLeaderboard();
+      console.log("🏆 Leaderboard cache initialized");
+    } catch (err) {
+      console.error("❌ Failed to rebuild leaderboard on startup:", err.message);
+    }
   });
 }
 

@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Trophy, Medal, Crown, TrendingUp, User, Calendar, Award, Star, Zap, Activity, ChevronRight } from "lucide-react";
+import { useState, useMemo, memo } from "react";
+import { Trophy, Medal, Crown, TrendingUp, User, Calendar, Award, Star, Zap, Activity, ChevronRight, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useGetLeaderboardQuery } from "../store/api/usersApiSlice";
+import { useDebounce } from "../hooks/useDebounce";
 
-const Metric = ({ label, value }) => {
+const Metric = memo(({ label, value }) => {
   return (
     <div className="text-center w-12">
       <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">{label}</p>
@@ -18,15 +19,16 @@ const Metric = ({ label, value }) => {
       <p className="text-[10px] font-black mt-1.5">{value || 0}%</p>
     </div>
   );
-};
+});
 
-const LeaderboardRow = ({ user, rank, period }) => {
+const LeaderboardRow = memo(({ user, rank, period }) => {
   if (!user || !user.username) return null;
 
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
+      layout
       className="bg-card/50 backdrop-blur-sm rounded-[2.5rem] p-8 border border-border/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary/30 hover:bg-card transition-all group"
     >
       <div className="flex items-center gap-8">
@@ -87,7 +89,7 @@ const LeaderboardRow = ({ user, rank, period }) => {
   );
 };
 
-const PodiumCard = ({ user, rank, color, bgColor, borderColor, featured }) => {
+const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) => {
   if (!user || !user.username) return null;
 
   return (
@@ -144,8 +146,18 @@ const PodiumCard = ({ user, rank, color, bgColor, borderColor, featured }) => {
 
 const Leaderboard = () => {
   const [period, setPeriod] = useState("all_time");
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
 
   const { data: users, isLoading } = useGetLeaderboardQuery(period);
+
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
+    if (!debouncedSearch) return users;
+    return users.filter(u => 
+      u.username.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+  }, [users, debouncedSearch]);
 
   const periods = [
     { id: "all_time", label: "All Time", icon: Trophy },
@@ -162,8 +174,8 @@ const Leaderboard = () => {
     );
   }
 
-  const topThree = users?.slice(0, 3) || [];
-  const restOfUsers = users?.slice(3) || [];
+  const topThree = useMemo(() => filteredUsers.slice(0, 3), [filteredUsers]);
+  const restOfUsers = useMemo(() => filteredUsers.slice(3), [filteredUsers]);
 
   return (
     <div className="py-20 max-w-6xl mx-auto px-4 selection:bg-primary/30 relative">
@@ -185,7 +197,7 @@ const Leaderboard = () => {
           </p>
         </div>
 
-        <div className="flex justify-center mb-24">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-24">
           <div className="bg-card/50 backdrop-blur-2xl p-2 rounded-[2.5rem] flex gap-1.5 border border-border/50 shadow-2xl shadow-black/5">
             {periods.map((p) => {
               const isSel = period === p.id;
@@ -205,9 +217,20 @@ const Leaderboard = () => {
               );
             })}
           </div>
+
+          <div className="relative group min-w-[300px]">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={18} />
+            <input
+              type="text"
+              placeholder="Search engineering elite..."
+              className="w-full pl-14 pr-6 py-4 bg-card/50 border border-border/50 rounded-[2rem] focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm backdrop-blur-2xl"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
 
-        {topThree.length > 0 && (
+        {topThree.length > 0 && !debouncedSearch && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 items-end px-4">
             {topThree[1] && (
               <motion.div
@@ -243,17 +266,19 @@ const Leaderboard = () => {
           </div>
         )}
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout">
           <motion.div 
-            key={period}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
+            key={`${period}-${debouncedSearch}`}
             className="grid grid-cols-1 gap-4"
           >
-            {restOfUsers.map((user, index) => (
-              <LeaderboardRow key={user._id || user.id} user={user} rank={index + 4} period={period} />
-            ))}
+            {debouncedSearch 
+              ? filteredUsers.map((user, index) => (
+                  <LeaderboardRow key={user._id || user.id} user={user} rank={index + 1} period={period} />
+                ))
+              : restOfUsers.map((user, index) => (
+                  <LeaderboardRow key={user._id || user.id} user={user} rank={index + 4} period={period} />
+                ))
+            }
           </motion.div>
         </AnimatePresence>
 

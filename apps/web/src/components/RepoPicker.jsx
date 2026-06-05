@@ -1,36 +1,26 @@
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useMemo, memo } from "react";
 import { Search, Globe, Lock, Code2, CheckCircle2, Github, RefreshCcw } from "lucide-react";
 import { motion } from "framer-motion";
-import api from "../lib/api";
+import { useGetReposQuery } from "../store/api/authApiSlice";
+import { useDebounce } from "../hooks/useDebounce";
 
 const RepoPicker = memo(({ onSelect, selectedRepo }) => {
-  const [repos, setRepos] = useState([]);
   const [search, setSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  
+  const { 
+    data: repos = [], 
+    isLoading, 
+    isFetching,
+    error, 
+    refetch 
+  } = useGetReposQuery();
 
-  const fetchRepos = useCallback(async () => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const response = await api.get("/auth/repos");
-      setRepos(response.data);
-    } catch (error) {
-      console.error("Failed to fetch repositories:", error);
-      setRepos([]);
-      setError(error.response?.data?.message || "Could not load repositories from GitHub.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchRepos();
-  }, [fetchRepos]);
-
-  const filteredRepos = repos.filter((repo) =>
-    repo.full_name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredRepos = useMemo(() => 
+    repos.filter((repo) =>
+      repo.full_name.toLowerCase().includes(debouncedSearch.toLowerCase())
+    ),
+  [repos, debouncedSearch]);
 
   return (
     <div className="w-full space-y-6">
@@ -47,13 +37,13 @@ const RepoPicker = memo(({ onSelect, selectedRepo }) => {
         </div>
         <button 
           type="button"
-          onClick={fetchRepos}
-          disabled={isLoading}
+          onClick={() => refetch()}
+          disabled={isLoading || isFetching}
           className="p-4 bg-muted/20 border border-border/50 rounded-2xl hover:bg-muted/40 transition-all text-muted-foreground hover:text-primary"
           title="Refresh Repositories"
           aria-label="Refresh repositories"
         >
-          <RefreshCcw size={18} className={isLoading ? "animate-spin" : ""} />
+          <RefreshCcw size={18} className={isLoading || isFetching ? "animate-spin" : ""} />
         </button>
       </div>
 
@@ -72,7 +62,7 @@ const RepoPicker = memo(({ onSelect, selectedRepo }) => {
               <h4 className="text-sm font-black uppercase tracking-[0.2em]">Repository Sync Failed</h4>
               <p className="text-xs font-medium text-muted-foreground">{error}</p>
             </div>
-            <button type="button" onClick={fetchRepos} className="text-[10px] font-black uppercase tracking-[0.25em] text-primary hover:underline">Retry Sync</button>
+            <button type="button" onClick={() => refetch()} className="text-[10px] font-black uppercase tracking-[0.25em] text-primary hover:underline">Retry Sync</button>
           </div>
         ) : filteredRepos.length > 0 ? (
           <div className="p-2 space-y-1">

@@ -2,6 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { setCredentials, logout, setLoading } from "../store/slices/authSlice";
 import { useGetMeQuery } from "../store/api/authApiSlice";
+import { initiateSocket } from "../lib/socket";
 
 export const useMe = () => {
   const { isAuthenticated, user: authUser, loading } = useSelector((state) => state.auth);
@@ -29,8 +30,10 @@ export const useMe = () => {
       if (isSuccess && data) {
         if (!isAuthenticated || authUser?._id !== data?._id) {
           dispatch(setCredentials({ user: data, token: token || localStorage.getItem("token") }));
+          initiateSocket(data._id);
         } else {
           dispatch(setLoading(false));
+          initiateSocket(data._id);
         }
       } else if (isError) {
         console.error("useMe: session restoration error:", error);

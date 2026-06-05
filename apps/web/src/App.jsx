@@ -12,15 +12,14 @@ import { Github, Rocket, Search, ShieldCheck, Zap, Sparkles, LayoutDashboard, Lo
 import { motion } from "framer-motion";
 import Layout from "./components/Layout";
 
-// Lazy Load Pages
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Notifications = lazy(() => import("./pages/Notifications"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Projects = lazy(() => import("./pages/Projects"));
-const Leaderboard = lazy(() => import("./pages/Leaderboard"));
-const ProjectDetails = lazy(() => import("./pages/ProjectDetails"));
-const CreateProject = lazy(() => import("./pages/CreateProject"));
-const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+import Dashboard from "./pages/Dashboard";
+import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
+import Projects from "./pages/Projects";
+import Leaderboard from "./pages/Leaderboard";
+import ProjectDetails from "./pages/ProjectDetails";
+import CreateProject from "./pages/CreateProject";
+import AuthCallback from "./pages/AuthCallback";
 
 // High-fidelity loading fallback for Suspense
 const PageLoader = () => (
@@ -343,60 +342,58 @@ function App() {
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route
-              path="/projects/:id"
-              element={
-                <ProtectedRoute>
-                  <ProjectDetails />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/projects/new"
-              element={
-                <ProtectedRoute>
-                  <CreateProject />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/notifications"
-              element={
-                <ProtectedRoute>
-                  <Notifications />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/profile/:username" element={<Profile />} />
-          </Route>
-
-          {/* Auth Callback variants */}
-          <Route path="/auth/callback/*" element={<AuthCallback />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="//auth/callback/*" element={<AuthCallback />} />
-          <Route path="//auth/callback" element={<AuthCallback />} />
-          <Route path="/auth/*" element={<AuthCallback />} />
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
           
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedRoute>
+                <ProjectDetails />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/projects/new"
+            element={
+              <ProtectedRoute>
+                <CreateProject />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/profile/:username" element={<Profile />} />
+        </Route>
+
+        {/* Auth Callback variants */}
+        <Route path="/auth/callback/*" element={<AuthCallback />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="//auth/callback/*" element={<AuthCallback />} />
+        <Route path="//auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/*" element={<AuthCallback />} />
+        
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Router>
   );
 }
