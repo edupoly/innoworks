@@ -33,6 +33,13 @@ export const authenticate = async (req, res, next) => {
       throw new Error("Invalid token payload: missing userId");
     }
 
+    if (redis) {
+      const isUserBlocklisted = await redis.get(`blocklist_user:${decoded.userId}`);
+      if (isUserBlocklisted) {
+        return res.status(403).json({ message: "Account has been suspended by an Administrator." });
+      }
+    }
+
     let rawRole = decoded.role || 'Developer';
     let normalizedRole = 'Developer';
     

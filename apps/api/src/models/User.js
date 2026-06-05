@@ -38,6 +38,11 @@ const userSchema = new mongoose.Schema({
     enum: ['Admin', 'Project Owner', 'Team', 'Developer'],
     default: 'Developer'
   },
+  status: {
+    type: String,
+    enum: ['Active', 'Blocked'],
+    default: 'Active'
+  },
   permissions: [String],
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },

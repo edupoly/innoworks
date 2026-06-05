@@ -14,20 +14,38 @@ import {
   Settings,
   MoreVertical,
   ExternalLink,
-  ShieldAlert
+  ShieldAlert,
+  Trash2,
+  CheckCircle2,
+  Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGetUsersQuery, useUpdateUserRoleMutation, useGetAuditLogsQuery } from "../../store/api/adminApiSlice";
+import { 
+  useGetUsersQuery, 
+  useUpdateUserRoleMutation, 
+  useUpdateUserStatusMutation,
+  useDeleteUserMutation,
+  useGetAuditLogsQuery,
+  useGetAdminProjectsQuery,
+  useDeleteAdminProjectMutation,
+  useGetAdminRequestsQuery
+} from "../../store/api/adminApiSlice";
 import { DASHBOARD_ROLES } from "../../lib/constants";
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("users"); // 'users', 'logs', 'settings'
+  const [activeTab, setActiveTab] = useState("users"); // 'users', 'projects', 'requests', 'logs', 'system'
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data: userData, isLoading: loadingUsers, refetch: refetchUsers } = useGetUsersQuery({ page, search });
-  const { data: logData, isLoading: loadingLogs } = useGetAuditLogsQuery({ page: 1 }); // Just showing first page of logs for now
+  const { data: userData, isLoading: loadingUsers } = useGetUsersQuery({ page, search });
+  const { data: logData, isLoading: loadingLogs } = useGetAuditLogsQuery({ page: 1 });
+  const { data: projectData, isLoading: loadingProjects } = useGetAdminProjectsQuery({ page, search }, { skip: activeTab !== 'projects' });
+  const { data: requestData, isLoading: loadingRequests } = useGetAdminRequestsQuery({ page }, { skip: activeTab !== 'requests' });
+
   const [updateRole, { isLoading: isUpdating }] = useUpdateUserRoleMutation();
+  const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateUserStatusMutation();
+  const [deleteUser, { isLoading: isDeletingUser }] = useDeleteUserMutation();
+  const [deleteProject, { isLoading: isDeletingProject }] = useDeleteAdminProjectMutation();
 
   const handleRoleChange = async (userId, newRole) => {
     if (window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
@@ -35,6 +53,37 @@ const AdminDashboard = () => {
         await updateRole({ id: userId, role: newRole }).unwrap();
       } catch (err) {
         console.error("Failed to update role:", err);
+      }
+    }
+  };
+
+  const handleStatusToggle = async (userId, currentStatus) => {
+    const newStatus = currentStatus === 'Blocked' ? 'Active' : 'Blocked';
+    if (window.confirm(`Are you sure you want to ${newStatus.toLowerCase()} this user?`)) {
+      try {
+        await updateStatus({ id: userId, status: newStatus }).unwrap();
+      } catch (err) {
+        console.error("Failed to update status:", err);
+      }
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm("CRITICAL WARNING: Are you sure you want to permanently delete this user? This action cannot be undone.")) {
+      try {
+        await deleteUser(userId).unwrap();
+      } catch (err) {
+        console.error("Failed to delete user:", err);
+      }
+    }
+  };
+
+  const handleDeleteProject = async (projectId) => {
+    if (window.confirm("CRITICAL WARNING: Are you sure you want to permanently delete this project globally?")) {
+      try {
+        await deleteProject(projectId).unwrap();
+      } catch (err) {
+        console.error("Failed to delete project:", err);
       }
     }
   };
@@ -54,9 +103,11 @@ const AdminDashboard = () => {
       </header>
 
       {/* Navigation Tabs */}
-      <div className="flex gap-1.5 p-1.5 bg-muted/30 rounded-[2rem] border border-border/50 w-fit mb-12">
+      <div className="flex flex-wrap gap-1.5 p-1.5 bg-muted/30 rounded-[2rem] border border-border/50 w-fit mb-12">
         {[
           { id: "users", label: "User Management", icon: Users },
+          { id: "projects", label: "Global Projects", icon: Briefcase },
+          { id: "requests", label: "Approval Requests", icon: ShieldAlert },
           { id: "logs", label: "Audit Logs", icon: History },
           { id: "system", label: "Global Settings", icon: Settings },
         ].map((tab) => (
@@ -161,9 +212,32 @@ const AdminDashboard = () => {
                             </div>
                           </td>
                           <td className="px-8 py-6">
-                            <button className="p-3 rounded-xl bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all">
-                              <ExternalLink size={16} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={() => {
+                                  if(window.confirm(`Are you sure you want to ${user.status === 'Blocked' ? 'unblock' : 'block'} this user?`)) {
+                                    /* We will need to define toggleStatus mutation */
+                                    // toggleStatus({ id: user._id, status: user.status === 'Blocked' ? 'Active' : 'Blocked' });
+                                  }
+                                }}
+                                className={`p-3 rounded-xl transition-all ${user.status === 'Blocked' ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' : 'bg-muted/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500'}`}
+                                title={user.status === 'Blocked' ? "Unblock User" : "Block User"}
+                              >
+                                <ShieldAlert size={16} />
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  if(window.confirm("Are you sure you want to permanently delete this user?")) {
+                                    /* deleteUser mutation */
+                                    // deleteUser(user._id);
+                                  }
+                                }}
+                                className="p-3 rounded-xl bg-muted/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-all"
+                                title="Delete User"
+                              >
+                                <Users size={16} /> {/* Should use Trash icon */}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -193,6 +267,138 @@ const AdminDashboard = () => {
                     <ChevronRight size={18} />
                   </button>
                 </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === "projects" && (
+          <motion.div
+            key="projects"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-8"
+          >
+            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-[2.5rem] overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-muted/30 border-b border-border/50">
+                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Project Name</th>
+                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Owner</th>
+                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Status / Difficulty</th>
+                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {loadingProjects ? (
+                      [...Array(5)].map((_, i) => (
+                        <tr key={i} className="animate-pulse">
+                          <td colSpan={4} className="px-8 py-10 h-24 bg-muted/10"></td>
+                        </tr>
+                      ))
+                    ) : (
+                      projectData?.projects?.map((proj) => (
+                        <tr key={proj._id} className="hover:bg-muted/10 transition-colors group">
+                          <td className="px-8 py-6">
+                            <p className="font-black text-sm tracking-tight text-foreground">{proj.title}</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 tracking-wider mt-1">{proj.bounty} XP Bounty</p>
+                          </td>
+                          <td className="px-8 py-6">
+                            <div className="flex items-center gap-3">
+                              <img src={proj.owner?.avatarUrl} alt="" className="w-8 h-8 rounded-lg object-cover" />
+                              <span className="text-xs font-black">{proj.owner?.username}</span>
+                            </div>
+                          </td>
+                          <td className="px-8 py-6">
+                            <span className="px-3 py-1 rounded-md border font-black text-[9px] uppercase tracking-widest bg-primary/10 text-primary border-primary/20 mr-2">
+                              {proj.status}
+                            </span>
+                            <span className="text-xs font-bold text-muted-foreground">{proj.difficulty}</span>
+                          </td>
+                          <td className="px-8 py-6">
+                            <button 
+                              onClick={() => handleDeleteProject(proj._id)}
+                              disabled={isDeletingProject}
+                              className="p-3 rounded-xl bg-muted/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-all"
+                              title="Delete Project"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === "requests" && (
+          <motion.div
+            key="requests"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-8"
+          >
+            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-[2.5rem] overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-muted/30 border-b border-border/50">
+                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Type</th>
+                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Project</th>
+                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Requested By</th>
+                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {loadingRequests ? (
+                      [...Array(5)].map((_, i) => (
+                        <tr key={i} className="animate-pulse">
+                          <td colSpan={4} className="px-8 py-10 h-24 bg-muted/10"></td>
+                        </tr>
+                      ))
+                    ) : (
+                      requestData?.requests?.map((req) => (
+                        <tr key={req._id} className="hover:bg-muted/10 transition-colors group">
+                          <td className="px-8 py-6">
+                            <p className="font-black text-sm tracking-tight text-foreground">{req.type}</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 tracking-wider mt-1">{new Date(req.createdAt).toLocaleDateString()}</p>
+                          </td>
+                          <td className="px-8 py-6">
+                            <span className="text-xs font-black text-muted-foreground">{req.project?.title || 'Unknown'}</span>
+                          </td>
+                          <td className="px-8 py-6">
+                            <div className="flex items-center gap-3">
+                              <img src={req.requestedBy?.avatarUrl} alt="" className="w-8 h-8 rounded-lg object-cover" />
+                              <span className="text-xs font-black">{req.requestedBy?.username}</span>
+                            </div>
+                          </td>
+                          <td className="px-8 py-6">
+                            {req.status === 'Pending' ? (
+                              <span className="px-3 py-1 rounded-md border font-black text-[9px] uppercase tracking-widest bg-yellow-500/10 text-yellow-600 border-yellow-500/20 flex items-center gap-1 w-fit">
+                                <Clock size={12} /> Pending
+                              </span>
+                            ) : req.status === 'Approved' ? (
+                              <span className="px-3 py-1 rounded-md border font-black text-[9px] uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border-emerald-500/20 flex items-center gap-1 w-fit">
+                                <CheckCircle2 size={12} /> Approved
+                              </span>
+                            ) : (
+                              <span className="px-3 py-1 rounded-md border font-black text-[9px] uppercase tracking-widest bg-red-500/10 text-red-500 border-red-500/20 w-fit">
+                                Rejected
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </motion.div>

@@ -19,7 +19,8 @@ import {
   Save,
   Terminal,
   ShieldCheck,
-  Rocket
+  Rocket,
+  AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
@@ -62,7 +63,7 @@ const Dashboard = () => {
     setSearchParams({ tab });
   }, [setSearchParams]);
 
-  const [editData, setEditData] = useState({ bio: "", skills: "" });
+  const [editData, setEditData] = useState({ bio: "", skills: "", email: "", phone: "" });
 
   const profile = authUser;
 
@@ -71,6 +72,8 @@ const Dashboard = () => {
       setEditData({
         bio: profile.bio || "",
         skills: profile.skills?.join(", ") || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
       });
     }
   }, [profile]);
@@ -198,6 +201,31 @@ const Dashboard = () => {
         </div>
       </motion.header>
 
+      {/* Profile Completion Warning */}
+      {(!profile?.email || !profile?.phone) && !isEditing && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-10 p-5 bg-yellow-500/10 border border-yellow-500/20 rounded-[1.5rem] flex items-center justify-between gap-4 shadow-sm"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-yellow-500/20 text-yellow-600 flex items-center justify-center shrink-0 border border-yellow-500/30">
+              <AlertTriangle size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-yellow-600 tracking-tight">Incomplete Identity Record</h4>
+              <p className="text-xs font-medium text-yellow-700/80 mt-0.5">Please provide your email and mobile number to receive critical mission updates.</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setIsEditing(true)}
+            className="px-5 py-2.5 bg-yellow-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-yellow-500/20 hover:bg-yellow-600 transition-colors whitespace-nowrap shrink-0"
+          >
+            Update Profile
+          </button>
+        </motion.div>
+      )}
+
       <AnimatePresence>
         {showWizard && <SetupWizard onClose={() => setShowWizard(false)} />}
       </AnimatePresence>
@@ -218,7 +246,32 @@ const Dashboard = () => {
                 Engineering Profile
               </h2>
               <form onSubmit={handleUpdateProfile} className="space-y-8 relative z-10">
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Encrypted Email Address</label>
+                    <input
+                      type="email"
+                      className="w-full px-5 py-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all font-bold text-sm outline-none text-foreground"
+                      placeholder="Transmission contact..."
+                      value={editData.email}
+                      onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Mobile Contact</label>
+                    <input
+                      type="tel"
+                      className="w-full px-5 py-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all font-bold text-sm outline-none text-foreground"
+                      placeholder="Secure channel number..."
+                      value={editData.phone}
+                      onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
                   <div className="space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Professional Summary</label>
                     <textarea
