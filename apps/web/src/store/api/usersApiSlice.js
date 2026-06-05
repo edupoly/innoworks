@@ -9,7 +9,7 @@ export const usersApiSlice = apiSlice.injectEndpoints({
       async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
         const socket = initiateSocket();
         let lastUpdate = 0;
-        const THROTTLE_MS = 2000; // Only update every 2s for real-time feel without overhead
+        const THROTTLE_MS = 3000; // Increased to 3s for maximum stabilization
 
         try {
           await cacheDataLoaded;
@@ -17,14 +17,17 @@ export const usersApiSlice = apiSlice.injectEndpoints({
             const now = Date.now();
             if (now - lastUpdate < THROTTLE_MS) return;
             
+            lastUpdate = now;
             updateCachedData((draft) => {
+              if (!Array.isArray(draft)) return;
               const userIndex = draft.findIndex(u => (u._id || u.id) === update.userId);
               if (userIndex !== -1) {
+                // Surgically update only the fields that changed
                 Object.assign(draft[userIndex], update);
+                // Sort the draft after update
                 draft.sort((a, b) => (b.xp || 0) - (a.xp || 0));
               }
             });
-            lastUpdate = now;
           };
           socket.on('leaderboardUpdate', handleUpdate);
         } catch {}

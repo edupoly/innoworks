@@ -25,11 +25,7 @@ const LeaderboardRow = memo(({ user, rank, period }) => {
   if (!user || !user.username) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-card/50 backdrop-blur-sm rounded-[2.5rem] p-8 border border-border/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary/30 hover:bg-card transition-all group"
-    >
+    <div className="bg-card/50 backdrop-blur-sm rounded-[2.5rem] p-8 border border-border/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary/30 hover:bg-card transition-all group">
       <div className="flex items-center gap-8">
         <div className="w-10 h-10 rounded-xl bg-muted/80 flex items-center justify-center font-black text-muted-foreground border border-border group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20 transition-colors">
           {rank}
@@ -65,10 +61,10 @@ const LeaderboardRow = memo(({ user, rank, period }) => {
       <div className="flex items-center gap-12 justify-between md:justify-end">
         {period === 'all_time' && (
           <div className="hidden lg:flex items-center gap-6 border-r border-border/50 pr-12">
-            <Metric label="Cons" value={user.consistencyScore} />
-            <Metric label="Perf" value={user.perfectionScore} />
             <Metric label="Collab" value={user.collaborationScore} />
             <Metric label="Inno" value={user.innovationScore} />
+            <Metric label="Cons" value={user.consistencyScore} />
+            <Metric label="Perf" value={user.perfectionScore} />
           </div>
         )}
         
@@ -84,7 +80,7 @@ const LeaderboardRow = memo(({ user, rank, period }) => {
           <ChevronRight size={20} />
         </Link>
       </div>
-    </motion.div>
+    </div>
   );
 });
 
@@ -232,57 +228,35 @@ const Leaderboard = () => {
         {topThree.length > 0 && !debouncedSearch && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 items-end px-4">
             {topThree[1] && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="order-2 md:order-1"
-              >
+              <div className="order-2 md:order-1">
                 <PodiumCard user={topThree[1]} rank={2} color="text-slate-400" bgColor="bg-slate-400/10" borderColor="border-slate-400/20" />
-              </motion.div>
+              </div>
             )}
 
             {topThree[0] && (
-              <motion.div
-                initial={{ opacity: 0, scale: 1, y: 20 }}
-                animate={{ opacity: 1, scale: 1.05, y: 0 }}
-                className="order-1 md:order-2 z-10"
-              >
+              <div className="order-1 md:order-2 z-10 scale-105">
                 <PodiumCard user={topThree[0]} rank={1} color="text-yellow-500" bgColor="bg-yellow-500/10" borderColor="border-yellow-500/30" featured />
-              </motion.div>
+              </div>
             )}
 
             {topThree[2] && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="order-3 md:order-3"
-              >
+              <div className="order-3 md:order-3">
                 <PodiumCard user={topThree[2]} rank={3} color="text-amber-600" bgColor="bg-amber-600/10" borderColor="border-amber-600/20" />
-              </motion.div>
+              </div>
             )}
           </div>
         )}
 
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={`${period}-${debouncedSearch}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="grid grid-cols-1 gap-4"
-          >
-            {debouncedSearch 
-              ? filteredUsers.map((user, index) => (
-                  <LeaderboardRow key={user._id || user.id} user={user} rank={index + 1} period={period} />
-                ))
-              : restOfUsers.map((user, index) => (
-                  <LeaderboardRow key={user._id || user.id} user={user} rank={index + 4} period={period} />
-                ))
-            }
-          </motion.div>
-        </AnimatePresence>
+        <div className="grid grid-cols-1 gap-4">
+          {debouncedSearch 
+            ? filteredUsers.map((user, index) => (
+                <LeaderboardRow key={user._id || user.id} user={user} rank={index + 1} period={period} />
+              ))
+            : restOfUsers.map((user, index) => (
+                <LeaderboardRow key={user._id || user.id} user={user} rank={index + 4} period={period} />
+              ))
+          }
+        </div>
 
         {(!users || users.length === 0) && (
           <div className="text-center py-32 bg-muted/20 rounded-[3rem] border border-dashed border-border/50 max-w-xl mx-auto backdrop-blur-sm">
