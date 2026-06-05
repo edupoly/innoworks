@@ -24,6 +24,7 @@
     "morgan": "^1.10.0",
     "octokit": "^5.0.5",
     "redis": "^5.12.1",
+    "slugify": "^1.6.9",
     "socket.io": "^4.7.4"
   },
   "devDependencies": {
