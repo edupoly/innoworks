@@ -87,7 +87,7 @@ const LeaderboardRow = memo(({ user, rank, period }) => {
       </div>
     </motion.div>
   );
-};
+});
 
 const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) => {
   if (!user || !user.username) return null;
@@ -142,7 +142,7 @@ const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) 
       </Link>
     </div>
   );
-};
+});
 
 const Leaderboard = () => {
   const [period, setPeriod] = useState("all_time");
