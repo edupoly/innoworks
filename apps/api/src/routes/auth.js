@@ -49,8 +49,18 @@ router.get("/me", authenticate, async (req, res) => {
       }).select('title difficulty bounty repoUrl branchName')
     ]);
 
+    const userData = user.toObject();
+    
+    // Normalize role for frontend consistency
+    if (userData.role) {
+      if (userData.role.toUpperCase() === 'ADMIN') userData.role = 'Admin';
+      else if (userData.role.toUpperCase() === 'PROJECT_OWNER' || userData.role.toUpperCase() === 'PROJECT OWNER') userData.role = 'Project Owner';
+      else if (userData.role.toUpperCase() === 'TEAM') userData.role = 'Team';
+      else if (userData.role.toUpperCase() === 'DEVELOPER') userData.role = 'Developer';
+    }
+
     res.json({
-      ...user.toObject(),
+      ...userData,
       submissions,
       ownedProjects,
       acceptedProjects: populatedAccepted

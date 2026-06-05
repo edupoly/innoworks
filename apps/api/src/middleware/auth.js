@@ -33,9 +33,16 @@ export const authenticate = async (req, res, next) => {
       throw new Error("Invalid token payload: missing userId");
     }
 
+    let rawRole = decoded.role || 'Developer';
+    let normalizedRole = 'Developer';
+    
+    if (rawRole.toUpperCase() === 'ADMIN') normalizedRole = 'Admin';
+    else if (rawRole.toUpperCase() === 'PROJECT_OWNER' || rawRole.toUpperCase() === 'PROJECT OWNER') normalizedRole = 'Project Owner';
+    else if (rawRole.toUpperCase() === 'TEAM') normalizedRole = 'Team';
+    
     req.user = {
       ...decoded,
-      role: decoded.role || 'Developer',
+      role: normalizedRole,
       permissions: decoded.permissions || []
     };
     next();

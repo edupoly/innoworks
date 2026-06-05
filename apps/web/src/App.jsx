@@ -64,7 +64,7 @@ const AdminRoute = ({ children }) => {
 
   if (loading) return <PageLoader />;
 
-  if (!isAuthenticated || !token || user?.role !== 'Admin') {
+  if (!isAuthenticated || !token || user?.role?.toLowerCase() !== 'admin') {
     return <Navigate to="/" replace />;
   }
 
