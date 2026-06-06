@@ -1,15 +1,12 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { 
   ArrowLeft, 
   Edit3, 
   Clock, 
-  User, 
   Share2,
-  MoreVertical,
   History,
   AlertCircle
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { useGetWikiPageQuery } from "../../store/api/wikiApiSlice";
 import { useSelector } from "react-redux";
 import ReactMarkdown from 'react-markdown';
@@ -17,7 +14,6 @@ import remarkGfm from 'remark-gfm';
 
 const WikiPage = () => {
   const { projectId, slug } = useParams();
-  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   
   const { data: page, isLoading, error } = useGetWikiPageQuery({ projectId, slug });

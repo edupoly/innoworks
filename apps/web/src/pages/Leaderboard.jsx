@@ -1,9 +1,13 @@
 import { useState, useMemo, memo } from "react";
-import { Trophy, Medal, Crown, TrendingUp, User, Calendar, Award, Star, Zap, Activity, ChevronRight, Search, Target, Fingerprint, Sparkles } from "lucide-react";
+import { Trophy, Crown, User, Calendar, Award, Zap, Activity, ChevronRight, Search, Fingerprint } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useGetLeaderboardQuery } from "../store/api/usersApiSlice";
 import { useDebounce } from "../hooks/useDebounce";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Card } from "../components/ui/Card";
+import { Badge } from "../components/ui/Badge";
 
 const Metric = memo(({ label, value }) => {
   return (
@@ -29,67 +33,67 @@ const LeaderboardRow = memo(({ user, rank, period }) => {
   return (
     <motion.div 
       whileHover={{ x: 5 }}
-      className="card-premium p-8 flex flex-col md:flex-row md:items-center justify-between gap-10 group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/[0.02]"
     >
-      <div className="flex items-center gap-10">
-        <div className="w-12 h-12 rounded-[1.25rem] bg-secondary/80 flex items-center justify-center font-black text-muted-foreground border border-border group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-500 shadow-sm tabular-nums">
-          {rank}
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="relative group/avatar">
-            <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-tr from-primary/20 to-indigo-400/20 p-[1.5px] shrink-0 border border-border/50 group-hover:border-primary/40 transition-all duration-500 overflow-hidden shadow-xl">
-              <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-background rounded-lg border border-border/50 flex items-center justify-center shadow-lg group-hover:border-primary/30 transition-colors">
-               <Fingerprint size={12} className="text-primary opacity-60" />
-            </div>
+      <Card className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-10 group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/[0.02]">
+        <div className="flex items-center gap-10">
+          <div className="w-12 h-12 rounded-[1.25rem] bg-secondary/80 flex items-center justify-center font-black text-muted-foreground border border-border group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-500 shadow-sm tabular-nums text-xs">
+            {rank}
           </div>
-          <div className="space-y-1.5">
-            <h3 className="text-xl font-black tracking-tighter flex items-center gap-3">
-              {user.username}
-              {user.badges?.length > 0 && (
-                <span className="text-[8px] font-black uppercase bg-primary text-primary-foreground px-2.5 py-1 rounded-lg shadow-lg shadow-primary/20 tracking-widest">
-                  {user.badges[0].icon || "🏆"} {user.badges[0].name}
-                </span>
-              )}
-            </h3>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-[9px] font-black uppercase text-primary tracking-widest bg-primary/5 px-2 py-0.5 rounded-md">
-                <Zap size={10} className="fill-primary" />
-                LVL {user.level}
+          
+          <div className="flex items-center gap-6">
+            <div className="relative group/avatar">
+              <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-tr from-primary/20 to-indigo-400/20 p-[1.5px] shrink-0 border border-border/50 group-hover:border-primary/40 transition-all duration-500 overflow-hidden shadow-xl">
+                <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
               </div>
-              <div className="w-1 h-1 rounded-full bg-border" />
-              <div className="text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">
-                {user.xp} XP_AGGREGATE
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-background rounded-lg border border-border/50 flex items-center justify-center shadow-lg group-hover:border-primary/30 transition-colors">
+                 <Fingerprint size={12} className="text-primary opacity-60" />
               </div>
             </div>
+            <div className="space-y-1.5">
+              <h3 className="text-xl font-black tracking-tighter flex items-center gap-3">
+                {user.username}
+                {user.badges?.length > 0 && (
+                  <Badge variant="default" className="shadow-lg shadow-primary/20">
+                    {user.badges[0].icon || "🏆"} {user.badges[0].name}
+                  </Badge>
+                )}
+              </h3>
+              <div className="flex items-center gap-4">
+                <Badge variant="default" className="border-none bg-primary/10 gap-2">
+                  <Zap size={10} className="fill-primary" />
+                  LVL {user.level}
+                </Badge>
+                <div className="w-1 h-1 rounded-full bg-border" />
+                <div className="text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">
+                  {user.xp} XP_AGGREGATE
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex items-center gap-16 justify-between md:justify-end">
-        {period === 'all_time' && (
-          <div className="hidden lg:flex items-center gap-8 border-r border-border/30 pr-16 py-1">
-            <Metric label="Collab" value={user.collaborationScore} />
-            <Metric label="Inno" value={user.innovationScore} />
-            <Metric label="Cons" value={user.consistencyScore} />
-            <Metric label="Perf" value={user.perfectionScore} />
+        <div className="flex items-center gap-16 justify-between md:justify-end">
+          {period === 'all_time' && (
+            <div className="hidden lg:flex items-center gap-8 border-r border-border/30 pr-16 py-1">
+              <Metric label="Collab" value={user.collaborationScore} />
+              <Metric label="Inno" value={user.innovationScore} />
+              <Metric label="Cons" value={user.consistencyScore} />
+              <Metric label="Perf" value={user.perfectionScore} />
+            </div>
+          )}
+          
+          <div className="text-right min-w-[100px] space-y-1">
+            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-50">Reputation</p>
+            <p className="text-3xl font-black text-foreground tracking-tighter group-hover:text-primary transition-colors tabular-nums">{user.reputationScore}</p>
           </div>
-        )}
-        
-        <div className="text-right min-w-[100px] space-y-1">
-          <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-50">Reputation</p>
-          <p className="text-3xl font-black text-foreground tracking-tighter group-hover:text-primary transition-colors tabular-nums">{user.reputationScore}</p>
+          
+          <Link to={`/profile/${user.username}`}>
+            <Button variant="secondary" size="icon" className="group-hover:bg-primary group-hover:text-white group-hover:shadow-primary/20">
+              <ChevronRight size={20} />
+            </Button>
+          </Link>
         </div>
-        
-        <Link 
-          to={`/profile/${user.username}`}
-          className="p-4 rounded-2xl bg-secondary/80 text-muted-foreground hover:bg-primary hover:text-white transition-all shadow-sm group-hover:shadow-primary/20"
-        >
-          <ChevronRight size={20} />
-        </Link>
-      </div>
+      </Card>
     </motion.div>
   );
 });
@@ -138,10 +142,10 @@ const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) 
       </div>
       
       <div className="flex flex-col items-center gap-6">
-         <div className="px-6 py-2.5 bg-primary/10 rounded-2xl border border-primary/20 flex items-center gap-3 shadow-sm">
+         <Badge variant="default" className="px-6 py-2.5 bg-primary/10 rounded-2xl border border-primary/20 flex items-center gap-3 shadow-sm border-none">
            <Trophy size={14} className="text-amber-500 fill-amber-500/20" />
            <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">{user.xp} XP_SYNC</span>
-         </div>
+         </Badge>
          
          <div className="grid grid-cols-2 gap-10 w-full pt-8 border-t border-border/30">
             <div className="text-center space-y-1">
@@ -155,8 +159,10 @@ const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) 
          </div>
       </div>
       
-      <Link to={`/profile/${user.username}`} className="mt-12 btn-primary w-full py-5 text-[10px] font-black uppercase tracking-[0.4em] rounded-[1.5rem] flex items-center justify-center gap-3 group/btn shadow-xl shadow-primary/20">
-        Access Node <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+      <Link to={`/profile/${user.username}`} className="mt-12 block">
+        <Button className="w-full py-5 rounded-[1.5rem] gap-3 group/btn shadow-xl shadow-primary/20">
+          Access Node <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+        </Button>
       </Link>
     </motion.div>
   );
@@ -226,28 +232,29 @@ const Leaderboard = () => {
             {periods.map((p) => {
               const isSel = period === p.id;
               return (
-                <button
+                <Button
                   key={p.id}
+                  variant={isSel ? "primary" : "ghost"}
                   onClick={() => setPeriod(p.id)}
-                  className={`flex items-center gap-4 px-10 py-4 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-700 ${
+                  className={`flex items-center gap-4 px-10 py-4 rounded-[2rem] transition-all duration-700 ${
                     isSel 
-                      ? "bg-primary text-primary-foreground shadow-2xl shadow-primary/30 border border-primary/20 scale-105" 
+                      ? "shadow-2xl shadow-primary/30 border border-primary/20 scale-105" 
                       : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                   }`}
                 >
                   <p.icon size={16} className={isSel ? "animate-glow" : ""} />
                   {p.label}
-                </button>
+                </Button>
               );
             })}
           </div>
 
           <div className="relative group min-w-[340px]">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" size={20} />
-            <input
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors z-10" size={20} />
+            <Input
               type="text"
               placeholder="Search registry elite..."
-              className="w-full pl-16 pr-8 py-5 bg-background/50 border border-border/50 rounded-[2rem] font-bold text-sm focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner backdrop-blur-3xl"
+              className="pl-16 pr-8 py-5 h-16 rounded-[2rem] backdrop-blur-3xl"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -304,8 +311,10 @@ const Leaderboard = () => {
                 The mission leaderboard is awaiting data. Synchronize your engineering node to register your standing.
               </p>
             </div>
-            <Link to="/projects" className="btn-primary py-4 px-10 rounded-2xl text-[10px] uppercase tracking-[0.3em] inline-flex items-center gap-3">
-               <Zap size={14} fill="currentColor" /> Initialize Contribution
+            <Link to="/projects">
+               <Button className="gap-3 px-10 py-4">
+                 <Zap size={14} fill="currentColor" /> Initialize Contribution
+               </Button>
             </Link>
           </motion.div>
         )}

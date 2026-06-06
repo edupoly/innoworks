@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
 import { apiSlice } from "../store/api/apiSlice";
@@ -11,7 +11,7 @@ export const useAutoRecovery = () => {
   const lastActivityRef = useRef(Date.now());
   const lastTickRef = useRef(Date.now());
 
-  const triggerRefetch = () => {
+  const triggerRefetch = useCallback(() => {
     console.log("useAutoRecovery: Triggering full revalidation & data recovery...");
     
     // 1. Refetch all active queries in TanStack React Query
@@ -28,7 +28,7 @@ export const useAutoRecovery = () => {
         "Repos",
       ])
     );
-  };
+  }, [queryClient, dispatch]);
 
   useEffect(() => {
     // 1. Visibility API Event Listener (Tab Switch / Re-entering App)

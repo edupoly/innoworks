@@ -34,7 +34,7 @@ router.post("/:projectId/upload", authenticate, authorize('Team'), async (req, r
 
     if (!isAutoApproved) {
       // Create approval request for Team members
-      const request = await ApprovalRequest.create({
+      await ApprovalRequest.create({
         type: 'Docker',
         referenceId: project._id, 
         project: projectId,

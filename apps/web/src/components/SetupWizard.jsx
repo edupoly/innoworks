@@ -9,11 +9,10 @@ import {
   Play, 
   ChevronRight, 
   ChevronLeft,
-  CheckCircle2,
-  Copy,
-  ExternalLink
+  CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "./ui/Button";
 
 const steps = [
   {
@@ -147,21 +146,22 @@ const SetupWizard = ({ onClose }) => {
            </div>
 
            <div className="flex items-center justify-between mt-12 pt-12 border-t border-border/30">
-              <button 
+              <Button 
+                variant="ghost"
                 onClick={prev}
                 disabled={currentStep === 0}
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-all disabled:opacity-0"
+                className="gap-2 disabled:opacity-0"
               >
                 <ChevronLeft size={16} /> Previous Phase
-              </button>
+              </Button>
               
-              <button 
+              <Button 
                 onClick={next}
-                className="btn-primary px-10 py-4 flex items-center gap-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]"
+                className="px-10 py-4 flex items-center gap-3"
               >
                 {currentStep === steps.length - 1 ? "Begin Transmission" : "Next Protocol"} 
                 {currentStep < steps.length - 1 && <ChevronRight size={16} />}
-              </button>
+              </Button>
            </div>
         </div>
       </motion.div>

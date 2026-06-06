@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
   useGetProjectQuery, 
@@ -8,9 +8,7 @@ import {
   useGetProjectForkStatusQuery,
   useUpdateProjectMutation,
   useDeleteProjectMutation,
-  useAcceptProjectMutation,
-  useCloseProjectIssueMutation,
-  useCreateProjectIssueMutation
+  useAcceptProjectMutation
 } from "../store/api/projectsApiSlice";
 import { 
   useGetProjectSubmissionsQuery, 
@@ -22,9 +20,6 @@ import {
 import { 
   Github, 
   ExternalLink, 
-  BadgeDollarSign, 
-  Layers, 
-  Users,
   Clock, 
   Send,
   AlertCircle,
@@ -33,7 +28,6 @@ import {
   ChevronRight,
   Rocket,
   ShieldCheck,
-  Code2,
   Trophy,
   History,
   Activity,
@@ -43,16 +37,15 @@ import {
   GitFork,
   BookOpen,
   Book,
-  Plus,
   GitPullRequest,
   ClipboardList,
   FileCode2,
-  Sparkles,
   Trash2,
   X,
   Target,
   Terminal,
   Cpu,
+  Layers,
   RefreshCcw,
   Zap,
   Check,
@@ -69,6 +62,8 @@ import ProjectAssets from "../components/project/ProjectAssets";
 import ProjectIssues from "../components/project/ProjectIssues";
 import { setCredentials } from "../store/slices/authSlice";
 import { useMe } from "../hooks/useAuth";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
 
 const ProjectDetails = () => {
   const queryClient = useQueryClient();
@@ -78,7 +73,7 @@ const ProjectDetails = () => {
   const dispatch = useDispatch();
 
   // 1. Fetch live repository intelligence
-  const { data: intelligence, isLoading: loadingIntel, error: intelError } = useGetProjectIntelligenceQuery(id, {
+  const { data: intelligence, isLoading: loadingIntel } = useGetProjectIntelligenceQuery(id, {
     pollingInterval: 300000 // 5 minutes
   });
 
@@ -160,10 +155,6 @@ const ProjectDetails = () => {
     projectSubmissions?.filter(s => s.status !== 'MERGED' && s.status !== 'REJECTED') || [],
   [projectSubmissions]);
 
-  const submissionHistory = useMemo(() => 
-    projectSubmissions?.filter(s => s.status === 'MERGED' || s.status === 'REJECTED') || [],
-  [projectSubmissions]);
-
   const mySubmissions = useMemo(() => 
     projectSubmissions?.filter(s => s.user?._id === authUser?._id || s.user === authUser?._id) || [],
   [projectSubmissions, authUser?._id]);
@@ -201,12 +192,10 @@ const ProjectDetails = () => {
     skip: !isAccepted
   });
 
-  const [createSubmission, { isLoading: isSubmittingDevMutation }] = useCreateSubmissionMutation();
-  const [submitReview, { isLoading: isSubmittingTestMutation }] = useSubmitReviewMutation();
+  const [createSubmission] = useCreateSubmissionMutation();
+  const [submitReview] = useSubmitReviewMutation();
   const [mergeSubmission, { isLoading: isMerging }] = useMergeSubmissionMutation();
   const [rejectSubmission, { isLoading: isRejecting }] = useRejectSubmissionMutation();
-  const [closeIssue, { isLoading: isClosingIssue }] = useCloseProjectIssueMutation();
-  const [createIssue, { isLoading: isCreatingIssue }] = useCreateProjectIssueMutation();
 
 
   const handleDevSubmit = useCallback(async (e) => {
@@ -283,41 +272,6 @@ const ProjectDetails = () => {
     }
   }, [rejectSubmission, id]);
 
-  const handleCloseIssue = useCallback(async (issueNumber) => {
-    if (window.confirm(`Are you sure you want to close issue #${issueNumber}?`)) {
-      try {
-        await closeIssue({ id, issueNumber }).unwrap();
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  }, [closeIssue, id]);
-
-  const [isAddingIssue, setIsAddingIssue] = useState(false);
-  const [issueTitle, setIssueTitle] = useState("");
-  const [issueBody, setIssueBody] = useState("");
-
-  const handleAddIssue = useCallback(async (e) => {
-    e.preventDefault();
-    try {
-      await createIssue({
-        id,
-        title: issueTitle,
-        body: issueBody
-      }).unwrap();
-      setIsAddingIssue(false);
-      setIssueTitle("");
-      setIssueBody("");
-    } catch (err) {
-      console.error(err);
-    }
-  }, [createIssue, id, issueTitle, issueBody]);
-
-  const handleCreateIssue = (e) => {
-    e.preventDefault();
-    handleAddIssue(e);
-  };
-
   if (loadingProject || loadingIntel) return (
     <div className="flex flex-col items-center justify-center py-40 space-y-8">
       <div className="relative">
@@ -377,16 +331,12 @@ const ProjectDetails = () => {
               <div className="flex flex-wrap items-center gap-4">
                 <h1 className="text-4xl font-black tracking-tighter text-gradient leading-none">{project?.title}</h1>
                 <div className="flex items-center gap-2">
-                  <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border ${
-                    project?.difficulty === 'Hard' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                    project?.difficulty === 'Medium' ? 'bg-primary/10 text-primary border-primary/20' :
-                    'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                  }`}>
+                  <Badge variant={project?.difficulty === 'Hard' ? 'destructive' : project?.difficulty === 'Medium' ? 'default' : 'success'} className="px-4 py-1.5 border-none">
                     {project?.difficulty} PROTOCOL
-                  </span>
-                  <span className="px-4 py-1.5 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-sm">
+                  </Badge>
+                  <Badge variant="default" className="bg-amber-500/10 text-amber-500 border-amber-500/20 px-4 py-1.5 gap-2 border-none">
                     <Trophy size={12} className="fill-amber-500/20" /> {project?.bounty} XP
-                  </span>
+                  </Badge>
                 </div>
               </div>
               
@@ -412,58 +362,43 @@ const ProjectDetails = () => {
           <div className="flex flex-wrap items-center gap-4">
             {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? (
               <div className="flex items-center gap-3">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link 
-                    to={`/projects/${id}/wiki`}
-                    className="p-4 bg-secondary/80 text-foreground border border-border/50 rounded-2xl hover:bg-secondary transition-all flex items-center shadow-sm"
-                    title="Documentation"
-                  >
+                <Link to={`/projects/${id}/wiki`}>
+                  <Button variant="secondary" size="icon" className="w-12 h-12" title="Documentation">
                     <Book size={20} />
-                  </Link>
-                </motion.div>
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleDelete}
-                  className="p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-2xl hover:bg-destructive/20 transition-all shadow-sm"
-                >
+                  </Button>
+                </Link>
+                <Button variant="destructive" size="icon" onClick={handleDelete} className="w-12 h-12">
                   <Trash2 size={20} />
-                </motion.button>
-                <motion.button 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                </Button>
+                <Button
+                  variant={activeTab === "management" ? "primary" : "secondary"}
                   onClick={() => setActiveTab("management")}
-                  className={`px-8 py-4 font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl flex items-center gap-3 transition-all shadow-xl ${activeTab === "management" ? "bg-primary text-primary-foreground shadow-primary/30" : "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"}`}
+                  className="gap-3"
                 >
                   <Layers size={18} /> Directive Panel
-                </motion.button>
+                </Button>
               </div>
             ) : (
               <div className="flex flex-wrap items-center gap-4">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link 
-                    to={`/projects/${id}/wiki`}
-                    className="p-4 bg-secondary/80 text-foreground border border-border/50 rounded-2xl hover:bg-secondary transition-all flex items-center shadow-sm"
-                  >
+                <Link to={`/projects/${id}/wiki`}>
+                  <Button variant="secondary" size="icon" className="w-12 h-12">
                     <BookOpen size={20} />
-                  </Link>
-                </motion.div>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  </Button>
+                </Link>
+                <Button
+                  variant={activeTab === "dev_flow" ? "primary" : "secondary"}
                   onClick={() => { if (!isAccepted) acceptProjectHandler(); setActiveTab("dev_flow"); }}
-                  className={`px-8 py-4 font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl flex items-center gap-3 transition-all shadow-xl ${activeTab === "dev_flow" ? "bg-primary text-primary-foreground shadow-primary/30" : "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"}`}
+                  className="gap-3"
                 >
                   <Terminal size={18} /> Initialize Dev_Flow
-                </motion.button>
-                <motion.button 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                </Button>
+                <Button 
+                  variant={activeTab === "test_flow" ? "primary" : "secondary"}
                   onClick={() => setActiveTab("test_flow")}
-                  className={`px-8 py-4 font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl flex items-center gap-3 transition-all shadow-xl ${activeTab === "test_flow" ? "bg-emerald-600 text-white shadow-emerald-600/30" : "bg-emerald-600/10 text-emerald-600 border border-emerald-600/20 hover:bg-emerald-600/20"}`}
+                  className={activeTab === "test_flow" ? "bg-emerald-600 border-emerald-600 hover:bg-emerald-700" : "text-emerald-600 bg-emerald-600/10 border-emerald-600/20 hover:bg-emerald-600/20"}
                 >
                   <ShieldCheck size={18} /> Initialize QA_Flow
-                </motion.button>
+                </Button>
               </div>
             )}
           </div>

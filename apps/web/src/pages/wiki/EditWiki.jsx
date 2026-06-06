@@ -5,7 +5,6 @@ import {
   Save, 
   Send,
   HelpCircle,
-  Eye,
   Code,
   AlertTriangle
 } from "lucide-react";
@@ -17,7 +16,6 @@ import {
   useUpdateWikiPageMutation,
   useSubmitWikiForApprovalMutation
 } from "../../store/api/wikiApiSlice";
-import { useSelector } from "react-redux";
 
 const EditWiki = () => {
   const { projectId, slug } = useParams();
@@ -27,7 +25,6 @@ const EditWiki = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [changeSummary, setChangeSummary] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
 
   const { data: page, isLoading: loadingPage } = useGetWikiPageQuery(
     { projectId, slug }, 

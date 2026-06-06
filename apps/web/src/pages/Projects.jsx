@@ -1,21 +1,14 @@
 import { useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { 
-  BadgeDollarSign, 
-  Layers, 
   Users, 
   Star, 
   ArrowRight, 
   CheckCircle2, 
   Search, 
-  SlidersHorizontal, 
-  BookOpen, 
-  Rocket,
   Zap,
   Target,
-  Terminal,
   Activity,
-  Globe,
   GitFork,
   ChevronDown,
   Trophy
@@ -25,6 +18,10 @@ import { useMe } from "../hooks/useAuth";
 import { useGetProjectsQuery } from "../store/api/projectsApiSlice";
 import { useGetUserProfileQuery } from "../store/api/usersApiSlice";
 import { useDebounce } from "../hooks/useDebounce";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Card } from "../components/ui/Card";
+import { Badge } from "../components/ui/Badge";
 
 const container = {
   hidden: { opacity: 0 },
@@ -124,13 +121,13 @@ const Projects = () => {
             <div className="space-y-3">
               <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-2">Designation Alpha</label>
               <div className="relative group">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors" size={20} />
-                <input
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors z-10" size={20} />
+                <Input
                   type="text"
                   placeholder="Scan by mission title..."
                   value={search}
                   onChange={handleSetSearch}
-                  className="w-full pl-14 pr-6 py-4 bg-background/50 border border-border/50 rounded-2xl font-bold text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary/40 outline-none transition-all shadow-inner"
+                  className="pl-14"
                 />
               </div>
             </div>
@@ -142,7 +139,7 @@ const Projects = () => {
                 <select
                   value={difficulty}
                   onChange={handleSetDifficulty}
-                  className="w-full px-6 py-4 bg-background/50 border border-border/50 rounded-2xl font-black text-xs uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-4 focus:ring-primary/10 appearance-none shadow-inner cursor-pointer transition-all group-hover:border-primary/30"
+                  className="w-full h-12 px-6 bg-background/50 border border-border/50 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
                 >
                   <option value="">All Protocol Levels</option>
                   <option value="Easy">Easy Phase</option>
@@ -162,7 +159,7 @@ const Projects = () => {
                 <select
                   value={sort}
                   onChange={handleSetSort}
-                  className="w-full px-6 py-4 bg-background/50 border border-border/50 rounded-2xl font-black text-xs uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-4 focus:ring-primary/10 appearance-none shadow-inner cursor-pointer transition-all group-hover:border-primary/30"
+                  className="w-full h-12 px-6 bg-background/50 border border-border/50 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
                 >
                   <option value="recent">Sequence: Recent</option>
                   <option value="trending">Sequence: Trending</option>
@@ -179,31 +176,27 @@ const Projects = () => {
 
           {/* Tech Matrix Filters */}
           <div className="pt-8 border-t border-border/30 flex flex-wrap items-center gap-3">
-            <button
+            <Button
+              variant={!skill ? "primary" : "secondary"}
+              size="sm"
               onClick={() => handleSetSkill("")}
-              className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all border shadow-sm ${
-                !skill 
-                  ? "bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/20 scale-105" 
-                  : "bg-background/50 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/50"
-              }`}
+              className={!skill ? "scale-105" : ""}
             >
               Full Stack
-            </button>
+            </Button>
             
             {skillsList.map((s) => {
               const isSel = skill === s;
               return (
-                <button
+                <Button
                   key={s}
+                  variant={isSel ? "primary" : "secondary"}
+                  size="sm"
                   onClick={() => handleSetSkill(s)}
-                  className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] transition-all border shadow-sm ${
-                    isSel 
-                      ? "bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/20 scale-105" 
-                      : "bg-background/50 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/50"
-                  }`}
+                  className={isSel ? "scale-105" : ""}
                 >
                   {s}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -228,33 +221,34 @@ const Projects = () => {
             >
               {projects?.map((project) => (
                 <motion.div variants={item} key={project._id || project.id}>
-                  <div className="card-premium p-10 flex flex-col h-full group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5">
+                  <Card className="p-10 flex flex-col h-full group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5">
                     {/* Hover visual accent glow */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                     
                     <div className="flex items-center justify-between mb-10 relative z-10">
                       <div className="flex items-center gap-3">
-                        <span
-                          className={`text-[9px] uppercase tracking-[0.3em] font-black px-4 py-1.5 rounded-xl shadow-sm border ${
+                        <Badge
+                          variant={
                             project.difficulty === "Easy"
-                              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                              ? "success"
                               : project.difficulty === "Medium"
-                                ? "bg-primary/10 text-primary border-primary/20"
-                                : "bg-red-500/10 text-red-500 border-red-500/20"
-                          }`}
+                                ? "default"
+                                : "destructive"
+                          }
+                          className="px-4 py-1.5"
                         >
                           {project.difficulty}
-                        </span>
+                        </Badge>
                         {submittedProjectIds.has((project._id || project.id).toString()) && (
                           <div className="w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 border-2 border-background animate-glow" title="Mission Solved">
                             <CheckCircle2 size={12} />
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-amber-500 font-black bg-amber-500/10 px-4 py-1.5 rounded-xl border border-amber-500/20 text-[10px] shadow-sm uppercase tracking-widest">
+                      <Badge variant="default" className="bg-amber-500/10 text-amber-500 border-amber-500/20 px-4 py-1.5 gap-2 border-none">
                         <Trophy size={14} className="fill-amber-500/20" />
                         <span>{project.bounty || 100} XP</span>
-                      </div>
+                      </Badge>
                     </div>
                     
                     <div className="space-y-4 mb-10 flex-grow relative z-10">
@@ -282,16 +276,14 @@ const Projects = () => {
                          <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">{project.contributors?.length || 0}+ LINKED</span>
                       </div>
                       
-                      <Link
-                        to={`/projects/${project._id || project.id}`}
-                        className="btn-primary py-3.5 px-8 text-[10px] flex items-center gap-3 font-black uppercase tracking-[0.3em] rounded-2xl group/btn overflow-hidden relative"
-                      >
-                        <span className="relative z-10">Engage</span>
-                        <ArrowRight size={14} className="relative z-10 group-hover/btn:translate-x-1 transition-transform" />
-                        <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                      <Link to={`/projects/${project._id || project.id}`}>
+                        <Button className="py-3.5 px-8 gap-3 group/btn overflow-hidden relative">
+                          <span className="relative z-10">Engage</span>
+                          <ArrowRight size={14} className="relative z-10 group-hover/btn:translate-x-1 transition-transform" />
+                        </Button>
                       </Link>
                     </div>
-                  </div>
+                  </Card>
                 </motion.div>
               ))}
             </motion.div>
@@ -312,12 +304,13 @@ const Projects = () => {
               <h2 className="text-3xl font-black tracking-tighter uppercase tracking-[0.1em]">Signal Lost</h2>
               <p className="text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed opacity-60 px-10 uppercase text-[10px] tracking-[0.3em]">No protocols match your current intelligence matrix. Refine search parameters.</p>
             </div>
-            <button 
+            <Button 
+              variant="ghost"
               onClick={() => { setSearch(""); setDifficulty(""); setSkill(""); setSort("recent"); }}
-              className="text-primary text-[10px] font-black uppercase tracking-[0.4em] hover:brightness-125 transition-all flex items-center gap-3 mx-auto"
+              className="gap-3 mx-auto"
             >
               <Zap size={14} fill="currentColor" /> Reset All Terminals
-            </button>
+            </Button>
           </motion.div>
         )}
       </div>

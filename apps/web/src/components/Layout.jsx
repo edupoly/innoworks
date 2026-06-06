@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { PageTransition } from "./PageTransition";
 import { AnimatePresence, motion } from "framer-motion";
@@ -9,10 +9,10 @@ import { logoutUser } from "../store/slices/authSlice";
 import CommandPalette from "./CommandPalette";
 import { useQueryClient } from "@tanstack/react-query";
 import { initiateSocket, disconnectSocket, subscribeToNotifications } from "../lib/socket";
-import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers, WifiOff, Cpu, Command } from "lucide-react";
+import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers, WifiOff, Command } from "lucide-react";
+import { Button } from "./ui/Button";
 
 const Layout = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
@@ -253,18 +253,18 @@ const Layout = () => {
               <a href="#" className="hover:text-primary transition-colors">Protocol</a>
             </div>
             
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Button 
+              variant="secondary"
+              size="sm"
               onClick={() => setIsCommandPaletteOpen(true)}
-              className="px-4 py-2 rounded-xl bg-secondary/50 border border-border/50 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-secondary transition-all group"
+              className="gap-3 group px-4 py-2"
             >
               <Command size={14} className="group-hover:text-primary transition-colors" />
               <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                 <span>{isMac ? "⌘" : "Ctrl"}</span>
                 <span>K</span>
               </div>
-            </motion.button>
+            </Button>
           </div>
         </div>
       </footer>
@@ -298,12 +298,14 @@ const Layout = () => {
                 </div>
                 <p className="text-xs font-bold leading-relaxed text-foreground/90">{toast.message}</p>
               </div>
-              <button 
+              <Button 
+                variant="ghost"
+                size="icon"
                 onClick={() => dismissToast(toast.id)}
-                className="text-muted-foreground hover:text-foreground shrink-0 hover:bg-secondary w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                className="shrink-0 w-8 h-8 rounded-xl"
               >
                 <X size={14} />
-              </button>
+              </Button>
             </motion.div>
           ))}
         </AnimatePresence>

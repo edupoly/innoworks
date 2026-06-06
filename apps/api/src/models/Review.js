@@ -18,6 +18,7 @@ const reviewSchema = new mongoose.Schema({
     enum: ['APPROVED', 'NEEDS_CHANGES', 'REJECTED'], 
     required: true 
   },
+  githubReviewId: { type: Number, unique: true, sparse: true },
 }, { timestamps: true });
 
 export const Review = mongoose.model('Review', reviewSchema);

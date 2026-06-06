@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -128,30 +128,31 @@ const Home = () => {
           className="flex w-full max-w-xl flex-col sm:flex-row gap-4 sm:gap-6"
         >
           {isAuthenticated ? (
-            <Link
-              to="/dashboard"
-              className="group btn-primary w-full sm:w-auto px-8 sm:px-12 py-5 sm:py-6 text-sm font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1"
-            >
-              <LayoutDashboard size={20} />
-              Command Center
+            <Link to="/dashboard" className="flex-1">
+              <Button className="w-full py-6 text-sm gap-4">
+                <LayoutDashboard size={20} />
+                Command Center
+              </Button>
             </Link>
           ) : (
-            <button
+            <Button
               onClick={handleLogin}
-              className="group btn-primary w-full sm:w-auto px-8 sm:px-12 py-5 sm:py-6 text-sm font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-4 transition-all hover:scale-105 hover:-translate-y-1 relative overflow-hidden"
+              className="flex-1 py-6 text-sm gap-4 relative overflow-hidden group"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] transition-transform"></div>
               <Github size={20} className="group-hover:rotate-12 transition-transform duration-500" />
               Login with GitHub
-            </button>
+            </Button>
           )}
 
-          <Link
-            to="/projects"
-            className="group btn-secondary w-full sm:w-auto px-8 sm:px-12 py-5 sm:py-6 text-sm font-black uppercase tracking-widest rounded-2xl border border-border/50 bg-secondary/50 backdrop-blur-3xl hover:bg-secondary/80 hover:-translate-y-1 transition-all flex items-center gap-4"
-          >
-            <Search size={20} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
-            Explore Missions
+          <Link to="/projects" className="flex-1">
+            <Button
+              variant="secondary"
+              className="w-full py-6 text-sm gap-4 backdrop-blur-3xl"
+            >
+              <Search size={20} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
+              Explore Missions
+            </Button>
           </Link>
         </motion.div>
 
@@ -293,12 +294,12 @@ const Home = () => {
             <p className="text-background/60 text-2xl mb-16 max-w-3xl mx-auto font-medium leading-relaxed tracking-tight">
               Join the elite ranks of student engineers building the next generation of software infrastructure. Your mission begins now.
             </p>
-            <button
+            <Button
               onClick={handleLogin}
-              className="px-20 py-8 bg-primary text-primary-foreground rounded-[2.5rem] text-sm font-black uppercase tracking-[0.4em] hover:scale-105 active:scale-95 transition-all shadow-[0_30px_60px_rgba(99,102,241,0.4)] border border-white/10"
+              className="px-20 py-8 bg-primary text-primary-foreground rounded-[2.5rem] text-sm hover:scale-105 active:scale-95 transition-all shadow-[0_30px_60px_rgba(99,102,241,0.4)] border border-white/10"
             >
               Initialize Node
-            </button>
+            </Button>
           </div>
         </div>
       </section>
@@ -326,6 +327,7 @@ const Home = () => {
 
 import { useMe } from "./hooks/useAuth";
 import { useAutoRecovery } from "./hooks/useAutoRecovery";
+import { Button } from "./components/ui/Button";
 
 function App() {
   const { isAuthenticated, loading } = useSelector((state) => state.auth);
@@ -346,13 +348,23 @@ function App() {
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[150px]" />
         </div>
-        <div className="relative z-10 space-y-6">
-          <div className="relative w-20 h-20 mx-auto">
-            <div className="absolute inset-0 border-4 border-primary/10 rounded-full" />
+        <div className="relative z-10 space-y-10">
+          <div className="relative w-24 h-24 mx-auto">
+            <div className="absolute inset-0 border-4 border-primary/5 rounded-full" />
             <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+               <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                 <Rocket size={24} className="animate-float" />
+               </div>
+            </div>
           </div>
-          <h2 className="text-xl font-black tracking-tight text-foreground uppercase tracking-[0.2em] text-[10px]">Initializing Node</h2>
-          <p className="text-muted-foreground text-[10px] font-mono font-medium">Decrypting secure telemetry stream...</p>
+          <div className="space-y-3">
+            <h2 className="text-xl font-black tracking-tight text-foreground uppercase tracking-[0.4em] text-[11px]">Initializing Node</h2>
+            <div className="flex items-center justify-center gap-2">
+               <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+               <p className="text-muted-foreground text-[9px] font-black uppercase tracking-[0.2em]">Decrypting secure telemetry stream...</p>
+            </div>
+          </div>
         </div>
       </div>
     );

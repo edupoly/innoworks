@@ -5,7 +5,7 @@ import { useGetRepoBranchesQuery } from "../store/api/authApiSlice";
 
 const BranchPicker = memo(({ owner, repo, onSelect, selectedBranch }) => {
   const skip = !owner || !repo;
-  const { data: branches = [], isLoading, isFetching, error, refetch } = useGetRepoBranchesQuery(
+  const { data: branches = [], isLoading, error } = useGetRepoBranchesQuery(
     { owner, repo },
     { skip }
   );

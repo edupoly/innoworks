@@ -12,7 +12,6 @@ import {
   AlertCircle,
   Kanban,
   History,
-  Layers,
   CheckCircle2,
   X,
   Edit3,
@@ -23,8 +22,7 @@ import {
   AlertTriangle,
   Fingerprint,
   Cpu,
-  Zap,
-  LayoutDashboard
+  Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
@@ -32,6 +30,10 @@ import { EngineeringRadarChart } from "../components/EngineeringRadarChart";
 import { useUpdateProfileMutation } from "../store/api/usersApiSlice";
 import { useDeleteProjectMutation } from "../store/api/projectsApiSlice";
 import SetupWizard from "../components/SetupWizard";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Card } from "../components/ui/Card";
+import { Badge } from "../components/ui/Badge";
 
 const container = {
   hidden: { opacity: 0 },
@@ -200,27 +202,27 @@ const Dashboard = () => {
         </div>
         
         <div className="flex flex-wrap items-center gap-4">
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <Button 
+            variant="secondary"
             onClick={() => setShowWizard(true)}
-            className="px-6 py-3 bg-secondary/80 text-foreground border border-border/50 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all flex items-center gap-2.5 shadow-sm"
+            className="flex items-center gap-2.5 shadow-sm"
           >
             <Rocket size={16} className="text-primary" /> Ignition Protocol
-          </motion.button>
+          </Button>
           
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <Button 
+            variant={isEditing ? "destructive" : "secondary"}
             onClick={() => setIsEditing(!isEditing)}
-            className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2.5 border ${isEditing ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-secondary/80 text-foreground border-border/50 hover:bg-secondary'}`}
+            className="flex items-center gap-2.5"
           >
             {isEditing ? <><X size={16} /> Abort Edit</> : <><Edit3 size={16} /> Registry Update</>}
-          </motion.button>
+          </Button>
           
-          <Link to="/projects/new" className="btn-primary group">
-            <Plus size={18} className="group-hover:rotate-90 transition-transform duration-500" />
-            <span className="text-[10px] uppercase tracking-widest">New Mission</span>
+          <Link to="/projects/new">
+            <Button className="group gap-2">
+              <Plus size={18} className="group-hover:rotate-90 transition-transform duration-500" />
+              New Mission
+            </Button>
           </Link>
         </div>
       </motion.header>
@@ -252,9 +254,8 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div className="space-y-3">
                     <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Secure Email Channel</label>
-                    <input
+                    <Input
                       type="email"
-                      className="w-full px-6 py-4 bg-background/50 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-bold text-sm outline-none shadow-inner"
                       placeholder="Enter encrypted email..."
                       value={editData.email}
                       onChange={(e) => setEditData({ ...editData, email: e.target.value })}
@@ -262,9 +263,8 @@ const Dashboard = () => {
                   </div>
                   <div className="space-y-3">
                     <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Direct Telemetry Line</label>
-                    <input
+                    <Input
                       type="tel"
-                      className="w-full px-6 py-4 bg-background/50 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-bold text-sm outline-none shadow-inner"
                       placeholder="Enter secure contact..."
                       value={editData.phone}
                       onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
@@ -285,9 +285,8 @@ const Dashboard = () => {
                   </div>
                   <div className="space-y-3">
                     <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Core Tech Matrix (CSV)</label>
-                    <input
+                    <Input
                       type="text"
-                      className="w-full px-6 py-4 bg-background/50 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-bold text-sm outline-none shadow-inner"
                       placeholder="React, Next.js, Rust, Go..."
                       value={editData.skills}
                       onChange={(e) => setEditData({ ...editData, skills: e.target.value })}
@@ -297,19 +296,17 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="flex justify-end pt-4">
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <Button 
                     disabled={isUpdatingProfile}
                     type="submit"
-                    className="btn-primary min-w-[240px] gap-3"
+                    className="min-w-[240px] gap-3"
                   >
                     {isUpdatingProfile ? (
                       <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                     ) : (
                       <><Save size={18} /> Commit Changes</>
                     )}
-                  </motion.button>
+                  </Button>
                 </div>
               </form>
             </div>
@@ -353,21 +350,23 @@ const Dashboard = () => {
             className="grid grid-cols-1 sm:grid-cols-2 gap-6"
           >
             {stats.map((stat, i) => (
-              <motion.div variants={item} key={i} className="card-premium p-8 flex items-center gap-8 group relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className={`w-16 h-16 rounded-[1.5rem] ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl shadow-black/5`}>
-                  <stat.icon size={28} strokeWidth={2.5} />
-                </div>
-                <div className="relative z-10 space-y-1">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em] opacity-60 leading-none">{stat.label}</p>
-                  <p className="text-4xl font-black tracking-tighter text-foreground tabular-nums">{stat.value}</p>
-                </div>
+              <motion.div variants={item} key={i}>
+                <Card className="p-8 flex items-center gap-8 group relative overflow-hidden h-full">
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                  <div className={`w-16 h-16 rounded-[1.5rem] ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl shadow-black/5`}>
+                    <stat.icon size={28} strokeWidth={2.5} />
+                  </div>
+                  <div className="relative z-10 space-y-1">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em] opacity-60 leading-none">{stat.label}</p>
+                    <p className="text-4xl font-black tracking-tighter text-foreground tabular-nums">{stat.value}</p>
+                  </div>
+                </Card>
               </motion.div>
             ))}
           </motion.div>
 
           {/* Achievement Registry */}
-          <div className="card-premium p-10 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+          <Card className="p-10 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
             <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full" />
             <div className="relative z-10 space-y-10">
               <div className="flex items-center gap-4">
@@ -403,7 +402,7 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Engineering Radar Matrix */}
@@ -468,15 +467,16 @@ const Dashboard = () => {
                     <motion.div 
                       key={project._id || project}
                       whileHover={{ y: -5, scale: 1.02 }}
-                      className="bg-card/50 border border-border/50 rounded-[2rem] p-7 space-y-8 hover:border-primary/40 hover:bg-card transition-all group shadow-xl shadow-black/5"
                     >
-                      <p className="font-black text-sm leading-tight group-hover:text-primary transition-colors tracking-tight text-foreground line-clamp-2">{project.title || "Unknown Mission"}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-primary bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10">{project.difficulty || 'Easy'}</span>
-                        <Link to={`/projects/${project._id || project}`} className="text-[9px] font-black uppercase tracking-[0.3em] text-primary hover:brightness-125 flex items-center gap-2 group/btn">
-                          Engage <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-                        </Link>
-                      </div>
+                      <Card className="p-7 space-y-8 bg-card/50 hover:bg-card">
+                        <p className="font-black text-sm leading-tight group-hover:text-primary transition-colors tracking-tight text-foreground line-clamp-2">{project.title || "Unknown Mission"}</p>
+                        <div className="flex items-center justify-between">
+                          <Badge variant="default">{project.difficulty || 'Easy'}</Badge>
+                          <Link to={`/projects/${project._id || project}`} className="text-[9px] font-black uppercase tracking-[0.3em] text-primary hover:brightness-125 flex items-center gap-2 group/btn">
+                            Engage <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                          </Link>
+                        </div>
+                      </Card>
                     </motion.div>
                   ))
                 ) : (
@@ -494,7 +494,7 @@ const Dashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                   <span className="text-[10px] font-black uppercase tracking-[0.25em] text-blue-500">Validation</span>
                 </div>
-                <span className="text-[9px] font-black bg-blue-500/10 text-blue-500 px-2.5 py-1 rounded-lg border border-blue-500/20 tabular-nums">{kanbanData.reviewing.length}</span>
+                <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20">{kanbanData.reviewing.length}</Badge>
               </div>
               <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                 {kanbanData.reviewing.length > 0 ? (
@@ -502,20 +502,21 @@ const Dashboard = () => {
                     <motion.div 
                       key={sub._id}
                       whileHover={{ y: -5, scale: 1.02 }}
-                      className="bg-card/50 border border-border/50 rounded-[2rem] p-7 space-y-8 hover:border-blue-500/40 hover:bg-card transition-all shadow-xl shadow-black/5"
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg border border-blue-500/20">{sub.status.replace('_', ' ')}</span>
-                        <Clock size={14} className="text-blue-500/50" />
-                      </div>
-                      <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Project Solution"}</p>
-                      <div className="pt-2">
-                        {sub.prNumber && (
-                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-2 bg-secondary/80 px-4 py-2 rounded-xl border border-border/50 transition-all">
-                            <Github size={12} /> PR #{sub.prNumber}
-                          </a>
-                        )}
-                      </div>
+                      <Card className="p-7 space-y-8 bg-card/50 hover:bg-card">
+                        <div className="flex justify-between items-center">
+                          <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20">{sub.status.replace('_', ' ')}</Badge>
+                          <Clock size={14} className="text-blue-500/50" />
+                        </div>
+                        <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Project Solution"}</p>
+                        <div className="pt-2">
+                          {sub.prNumber && (
+                            <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-2 bg-secondary/80 px-4 py-2 rounded-xl border border-border/50 transition-all">
+                              <Github size={12} /> PR #{sub.prNumber}
+                            </a>
+                          )}
+                        </div>
+                      </Card>
                     </motion.div>
                   ))
                 ) : (
@@ -533,7 +534,7 @@ const Dashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse shadow-sm shadow-orange-500/40" />
                   <span className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-500">Refactor</span>
                 </div>
-                <span className="text-[9px] font-black bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-lg border border-orange-500/20 tabular-nums">{kanbanData.changes.length}</span>
+                <Badge variant="warning">{kanbanData.changes.length}</Badge>
               </div>
               <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                 {kanbanData.changes.length > 0 ? (
@@ -541,16 +542,19 @@ const Dashboard = () => {
                     <motion.div 
                       key={sub._id}
                       whileHover={{ y: -5, scale: 1.02 }}
-                      className="bg-card/50 border border-orange-500/30 rounded-[2rem] p-7 space-y-8 hover:border-orange-500/50 hover:bg-card transition-all shadow-xl shadow-orange-500/5"
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] px-3 py-1 bg-orange-500/10 text-orange-500 rounded-lg border border-orange-500/20">Operational Change</span>
-                        <AlertCircle size={14} className="text-orange-500" />
-                      </div>
-                      <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Module Patch"}</p>
-                      <Link to={`/projects/${sub.project?._id}`} className="block text-center w-full py-3 bg-orange-500 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-xl shadow-lg shadow-orange-500/20 hover:brightness-110 active:scale-95 transition-all">
-                        Execute Fix
-                      </Link>
+                      <Card className="p-7 space-y-8 border-orange-500/30 bg-card/50 hover:bg-card">
+                        <div className="flex justify-between items-center">
+                          <Badge variant="warning">Operational Change</Badge>
+                          <AlertCircle size={14} className="text-orange-500" />
+                        </div>
+                        <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Module Patch"}</p>
+                        <Link to={`/projects/${sub.project?._id}`} className="block">
+                          <Button variant="destructive" className="w-full bg-orange-500 hover:bg-orange-600 shadow-orange-500/20">
+                            Execute Fix
+                          </Button>
+                        </Link>
+                      </Card>
                     </motion.div>
                   ))
                 ) : (
@@ -568,7 +572,7 @@ const Dashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40" />
                   <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-500">Merged</span>
                 </div>
-                <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-lg border border-emerald-500/20 tabular-nums">{kanbanData.completed.length}</span>
+                <Badge variant="success">{kanbanData.completed.length}</Badge>
               </div>
               <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                 {kanbanData.completed.length > 0 ? (
@@ -576,20 +580,21 @@ const Dashboard = () => {
                     <motion.div 
                       key={sub._id}
                       whileHover={{ y: -5, scale: 1.02 }}
-                      className="bg-card/50 border border-emerald-500/30 rounded-[2rem] p-7 space-y-8 hover:border-emerald-500/50 hover:bg-card transition-all shadow-xl shadow-emerald-500/5"
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20">Mission Complete</span>
-                        <CheckCircle2 size={14} className="text-emerald-500" />
-                      </div>
-                      <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Solved Protocol"}</p>
-                      <div className="flex items-center justify-between pt-2">
-                        <div className="flex -space-x-2">
-                           <div className="w-6 h-6 rounded-full bg-primary border-2 border-background shadow-sm"></div>
-                           <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-background shadow-sm"></div>
+                      <Card className="p-7 space-y-8 border-emerald-500/30 bg-card/50 hover:bg-card">
+                        <div className="flex justify-between items-center">
+                          <Badge variant="success">Mission Complete</Badge>
+                          <CheckCircle2 size={14} className="text-emerald-500" />
                         </div>
-                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">+200 XP Credited</span>
-                      </div>
+                        <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Solved Protocol"}</p>
+                        <div className="flex items-center justify-between pt-2">
+                          <div className="flex -space-x-2">
+                             <div className="w-6 h-6 rounded-full bg-primary border-2 border-background shadow-sm"></div>
+                             <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-background shadow-sm"></div>
+                          </div>
+                          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">+200 XP Credited</span>
+                        </div>
+                      </Card>
                     </motion.div>
                   ))
                 ) : (
@@ -613,7 +618,7 @@ const Dashboard = () => {
           >
             {kanbanData.owned.length > 0 ? (
               kanbanData.owned.map((project) => (
-                <div key={project._id} className="card-premium p-10 space-y-10 group relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+                <Card key={project._id} className="p-10 space-y-10 group relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
                   
                   <div className="flex justify-between items-start relative z-10">
@@ -621,22 +626,22 @@ const Dashboard = () => {
                       <Terminal size={24} />
                     </div>
                     <div className="flex gap-2">
-                       <motion.button 
-                         whileHover={{ scale: 1.1, rotate: 5 }}
-                         whileTap={{ scale: 0.9 }}
+                       <Button 
+                         variant="secondary"
+                         size="icon"
                          onClick={() => navigate(`/projects/${project._id}`)}
-                         className="p-2.5 rounded-xl bg-background border border-border/50 text-muted-foreground hover:text-primary transition-colors shadow-sm"
+                         className="w-9 h-9"
                        >
                          <Edit3 size={18} />
-                       </motion.button>
-                       <motion.button 
-                         whileHover={{ scale: 1.1, rotate: -5 }}
-                         whileTap={{ scale: 0.9 }}
+                       </Button>
+                       <Button 
+                         variant="secondary"
+                         size="icon"
                          onClick={() => handleDeleteProject(project._id)}
-                         className="p-2.5 rounded-xl bg-background border border-border/50 text-muted-foreground hover:text-destructive transition-colors shadow-sm"
+                         className="w-9 h-9 hover:text-destructive hover:bg-destructive/10"
                        >
                          <X size={18} />
-                       </motion.button>
+                       </Button>
                     </div>
                   </div>
                   
@@ -656,7 +661,7 @@ const Dashboard = () => {
                       Manage Briefing <ChevronRight size={14} />
                     </Link>
                   </div>
-                </div>
+                </Card>
               ))
             ) : (
               <div className="col-span-full py-32 text-center border-2 border-dashed border-border/30 rounded-[3rem] bg-secondary/5 space-y-6">
@@ -689,43 +694,37 @@ const Dashboard = () => {
                     <div className={`w-2.5 h-2.5 rounded-full ${sub.status === 'MERGED' ? 'bg-emerald-500' : sub.status === 'CHANGES_REQUESTED' ? 'bg-orange-500' : 'bg-primary'} animate-pulse shadow-sm`} />
                   </div>
                   
-                  <motion.div 
-                    whileHover={{ x: 5 }}
-                    className="glass-card rounded-[2.5rem] p-8 hover:border-primary/20 transition-all shadow-2xl shadow-black/5"
-                  >
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 pb-6 border-b border-border/20">
-                      <div className="flex items-center gap-3">
-                        <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] ${sub.status === 'MERGED' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : sub.status === 'CHANGES_REQUESTED' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' : 'bg-primary/10 text-primary border border-primary/20'}`}>
-                          {sub.status.replace('_', ' ')}
-                        </span>
-                        <div className="h-4 w-px bg-border/40" />
-                        <span className="text-[9px] font-black text-muted-foreground opacity-50 uppercase tracking-widest">{new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  <motion.div whileHover={{ x: 5 }}>
+                    <Card className="rounded-[2.5rem] p-8 hover:border-primary/20 transition-all">
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 pb-6 border-b border-border/20">
+                        <div className="flex items-center gap-3">
+                          <Badge variant={sub.status === 'MERGED' ? 'success' : sub.status === 'CHANGES_REQUESTED' ? 'warning' : 'default'}>
+                            {sub.status.replace('_', ' ')}
+                          </Badge>
+                          <div className="h-4 w-px bg-border/40" />
+                          <span className="text-[9px] font-black text-muted-foreground opacity-50 uppercase tracking-widest">{new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                        <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.3em] font-mono">TX_ID: {sub._id.slice(-8)}</span>
                       </div>
-                      <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.3em] font-mono">TX_ID: {sub._id.slice(-8)}</span>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <h4 className="font-black text-xl tracking-tight text-foreground leading-tight">{sub.project?.title || "Project Solution"}</h4>
-                      <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] flex items-center gap-2">
-                        <Zap size={14} className="text-primary" /> Signal Synchronized via Global Grid
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center gap-4 pt-8">
-                       <motion.a 
-                         whileHover={{ scale: 1.05 }}
-                         whileTap={{ scale: 0.95 }}
-                         href={sub.prUrl} 
-                         target="_blank" 
-                         rel="noreferrer" 
-                         className="px-6 py-3 bg-secondary/80 text-foreground border border-border/50 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl flex items-center gap-2.5 transition-all hover:bg-secondary"
-                       >
-                         <Github size={14} /> Open Source
-                       </motion.a>
-                       <Link to={`/projects/${sub.project?._id}`} className="text-[10px] font-black uppercase tracking-widest text-primary hover:brightness-125 transition-all flex items-center gap-2">
-                         View Protocol <ChevronRight size={14} />
-                       </Link>
-                    </div>
+                      
+                      <div className="space-y-4">
+                        <h4 className="font-black text-xl tracking-tight text-foreground leading-tight">{sub.project?.title || "Project Solution"}</h4>
+                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] flex items-center gap-2">
+                          <Zap size={14} className="text-primary" /> Signal Synchronized via Global Grid
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 pt-8">
+                         <a href={sub.prUrl} target="_blank" rel="noreferrer">
+                           <Button variant="secondary" className="gap-2.5">
+                             <Github size={14} /> Open Source
+                           </Button>
+                         </a>
+                         <Link to={`/projects/${sub.project?._id}`} className="text-[10px] font-black uppercase tracking-widest text-primary hover:brightness-125 transition-all flex items-center gap-2">
+                           View Protocol <ChevronRight size={14} />
+                         </Link>
+                      </div>
+                    </Card>
                   </motion.div>
                 </div>
               ))

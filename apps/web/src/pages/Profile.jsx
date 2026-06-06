@@ -1,25 +1,16 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { 
   Trophy, 
-  Award, 
   Github, 
   ExternalLink, 
   Activity, 
-  Layers, 
   CheckCircle2, 
   ChevronLeft,
-  Mail,
-  MapPin,
-  Link as LinkIcon,
-  Zap,
   Target,
   Fingerprint,
   Cpu,
   ShieldCheck,
-  ChevronRight,
-  Rocket,
-  Sparkles,
-  Command
+  Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EngineeringRadarChart } from "../components/EngineeringRadarChart";
@@ -117,8 +108,8 @@ const Profile = () => {
               </div>
 
               <div className="flex flex-wrap justify-center gap-2.5">
-                {profile.skills?.map((skill, i) => (
-                  <span key={i} className="px-3.5 py-1.5 bg-secondary/80 text-foreground text-[9px] font-black uppercase tracking-widest rounded-xl border border-border/50 shadow-sm hover:border-primary/30 transition-all">
+                {profile.skills?.map((skill) => (
+                  <span key={skill} className="px-3.5 py-1.5 bg-secondary/80 text-foreground text-[9px] font-black uppercase tracking-widest rounded-xl border border-border/50 shadow-sm hover:border-primary/30 transition-all">
                     {skill}
                   </span>
                 ))}
@@ -248,7 +239,7 @@ const Profile = () => {
               
               <div className="space-y-6">
                 {profile.submissions?.length > 0 ? (
-                  profile.submissions.map((sub, i) => (
+                  profile.submissions.map((sub) => (
                     <motion.div 
                       key={sub._id} 
                       whileHover={{ x: 5 }}

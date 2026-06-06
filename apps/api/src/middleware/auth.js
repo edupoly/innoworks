@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { getRedisConnection } from "../lib/redis.js";
-import { User } from "../models/User.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 

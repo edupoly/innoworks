@@ -28,11 +28,6 @@ const userSchema = new mongoose.Schema({
     mergedPrsCount: { type: Number, default: 0 },
     issuesCount: { type: Number, default: 0 }
   },
-  roles: { 
-    type: [String], 
-    enum: ['PROJECT_OWNER', 'DEVELOPER', 'TESTER', 'ADMIN', 'TEAM'],
-    default: ['DEVELOPER'] 
-  },
   role: {
     type: String,
     enum: ['Admin', 'Project Owner', 'Team', 'Developer'],
@@ -61,6 +56,27 @@ const userSchema = new mongoose.Schema({
 // Indices for performance
 userSchema.index({ xp: -1 });
 userSchema.index({ reputationScore: -1 });
+
+// Cascading delete middleware
+userSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function(next) {
+  const query = this.getQuery();
+  const users = await this.model.find(query);
+  const userIds = users.map(u => u._id);
+
+  if (userIds.length > 0) {
+    const mongoose = this.model.base;
+    
+    // Delete Projects owned by these users
+    await mongoose.model('Project').deleteMany({ owner: { $in: userIds } });
+    
+    // Delete Submissions by these users
+    await mongoose.model('Submission').deleteMany({ user: { $in: userIds } });
+    
+    // Delete Notifications for these users
+    await mongoose.model('Notification').deleteMany({ user: { $in: userIds } });
+  }
+  next();
+});
 
 // Pre-save hook to cap scores at 100
 userSchema.pre('save', async function() {

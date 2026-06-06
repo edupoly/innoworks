@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { 
   Box, 
-  Terminal, 
   FileCode2, 
   Youtube, 
   Plus, 
   Download, 
-  ExternalLink,
   ShieldCheck,
-  AlertCircle,
   Play,
   X,
   Send
@@ -18,7 +15,7 @@ import { useGetDockerAssetsQuery, useUploadDockerAssetMutation } from "../../sto
 import { useSelector } from "react-redux";
 import { DOCKER_ASSET_TYPES } from "../../lib/constants";
 
-const ProjectAssets = ({ projectId, project }) => {
+const ProjectAssets = ({ projectId }) => {
   const [activeSubTab, setActiveSubTab] = useState("docker"); // 'docker', 'youtube'
   const { user } = useSelector((state) => state.auth);
   const [isUploadingModal, setIsUploadingModal] = useState(false);

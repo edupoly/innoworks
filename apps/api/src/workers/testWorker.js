@@ -1,8 +1,6 @@
 import { Worker } from "bullmq";
 import { Submission } from '../models/Submission.js';
-import { User } from '../models/User.js';
 import { getRedisConnection } from '../lib/redis.js';
-import { awardXP } from '../lib/gamification.js';
 import { exec } from 'child_process';
 import util from 'util';
 import path from 'path';
@@ -11,6 +9,15 @@ import os from 'os';
 
 const execAsync = util.promisify(exec);
 const connection = getRedisConnection();
+
+/**
+ * Sanitizes strings for use in shell commands.
+ * Limits to alphanumeric and safe characters.
+ */
+const sanitizeShell = (str) => {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[^a-zA-Z0-9\-._/:]/g, '');
+};
 
 export const testWorker = new Worker(
   "test-execution",
@@ -25,8 +32,8 @@ export const testWorker = new Worker(
 
       await Submission.findByIdAndUpdate(submissionId, { status: "TESTING" });
 
-      const forkUrl = submission.forkUrl;
-      const branchName = submission.branchName;
+      const forkUrl = sanitizeShell(submission.forkUrl);
+      const branchName = sanitizeShell(submission.branchName);
       
       tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'innoworks-test-'));
       
@@ -44,12 +51,10 @@ export const testWorker = new Worker(
         if (files.includes('package.json')) {
           testOutput += "Executing tests in isolated Docker sandbox...\n";
           
-          // Use Docker to sandbox the execution. Mount tempDir to /app and run npm install & test.
-          // --network none prevents malicious network access during tests (if acceptable).
-          // For now, we'll allow network for npm install.
+          // Use Docker to sandbox the execution.
           const dockerCommand = `docker run --rm -v "${tempDir}:/app" -w /app node:18-alpine sh -c "npm install && npm test"`;
           
-          const { stdout, stderr } = await execAsync(dockerCommand, { timeout: 120000 }); // 2 min timeout for docker
+          const { stdout, stderr } = await execAsync(dockerCommand, { timeout: 120000 }); 
           testOutput += stdout + "\n" + stderr;
           success = true;
         } else {
@@ -67,29 +72,9 @@ export const testWorker = new Worker(
           testOutput,
         });
 
-        // Calculate metrics based on project difficulty
-        const project = submission.project;
-        const bounty = project.bounty || 100;
-        
-        // Define score increments based on difficulty
-        const scoreMultiplier = 
-          project.difficulty === 'Hard' ? 5 : 
-          project.difficulty === 'Medium' ? 3 : 2;
-
-        // Use centralized gamification logic
-        await awardXP(submission.user, bounty, 'PR_MERGED');
-        
-        // We still add the performance points manually as awardXP handles the base XP and broadcast
-        const user = await User.findById(submission.user);
-        if (user) {
-           user.consistencyScore += scoreMultiplier;
-           user.perfectionScore += scoreMultiplier;
-           user.collaborationScore += scoreMultiplier;
-           user.communicationScore += scoreMultiplier;
-           user.adaptabilityScore += scoreMultiplier;
-           user.innovationScore += scoreMultiplier;
-           await user.save();
-        }
+        // NOTE: XP awarding moved to Merge workflow (webhooks or manual merge)
+        // to prevent premature or duplicate XP grants.
+        console.log(`✅ Tests passed for submission ${submissionId}. Awaiting review/merge.`);
 
       } else {
         await Submission.findByIdAndUpdate(submissionId, {

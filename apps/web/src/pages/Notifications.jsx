@@ -3,8 +3,7 @@ import {
   useMarkNotificationsReadMutation, 
   useMarkNotificationReadMutation 
 } from "../store/api/usersApiSlice";
-import api from "../lib/api";
-import { Bell, Check, Trophy, Sparkles, Clock, Trash2, ChevronLeft } from "lucide-react";
+import { Bell, Check, Trophy, Sparkles, ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 

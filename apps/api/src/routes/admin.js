@@ -4,7 +4,7 @@ import { AuditLog } from '../models/AuditLog.js';
 import { Project } from '../models/Project.js';
 import { ApprovalRequest } from '../models/ApprovalRequest.js';
 import { authenticate } from '../middleware/auth.js';
-import { authorize, logAudit, maskSensitiveData } from '../middleware/rbac.js';
+import { authorize, logAudit } from '../middleware/rbac.js';
 import { getRedisConnection } from '../lib/redis.js';
 
 const router = Router();

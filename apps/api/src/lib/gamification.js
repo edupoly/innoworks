@@ -161,7 +161,8 @@ export const evaluateBadges = async (user) => {
   }
 
   // Badge 3: Master Reviewer
-  if (!hasBadge('Master Reviewer') && user.communicationScore >= 80 && user.roles.includes('TESTER')) {
+  const reviewCountForMaster = await mongoose.model('Review').countDocuments({ reviewer: user._id });
+  if (!hasBadge('Master Reviewer') && user.communicationScore >= 80 && reviewCountForMaster >= 1) {
     badgeUnlocked.push({
       name: 'Master Reviewer',
       description: 'Superb quality checking. High communication and collaboration scores.',

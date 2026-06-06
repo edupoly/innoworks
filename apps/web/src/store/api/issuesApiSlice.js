@@ -20,7 +20,7 @@ export const issuesApiSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: (result, error, { id, projectId }) => [
+      invalidatesTags: (result, error, { projectId }) => [
         { type: 'Issue', id: projectId }
       ],
     }),

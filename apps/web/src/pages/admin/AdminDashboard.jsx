@@ -1,19 +1,14 @@
 import { useState } from "react";
 import { 
   Users, 
-  Shield, 
   History, 
   Search, 
   Filter, 
   ChevronLeft, 
   ChevronRight, 
-  UserCheck, 
-  AlertCircle,
   Activity,
   Briefcase,
   Settings,
-  MoreVertical,
-  ExternalLink,
   ShieldAlert,
   Trash2,
   CheckCircle2,
@@ -214,28 +209,20 @@ const AdminDashboard = () => {
                           <td className="px-8 py-6">
                             <div className="flex items-center gap-2">
                               <button 
-                                onClick={() => {
-                                  if(window.confirm(`Are you sure you want to ${user.status === 'Blocked' ? 'unblock' : 'block'} this user?`)) {
-                                    /* We will need to define toggleStatus mutation */
-                                    // toggleStatus({ id: user._id, status: user.status === 'Blocked' ? 'Active' : 'Blocked' });
-                                  }
-                                }}
-                                className={`p-3 rounded-xl transition-all ${user.status === 'Blocked' ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' : 'bg-muted/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500'}`}
+                                onClick={() => handleStatusToggle(user._id, user.status)}
+                                disabled={isUpdatingStatus || user.role === 'Admin'}
+                                className={`p-3 rounded-xl transition-all disabled:opacity-30 ${user.status === 'Blocked' ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' : 'bg-muted/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500'}`}
                                 title={user.status === 'Blocked' ? "Unblock User" : "Block User"}
                               >
                                 <ShieldAlert size={16} />
                               </button>
                               <button 
-                                onClick={() => {
-                                  if(window.confirm("Are you sure you want to permanently delete this user?")) {
-                                    /* deleteUser mutation */
-                                    // deleteUser(user._id);
-                                  }
-                                }}
-                                className="p-3 rounded-xl bg-muted/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-all"
+                                onClick={() => handleDeleteUser(user._id)}
+                                disabled={isDeletingUser || user.role === 'Admin'}
+                                className="p-3 rounded-xl bg-muted/50 text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-all disabled:opacity-30"
                                 title="Delete User"
                               >
-                                <Users size={16} /> {/* Should use Trash icon */}
+                                <Trash2 size={16} />
                               </button>
                             </div>
                           </td>

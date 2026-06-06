@@ -40,5 +40,27 @@ projectSchema.index({ status: 1 });
 projectSchema.index({ owner: 1 });
 projectSchema.index({ createdAt: -1 });
 
+// Cascading delete middleware
+projectSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function(next) {
+  const query = this.getQuery();
+  const projects = await this.model.find(query);
+  const projectIds = projects.map(p => p._id);
+
+  if (projectIds.length > 0) {
+    const mongoose = this.model.base;
+    
+    // Delete Submissions
+    await mongoose.model('Submission').deleteMany({ project: { $in: projectIds } });
+    
+    // Delete WikiPages
+    await mongoose.model('WikiPage').deleteMany({ project: { $in: projectIds } });
+    
+    // Delete Notifications related to these projects
+    // Notifications might be linked via link field or metadata, but usually they are for users.
+    // We'll focus on direct associations first.
+  }
+  next();
+});
+
 export const Project = mongoose.model('Project', projectSchema);
 

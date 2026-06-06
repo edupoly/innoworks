@@ -243,6 +243,11 @@ if (githubApp) {
       } 
       
       else if (action === "closed" && isMerged) {
+        if (submission.status === "MERGED") {
+          console.log(`📡 PR #${prNumber} already marked as MERGED. Skipping XP.`);
+          return;
+        }
+
         submission.status = "MERGED";
         submission.timeline.push({
           action: "MERGED",
@@ -319,6 +324,13 @@ if (githubApp) {
 
       if (!submission) return;
 
+      // Check for existing review by ID to prevent duplication
+      const existingReview = await Review.findOne({ githubReviewId: payload.review.id });
+      if (existingReview) {
+        console.log(`📡 Skipping duplicate review webhook for PR #${prNumber}`);
+        return;
+      }
+
       // Clear project cache
       clearCache(`/projects/${project._id}`);
 
@@ -345,16 +357,17 @@ if (githubApp) {
       });
       await submission.save();
 
-      // Create Local Review Report
+      // Create Local Review Report (using upsert/id)
       await Review.create({
         submission: submission._id,
         reviewer: reviewerId,
         feedback: feedback,
-        outcome: outcome
+        outcome: outcome,
+        githubReviewId: payload.review.id
       });
 
-      // Award XP to reviewer if tester (30 XP)
-      if (reviewer && reviewer.roles.includes('TESTER')) {
+      // Award XP to reviewer (30 XP)
+      if (reviewer) {
         await awardXP(reviewer._id, XP_VALUES.TESTING_REVIEW, 'TESTING_REVIEW');
         clearCache(`/users/profile/${reviewer.username}`);
         clearCache('/users/leaderboard');

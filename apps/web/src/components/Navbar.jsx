@@ -1,11 +1,12 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../store/slices/authSlice";
-import { Github, LogOut, LayoutDashboard, Code2, User, Moon, Sun, Monitor, Bell, Check, Sparkles, Trophy, ChevronDown, Command } from "lucide-react";
+import { Github, LogOut, LayoutDashboard, Code2, User, Moon, Sun, Monitor, Bell, Check, Sparkles, Trophy } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import api from "../lib/api";
+import { Button } from "./ui/Button";
+import { Badge } from "./ui/Badge";
 
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
@@ -32,16 +33,16 @@ const ThemeToggle = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={toggleDropdown}
-        className="p-2.5 rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-300 focus:outline-none border border-transparent hover:border-border/50 relative"
+        className="text-muted-foreground hover:text-foreground relative"
         aria-label="Toggle theme"
       >
         <Sun className="h-[1.1rem] w-[1.1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
         <Moon className="absolute top-2.5 left-2.5 h-[1.1rem] w-[1.1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      </motion.button>
+      </Button>
 
       <AnimatePresence>
         {isOpen && (
@@ -59,7 +60,7 @@ const ThemeToggle = () => {
                   setTheme(t.value);
                   setIsOpen(false);
                 }}
-                className={`flex items-center justify-between w-full px-3 py-2 text-xs rounded-xl font-semibold transition-all ${
+                className={`flex items-center justify-between w-full px-3 py-2 text-[10px] rounded-xl font-black uppercase tracking-widest transition-all ${
                   theme === t.value
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -127,11 +128,11 @@ const NotificationDropdown = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2.5 rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-300 focus:outline-none border border-transparent hover:border-border/50 relative"
+        className="text-muted-foreground hover:text-foreground relative"
         aria-label="Open notifications"
       >
         <Bell size={18} />
@@ -140,7 +141,7 @@ const NotificationDropdown = () => {
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
-      </motion.button>
+      </Button>
 
       <AnimatePresence>
         {isOpen && (
@@ -312,34 +313,32 @@ const Navbar = () => {
                       </div>
                       <div className="hidden sm:block">
                         <p className="text-[10px] font-black tracking-tight text-foreground uppercase truncate max-w-[80px]">{user.username}</p>
-                        <p className="text-[8px] font-black text-primary tracking-widest leading-none">LVL {user.level || 1}</p>
+                        <Badge variant="default" className="py-0 px-1.5 h-auto text-[7px] border-none bg-primary/20">LVL {user.level || 1}</Badge>
                       </div>
                     </Link>
                   )}
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={handleLogout}
-                    className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all focus:outline-none"
+                    className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     title="Logout"
                   >
                     <LogOut size={14} />
-                  </motion.button>
+                  </Button>
                 </div>
               </>
             ) : (
-              <motion.button
-                whileHover={{ scale: 1.02, y: -1 }}
-                whileTap={{ scale: 0.98 }}
+              <Button
                 onClick={() => {
                   const apiUrl = import.meta.env.VITE_API_URL || "https://innoworks-api.up.railway.app";
                   window.location.href = `${apiUrl}/auth/github`;
                 }}
-                className="btn-primary flex items-center gap-2.5 py-2.5 text-[10px] uppercase tracking-[0.2em] group"
+                className="gap-2.5 group"
               >
                 <Github size={16} className="group-hover:rotate-12 transition-transform duration-500" />
                 Auth via GitHub
-              </motion.button>
+              </Button>
             )}
           </div>
         </div>

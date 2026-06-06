@@ -41,7 +41,21 @@ submissionSchema.virtual('reviews', {
 
 submissionSchema.index({ project: 1, user: 1 }, { unique: true });
 submissionSchema.index({ status: 1 });
-submissionSchema.index({ prNumber: 1 });
+submissionSchema.index({ user: 1, project: 1 });
+
+// Cascading delete middleware
+submissionSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function(next) {
+  const query = this.getQuery();
+  const submissions = await this.model.find(query);
+  const submissionIds = submissions.map(s => s._id);
+
+  if (submissionIds.length > 0) {
+    const mongoose = this.model.base;
+    // Delete Reviews
+    await mongoose.model('Review').deleteMany({ submission: { $in: submissionIds } });
+  }
+  next();
+});
 
 export const Submission = mongoose.model('Submission', submissionSchema);
 

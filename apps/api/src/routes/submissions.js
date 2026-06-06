@@ -46,43 +46,45 @@ router.post("/", authenticate, validateObjectId, validateSubmission, async (req,
       return res.status(401).json({ message: "GitHub authentication required" });
     }
 
-    // Check for existing submission
-    let existingSubmission = await Submission.findOne({
-      project: projectId,
-      user: userId,
-    });
+    // Atomic search and state transition using findOneAndUpdate
+    const submission = await Submission.findOneAndUpdate(
+      { project: projectId, user: userId },
+      { 
+        $setOnInsert: {
+          project: projectId,
+          user: userId,
+          forkUrl,
+          branchName,
+          linkedIssue,
+          status: "PENDING",
+          timeline: [{
+            action: "SUBMITTED",
+            description: `Challenge accepted and branch "${branchName}" submitted for validation.${linkedIssue ? ` Resolves Issue #${linkedIssue}.` : ''}`,
+            actor: userId
+          }]
+        }
+      },
+      { upsert: true, new: true, runValidators: true }
+    );
 
-    let submission;
-    if (existingSubmission) {
-      if (['TESTING', 'APPROVED', 'MERGED'].includes(existingSubmission.status)) {
+    // If it wasn't a new insert, we need to handle updates carefully
+    // Check if the existing submission allows an update
+    if (submission.createdAt.getTime() !== submission.updatedAt.getTime()) {
+      if (['TESTING', 'APPROVED', 'MERGED'].includes(submission.status)) {
         return res.status(400).json({ message: "You have already submitted a solution that is active or approved." });
       }
-      
-      existingSubmission.forkUrl = forkUrl;
-      existingSubmission.branchName = branchName;
-      existingSubmission.linkedIssue = linkedIssue;
-      existingSubmission.status = "PENDING"; 
-      existingSubmission.timeline.push({
+
+      // Perform the update if allowed
+      submission.forkUrl = forkUrl;
+      submission.branchName = branchName;
+      submission.linkedIssue = linkedIssue;
+      submission.status = "PENDING";
+      submission.timeline.push({
         action: "SUBMITTED",
         description: `Solution updated with branch: ${branchName} on fork.${linkedIssue ? ` Resolves Issue #${linkedIssue}.` : ''}`,
         actor: userId
       });
-      await existingSubmission.save();
-      submission = existingSubmission;
-    } else {
-      submission = await Submission.create({
-        project: projectId,
-        user: userId,
-        forkUrl,
-        branchName,
-        linkedIssue,
-        status: "PENDING",
-        timeline: [{
-          action: "SUBMITTED",
-          description: `Challenge accepted and branch "${branchName}" submitted for validation.${linkedIssue ? ` Resolves Issue #${linkedIssue}.` : ''}`,
-          actor: userId
-        }]
-      });
+      await submission.save();
     }
 
     // Auto-create PR on GitHub with CRITICAL PR CREATION FIX (Prevents 422 Errors)
@@ -169,7 +171,8 @@ router.post("/", authenticate, validateObjectId, validateSubmission, async (req,
       }
     } catch (prError) {
       console.warn("⚠️ GitHub PR Creation skipped/failed:", prError.message);
-      if (submission && !existingSubmission) {
+      // Only delete if it was a brand new submission (created and updated at the same time)
+      if (submission && submission.createdAt.getTime() === submission.updatedAt.getTime()) {
         await Submission.findByIdAndDelete(submission._id);
       }
       return res.status(400).json({ message: prError.message || "Pull request creation validation failed on GitHub" });
@@ -345,7 +348,7 @@ router.post("/:id/reviews", authenticate, async (req, res) => {
           githubBody += `\n\n**Suggestions:**\n${suggestions}`;
         }
 
-        await createPullRequestReview(
+        const ghReview = await createPullRequestReview(
           reviewerUser.githubAccessToken,
           owner,
           repo,
@@ -353,6 +356,11 @@ router.post("/:id/reviews", authenticate, async (req, res) => {
           githubEvent,
           githubBody
         );
+
+        if (ghReview && ghReview.id) {
+          review.githubReviewId = ghReview.id;
+          await review.save();
+        }
       } catch (ghError) {
         console.warn("⚠️ Failed to sync review to GitHub:", ghError.message);
       }
@@ -386,10 +394,6 @@ router.post("/:id/reviews", authenticate, async (req, res) => {
     }
 
     // Award XP to reviewer for testing contribution! (30 XP)
-    if (!reviewerUser.roles.includes('TESTER')) {
-      reviewerUser.roles.push('TESTER');
-      await reviewerUser.save();
-    }
     await awardXP(reviewerId, XP_VALUES.TESTING_REVIEW, 'TESTING_REVIEW');
 
     // Notify developer
@@ -436,6 +440,10 @@ router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
     // Verify project ownership
     if (submission.project.owner.toString() !== req.user.userId) {
       return res.status(403).json({ message: "Only the project owner can merge submissions" });
+    }
+
+    if (submission.status === 'MERGED') {
+      return res.status(400).json({ message: "This submission has already been merged." });
     }
 
     if (!submission.prNumber) {

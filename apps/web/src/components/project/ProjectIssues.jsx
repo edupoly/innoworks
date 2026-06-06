@@ -2,25 +2,20 @@ import { useState, useMemo } from "react";
 import { 
   AlertCircle, 
   MessageSquare, 
-  Tag, 
   User, 
   Clock, 
   Plus, 
   X,
   Send,
-  Filter,
   CheckCircle2,
-  AlertTriangle,
   Kanban
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGetIssuesQuery, useCreateIssueMutation, useUpdateIssueMutation } from "../../store/api/issuesApiSlice";
-import { useSelector } from "react-redux";
+import { useGetIssuesQuery, useCreateIssueMutation } from "../../store/api/issuesApiSlice";
 
 const ProjectIssues = ({ projectId }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [filter, setFilter] = useState("all"); // 'all', 'open', 'closed'
-  const { user } = useSelector((state) => state.auth);
   
   const { data: issues, isLoading } = useGetIssuesQuery(projectId);
   const [createIssue, { isLoading: isSubmitting }] = useCreateIssueMutation();

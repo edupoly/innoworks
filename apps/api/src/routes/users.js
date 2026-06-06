@@ -8,6 +8,7 @@ import { validateObjectId } from '../middleware/validate.js';
 import { cacheMiddleware, clearCache } from '../middleware/cache.js';
 import { getTopUsers } from '../lib/leaderboard.js';
 import { maskSensitiveData } from '../middleware/rbac.js';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 
@@ -104,7 +105,7 @@ router.put("/notifications/:id/read", authenticate, validateObjectId, async (req
 // 5. Update user's profile metadata and roles
 router.put("/profile", authenticate, async (req, res) => {
   try {
-    const { bio, skills, roles, email, phone, country, timezone } = req.body;
+    const { bio, skills, email, phone, country, timezone } = req.body;
     
     const updateData = {};
     if (bio !== undefined) updateData.bio = bio;
@@ -117,13 +118,6 @@ router.put("/profile", authenticate, async (req, res) => {
       updateData.skills = Array.isArray(skills) 
         ? skills 
         : skills.split(',').map(s => s.trim()).filter(s => s !== "");
-    }
-    if (roles !== undefined && Array.isArray(roles)) {
-      // Validate roles enum values
-      const validRoles = roles.filter(role => ['PROJECT_OWNER', 'DEVELOPER', 'TESTER', 'ADMIN', 'TEAM'].includes(role));
-      if (validRoles.length > 0) {
-        updateData.roles = validRoles;
-      }
     }
 
     const user = await User.findByIdAndUpdate(
