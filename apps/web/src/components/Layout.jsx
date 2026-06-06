@@ -9,7 +9,7 @@ import { logoutUser } from "../store/slices/authSlice";
 import CommandPalette from "./CommandPalette";
 import { useQueryClient } from "@tanstack/react-query";
 import { initiateSocket, disconnectSocket, subscribeToNotifications } from "../lib/socket";
-import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers, WifiOff, Cpu } from "lucide-react";
+import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers, WifiOff, Cpu, Command } from "lucide-react";
 
 const Layout = () => {
   const location = useLocation();
