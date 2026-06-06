@@ -17,7 +17,8 @@ import {
   Activity,
   Globe,
   GitFork,
-  ChevronDown
+  ChevronDown,
+  Trophy
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
