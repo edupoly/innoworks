@@ -6,6 +6,7 @@ import { ApprovalRequest } from '../models/ApprovalRequest.js';
 import { authenticate } from '../middleware/auth.js';
 import { authorize, logAudit } from '../middleware/rbac.js';
 import { getRedisConnection } from '../lib/redis.js';
+import { clearCache } from '../middleware/cache.js';
 
 const router = Router();
 
@@ -64,6 +65,10 @@ router.put("/users/:id/role", async (req, res) => {
     if (permissions) user.permissions = permissions;
     
     await user.save();
+
+    // Clear caches
+    clearCache(`/users/profile/${user.username}`);
+    clearCache('/users/leaderboard');
 
     await logAudit(req, 'UPDATE_USER_ROLE', 'User', id, {
       oldRole,
@@ -129,6 +134,9 @@ router.put("/users/:id/status", async (req, res) => {
     user.status = status;
     await user.save();
 
+    // Clear caches
+    clearCache(`/users/profile/${user.username}`);
+
     const redis = getRedisConnection();
     if (redis) {
       if (status === 'Blocked') {
@@ -165,6 +173,10 @@ router.delete("/users/:id", async (req, res) => {
 
     const username = user.username;
     await User.findByIdAndDelete(id);
+
+    // Clear caches
+    clearCache(`/users/profile/${username}`);
+    clearCache('/users/leaderboard');
 
     await logAudit(req, 'DELETE_USER', 'User', id, { username });
 
@@ -221,6 +233,10 @@ router.delete("/projects/:id", async (req, res) => {
 
     const title = project.title;
     await Project.findByIdAndDelete(id);
+
+    // Clear caches
+    clearCache(`/projects/${id}`);
+    clearCache('/projects');
 
     await logAudit(req, 'DELETE_PROJECT', 'Project', id, { title });
 

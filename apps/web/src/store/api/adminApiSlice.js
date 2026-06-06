@@ -12,7 +12,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body: { role, permissions },
       }),
-      invalidatesTags: ['AdminUsers', 'User'],
+      invalidatesTags: ['AdminUsers', 'User', 'AuditLogs'],
     }),
     updateUserStatus: builder.mutation({
       query: ({ id, status }) => ({
@@ -20,14 +20,14 @@ export const adminApiSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body: { status },
       }),
-      invalidatesTags: ['AdminUsers', 'User'],
+      invalidatesTags: ['AdminUsers', 'User', 'AuditLogs'],
     }),
     deleteUser: builder.mutation({
       query: (id) => ({
         url: `/admin/users/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['AdminUsers'],
+      invalidatesTags: ['AdminUsers', 'AuditLogs'],
     }),
     getAuditLogs: builder.query({
       query: ({ page = 1 }) => `/admin/logs?page=${page}`,
@@ -42,7 +42,7 @@ export const adminApiSlice = apiSlice.injectEndpoints({
         url: `/admin/projects/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Project'],
+      invalidatesTags: ['Project', 'AuditLogs'],
     }),
     getAdminRequests: builder.query({
       query: ({ page = 1 }) => `/admin/requests?page=${page}`,

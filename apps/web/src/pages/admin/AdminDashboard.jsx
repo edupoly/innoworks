@@ -46,8 +46,10 @@ const AdminDashboard = () => {
     if (window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
       try {
         await updateRole({ id: userId, role: newRole }).unwrap();
+        alert("User role updated successfully.");
       } catch (err) {
         console.error("Failed to update role:", err);
+        alert(err.data?.message || "Failed to update user role.");
       }
     }
   };
@@ -57,8 +59,10 @@ const AdminDashboard = () => {
     if (window.confirm(`Are you sure you want to ${newStatus.toLowerCase()} this user?`)) {
       try {
         await updateStatus({ id: userId, status: newStatus }).unwrap();
+        alert(`User successfully ${newStatus === 'Blocked' ? 'suspended' : 'activated'}.`);
       } catch (err) {
         console.error("Failed to update status:", err);
+        alert(err.data?.message || "Failed to update user status.");
       }
     }
   };
@@ -67,8 +71,10 @@ const AdminDashboard = () => {
     if (window.confirm("CRITICAL WARNING: Are you sure you want to permanently delete this user? This action cannot be undone.")) {
       try {
         await deleteUser(userId).unwrap();
+        alert("User successfully purged from the registry.");
       } catch (err) {
         console.error("Failed to delete user:", err);
+        alert(err.data?.message || "Failed to delete user node.");
       }
     }
   };
@@ -77,8 +83,10 @@ const AdminDashboard = () => {
     if (window.confirm("CRITICAL WARNING: Are you sure you want to permanently delete this project globally?")) {
       try {
         await deleteProject(projectId).unwrap();
+        alert("Project successfully decommissioned.");
       } catch (err) {
         console.error("Failed to delete project:", err);
+        alert(err.data?.message || "Failed to delete project protocol.");
       }
     }
   };
