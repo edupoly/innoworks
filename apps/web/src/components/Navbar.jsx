@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../store/slices/authSlice";
-import { Github, LogOut, LayoutDashboard, Code2, User, Moon, Sun, Monitor, Bell, Check, Sparkles, Trophy } from "lucide-react";
+import { Github, LogOut, LayoutDashboard, Code2, User, Moon, Sun, Monitor, Bell, Check, Sparkles, Trophy, ChevronDown, Command } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,49 +24,54 @@ const ThemeToggle = () => {
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
+  const themes = [
+    { name: "Light", value: "light", icon: Sun },
+    { name: "Dark", value: "dark", icon: Moon },
+    { name: "System", value: "system", icon: Monitor },
+  ];
+
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={toggleDropdown}
-        className="p-2 rounded-xl text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
+        className="p-2.5 rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-300 focus:outline-none border border-transparent hover:border-border/50 relative"
         aria-label="Toggle theme"
       >
-        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-        <Moon className="absolute top-2 left-2 h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      </button>
+        <Sun className="h-[1.1rem] w-[1.1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+        <Moon className="absolute top-2.5 left-2.5 h-[1.1rem] w-[1.1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      </motion.button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-2 w-36 rounded-xl border border-border/50 bg-background/95 backdrop-blur-xl shadow-xl shadow-black/5 dark:shadow-black/40 overflow-hidden z-50"
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute right-0 mt-3 w-40 rounded-2xl border border-border/50 bg-background/80 backdrop-blur-2xl shadow-2xl shadow-black/10 overflow-hidden z-50 p-1.5"
           >
-            <div className="flex flex-col p-1">
-              {[
-                { name: "Light", value: "light", icon: Sun },
-                { name: "Dark", value: "dark", icon: Moon },
-                { name: "System", value: "system", icon: Monitor },
-              ].map((t) => (
-                <button
-                  key={t.value}
-                  onClick={() => {
-                    setTheme(t.value);
-                    setIsOpen(false);
-                  }}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
-                    theme === t.value
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
+            {themes.map((t) => (
+              <button
+                key={t.value}
+                onClick={() => {
+                  setTheme(t.value);
+                  setIsOpen(false);
+                }}
+                className={`flex items-center justify-between w-full px-3 py-2 text-xs rounded-xl font-semibold transition-all ${
+                  theme === t.value
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
                   <t.icon size={14} />
                   {t.name}
-                </button>
-              ))}
-            </div>
+                </div>
+                {theme === t.value && <div className="w-1 h-1 rounded-full bg-current" />}
+              </button>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
@@ -122,80 +127,90 @@ const NotificationDropdown = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-xl text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 relative"
+        className="p-2.5 rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-300 focus:outline-none border border-transparent hover:border-border/50 relative"
         aria-label="Open notifications"
       >
-        <Bell size={20} />
+        <Bell size={18} />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-background animate-pulse shadow-sm">
-            {unreadCount > 99 ? "99+" : unreadCount}
+          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-primary-foreground text-[8px] font-black rounded-full flex items-center justify-center border-2 border-background shadow-lg shadow-primary/20">
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
-      </button>
+      </motion.button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-2 w-80 rounded-2xl border border-border/50 bg-background/95 backdrop-blur-xl shadow-xl shadow-black/10 dark:shadow-black/50 overflow-hidden z-50"
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute right-0 mt-3 w-80 rounded-[2rem] border border-border/50 bg-background/80 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden z-50"
           >
-            <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-widest">Recent Alerts</span>
+            <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between bg-secondary/30">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70">Notifications</span>
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllRead}
-                  className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
+                  className="text-[9px] font-black uppercase tracking-widest text-primary hover:brightness-110 transition-all"
                 >
-                  <Check size={10} /> Mark all read
+                  Clear All
                 </button>
               )}
             </div>
 
-            <div className="max-h-[280px] overflow-y-auto divide-y divide-border/30">
+            <div className="max-h-[320px] overflow-y-auto custom-scrollbar">
               {notifications.length > 0 ? (
-                notifications.map((n) => (
-                  <button
-                    key={n._id}
-                    onClick={() => handleReadSingle(n)}
-                    className={`w-full text-left px-4 py-3 hover:bg-muted/30 transition-colors flex gap-3 text-xs ${
-                      !n.read ? "bg-primary/5 font-semibold" : "text-muted-foreground"
-                    }`}
-                  >
-                    <div className="shrink-0 mt-0.5">
-                      {n.type === 'ACHIEVEMENT_UNLOCKED' ? (
-                        <Trophy size={14} className="text-yellow-500 fill-yellow-500/10" />
-                      ) : n.type === 'REVIEW_APPROVED' || n.type === 'PR_MERGED' ? (
-                        <Sparkles size={14} className="text-emerald-500" />
-                      ) : (
-                        <Bell size={14} className="text-primary" />
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="leading-relaxed">{n.message}</p>
-                      <p className="text-[9px] font-bold opacity-60">
-                        {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                  </button>
-                ))
+                <div className="divide-y divide-border/20">
+                  {notifications.map((n) => (
+                    <button
+                      key={n._id}
+                      onClick={() => handleReadSingle(n)}
+                      className={`w-full text-left px-5 py-4 hover:bg-secondary/50 transition-all flex gap-4 text-xs group ${
+                        !n.read ? "bg-primary/5" : "opacity-70"
+                      }`}
+                    >
+                      <div className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center border border-border/50 transition-colors ${!n.read ? "bg-primary/10 text-primary border-primary/20" : "bg-secondary text-muted-foreground"}`}>
+                        {n.type === 'ACHIEVEMENT_UNLOCKED' ? (
+                          <Trophy size={14} className={!n.read ? "fill-primary/20" : ""} />
+                        ) : n.type === 'REVIEW_APPROVED' || n.type === 'PR_MERGED' ? (
+                          <Sparkles size={14} />
+                        ) : (
+                          <Bell size={14} />
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-1 min-w-0">
+                        <p className={`leading-snug truncate ${!n.read ? "font-bold text-foreground" : "font-medium text-muted-foreground"}`}>{n.message}</p>
+                        <p className="text-[9px] font-black uppercase tracking-tighter opacity-40">
+                          {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • MISSION UPDATE
+                        </p>
+                      </div>
+                      {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1 shadow-sm shadow-primary/40" />}
+                    </button>
+                  ))}
+                </div>
               ) : (
-                <div className="py-12 text-center text-muted-foreground text-xs font-semibold">
-                  All caught up! No notifications.
+                <div className="py-16 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-secondary mx-auto flex items-center justify-center text-muted-foreground/30">
+                    <Check size={24} />
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-40">
+                    Sector Clear
+                  </p>
                 </div>
               )}
             </div>
 
             <Link
-              to="/dashboard?tab=timeline"
+              to="/notifications"
               onClick={() => setIsOpen(false)}
-              className="block w-full py-2.5 text-center text-[10px] font-bold bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground border-t border-border/50 uppercase tracking-wider"
+              className="block w-full py-4 text-center text-[9px] font-black uppercase tracking-[0.3em] bg-secondary/50 hover:bg-secondary hover:text-primary transition-all border-t border-border/30"
             >
-              Go to Dashboard Timeline
+              Access Intelligence Hub
             </Link>
           </motion.div>
         )}
@@ -216,92 +231,117 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: "Explore", path: "/projects" },
-    { name: "Leaderboard", path: "/leaderboard" }
+    { name: "Missions", path: "/projects" },
+    { name: "Ranking", path: "/leaderboard" }
   ];
 
   return (
-    <nav className="sticky top-0 z-50 glass border-b border-border/40 px-6 py-3 transition-colors duration-300">
+    <nav className="sticky top-0 z-[60] glass border-b border-border/40 px-6 py-2 transition-all duration-500">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-            <Code2 size={22} strokeWidth={2.5} />
-          </div>
-          <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-            INNOWORKS
-          </span>
-        </Link>
+        <div className="flex items-center gap-10">
+          <Link to="/" className="flex items-center gap-3 group focus:outline-none">
+            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-2xl shadow-primary/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" />
+              <Code2 size={20} strokeWidth={2.5} className="relative z-10" />
+            </div>
+            <span className="text-lg font-black tracking-tighter text-foreground group-hover:text-primary transition-colors duration-300 uppercase">
+              Innoworks
+            </span>
+          </Link>
 
-        <div className="hidden md:flex items-center gap-1 pl-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
-                location.pathname === link.path
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              {link.name}
-            </Link>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-4 flex-1 justify-end">
-          <ThemeToggle />
-          
-          {isAuthenticated ? (
-            <div className="flex items-center gap-4 pl-4 border-l border-border/50">
-              {/* Bell Icon Notification Dropdown */}
-              <NotificationDropdown />
-
+          <div className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
               <Link
-                to="/dashboard"
-                className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
-                  location.pathname === "/dashboard"
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                    : "bg-muted text-foreground hover:bg-muted/80"
+                key={link.path}
+                to={link.path}
+                className={`px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative group ${
+                  location.pathname === link.path
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <LayoutDashboard size={16} />
-                <span>Dashboard</span>
+                {link.name}
+                {location.pathname === link.path && (
+                  <motion.div
+                    layoutId="nav-active"
+                    className="absolute inset-0 bg-primary/5 rounded-xl -z-10 border border-primary/10"
+                    transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
+                  />
+                )}
+                <div className="absolute bottom-1 left-5 right-5 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-center" />
               </Link>
-              
-              {user?.username && (
-                <Link to={`/profile/${user.username}`} className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-full border border-border/50 hover:bg-muted transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-blue-400 p-[2px] shadow-sm">
-                    <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                       {user?.avatarUrl ? (
-                         <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
-                        ) : (
-                         <User size={16} className="text-primary" />
-                       )}
-                    </div>
-                  </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 pr-4 border-r border-border/30">
+            <ThemeToggle />
+            {isAuthenticated && <NotificationDropdown />}
+          </div>
+          
+          <div className="flex items-center gap-3 pl-2">
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className={`hidden lg:flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 border ${
+                    location.pathname === "/dashboard"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/20"
+                      : "bg-secondary/50 text-foreground border-border/50 hover:border-primary/30"
+                  }`}
+                >
+                  <LayoutDashboard size={14} />
+                  <span>Control Center</span>
                 </Link>
-              )}
-              <button
-                onClick={handleLogout}
-                className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-destructive/50"
-                title="Logout"
-                aria-label="Logout"
+                
+                <div className="flex items-center gap-2 bg-secondary/30 p-1 rounded-2xl border border-border/50">
+                  {user?.username && (
+                    <Link 
+                      to={`/profile/${user.username}`} 
+                      className="flex items-center gap-3 pr-4 pl-1 hover:bg-background/50 rounded-xl transition-all py-1 group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-indigo-400 p-[1.5px] shadow-sm">
+                        <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center overflow-hidden">
+                           {user?.avatarUrl ? (
+                             <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
+                            ) : (
+                             <User size={14} className="text-primary" />
+                           )}
+                        </div>
+                      </div>
+                      <div className="hidden sm:block">
+                        <p className="text-[10px] font-black tracking-tight text-foreground uppercase truncate max-w-[80px]">{user.username}</p>
+                        <p className="text-[8px] font-black text-primary tracking-widest leading-none">LVL {user.level || 1}</p>
+                      </div>
+                    </Link>
+                  )}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleLogout}
+                    className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all focus:outline-none"
+                    title="Logout"
+                  >
+                    <LogOut size={14} />
+                  </motion.button>
+                </div>
+              </>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  const apiUrl = import.meta.env.VITE_API_URL || "https://innoworks-api.up.railway.app";
+                  window.location.href = `${apiUrl}/auth/github`;
+                }}
+                className="btn-primary flex items-center gap-2.5 py-2.5 text-[10px] uppercase tracking-[0.2em] group"
               >
-                <LogOut size={16} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                const apiUrl = import.meta.env.VITE_API_URL || "https://innoworks-api.up.railway.app";
-                window.location.href = `${apiUrl}/auth/github`;
-              }}
-              className="btn-primary flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-full group shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"
-            >
-              <Github size={18} className="group-hover:rotate-12 transition-transform duration-300" />
-              Login with GitHub
-            </button>
-          )}
+                <Github size={16} className="group-hover:rotate-12 transition-transform duration-500" />
+                Auth via GitHub
+              </motion.button>
+            )}
+          </div>
         </div>
       </div>
     </nav>
@@ -309,3 +349,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

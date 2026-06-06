@@ -9,7 +9,7 @@ import { logoutUser } from "../store/slices/authSlice";
 import CommandPalette from "./CommandPalette";
 import { useQueryClient } from "@tanstack/react-query";
 import { initiateSocket, disconnectSocket, subscribeToNotifications } from "../lib/socket";
-import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers } from "lucide-react";
+import { Bell, X, ShieldAlert, Sparkles, Trophy, Rocket, AlertCircle, Layers, WifiOff, Cpu } from "lucide-react";
 
 const Layout = () => {
   const location = useLocation();
@@ -187,7 +187,7 @@ const Layout = () => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'ACHIEVEMENT_UNLOCKED':
-        return <Trophy size={18} className="text-yellow-500 fill-yellow-500/20" />;
+        return <Trophy size={18} className="text-yellow-500 fill-yellow-500/10" />;
       case 'REVIEW_APPROVED':
       case 'PR_MERGED':
         return <Sparkles size={18} className="text-emerald-500" />;
@@ -205,27 +205,28 @@ const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground transition-colors duration-300 relative overflow-x-hidden">
-      {/* Dynamic Ambient Background Layers */}
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-500 relative overflow-x-hidden selection:bg-primary/20 selection:text-primary">
+      {/* Premium Ambient Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.22)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.18)_1px,transparent_1px)] bg-[size:48px_48px] opacity-40"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/70 to-background"></div>
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E')] opacity-[0.03] mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,hsl(var(--primary)/0.08),transparent_70%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.2)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.2)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E')] opacity-[0.02] mix-blend-overlay" />
       </div>
 
       <Navbar />
       
-      {/* Offline Indicator */}
+      {/* Offline Alert */}
       <AnimatePresence>
         {!isOnline && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="bg-destructive text-destructive-foreground py-1.5 px-4 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 z-[60] relative overflow-hidden"
+            className="bg-destructive text-destructive-foreground py-2 px-4 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 z-[70] relative overflow-hidden shadow-2xl"
           >
-            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-            Network Connection Lost - Viewing Offline Mode
+            <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.05)_10px,rgba(255,255,255,0.05)_20px)]" />
+            <WifiOff size={14} className="relative z-10" />
+            <span className="relative z-10">Communications Disrupted - Operating in Offline Protocol</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -236,54 +237,70 @@ const Layout = () => {
         </PageTransition>
       </main>
 
-      {/* Footer */}
-      <footer className="py-8 text-center text-sm font-medium text-muted-foreground border-t border-border/50 bg-card/50 backdrop-blur-sm relative z-10">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} Innoworks. Powered by Student Developers.</p>
-          <div className="flex items-center gap-6">
-            <button 
+      {/* Premium Footer */}
+      <footer className="py-12 border-t border-border/40 bg-background/50 backdrop-blur-md relative z-10 overflow-hidden">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-2 text-center md:text-left">
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-50 italic">© {new Date().getFullYear()} Innoworks Engineering cluster.</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-primary/60">Forged by student developers for the next generation.</p>
+          </div>
+          
+          <div className="flex flex-wrap items-center justify-center gap-8">
+            <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+              <Link to="/projects" className="hover:text-primary transition-colors">Logistics</Link>
+              <Link to="/leaderboard" className="hover:text-primary transition-colors">Registry</Link>
+              <a href="#" className="hover:text-primary transition-colors">Protocol</a>
+            </div>
+            
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setIsCommandPaletteOpen(true)}
-              className="hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest bg-muted px-3 py-1.5 rounded-lg border border-border/50 flex items-center gap-1.5"
-              aria-label="Open command palette"
+              className="px-4 py-2 rounded-xl bg-secondary/50 border border-border/50 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-secondary transition-all group"
             >
-              <span>Command Palette</span>
-              <kbd className="text-[10px] bg-background border px-1 rounded">{isMac ? "Cmd K" : "Ctrl K"}</kbd>
-            </button>
-            <span className="text-border">|</span>
-            <Link to="/projects" className="hover:text-primary transition-colors">Explore</Link>
-            <Link to="/leaderboard" className="hover:text-primary transition-colors">Leaderboard</Link>
+              <Command size={14} className="group-hover:text-primary transition-colors" />
+              <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                <span>{isMac ? "⌘" : "Ctrl"}</span>
+                <span>K</span>
+              </div>
+            </motion.button>
           </div>
         </div>
       </footer>
 
-      {/* Floating Spotlight Command Palette */}
+      {/* Command Center Palette */}
       <CommandPalette 
         isOpen={isCommandPaletteOpen} 
         onClose={() => setIsCommandPaletteOpen(false)} 
       />
 
-      {/* Real-time Toast Notifications Hub */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full">
-        <AnimatePresence>
+      {/* High-Fidelity Notification Stack */}
+      <div className="fixed bottom-8 right-8 z-[100] flex flex-col gap-4 max-w-sm w-full">
+        <AnimatePresence mode="popLayout">
           {toasts.map((toast) => (
             <motion.div
+              layout
               key={toast.id}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-              className="w-full bg-popover/90 border border-border rounded-2xl p-4 shadow-2xl shadow-black/50 backdrop-blur-xl flex gap-3.5 relative overflow-hidden"
+              initial={{ opacity: 0, x: 50, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 20, scale: 0.9, transition: { duration: 0.2 } }}
+              className="w-full glass-card rounded-[1.5rem] p-5 flex gap-5 group relative overflow-hidden border-l-4 border-l-primary"
             >
-              <div className="w-1.5 h-full absolute left-0 top-0 bg-primary" />
-              <div className="w-10 h-10 rounded-xl bg-muted/80 flex items-center justify-center shrink-0 border border-border">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 blur-2xl rounded-full" />
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-inner">
                 {getNotificationIcon(toast.type)}
               </div>
-              <div className="flex-grow min-w-0 pr-4">
-                <p className="text-xs font-black uppercase tracking-wider text-primary mb-0.5">Real-time Alert</p>
-                <p className="text-xs font-semibold leading-relaxed text-foreground">{toast.message}</p>
+              <div className="flex-grow min-w-0 pr-2 space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">Intelligence Signal</p>
+                </div>
+                <p className="text-xs font-bold leading-relaxed text-foreground/90">{toast.message}</p>
               </div>
               <button 
                 onClick={() => dismissToast(toast.id)}
-                className="text-muted-foreground hover:text-foreground shrink-0 hover:bg-muted p-1.5 rounded-lg h-fit transition-colors"
+                className="text-muted-foreground hover:text-foreground shrink-0 hover:bg-secondary w-8 h-8 rounded-xl flex items-center justify-center transition-all"
               >
                 <X size={14} />
               </button>
@@ -296,3 +313,4 @@ const Layout = () => {
 };
 
 export default Layout;
+

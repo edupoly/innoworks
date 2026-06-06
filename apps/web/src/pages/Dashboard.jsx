@@ -20,7 +20,11 @@ import {
   Terminal,
   ShieldCheck,
   Rocket,
-  AlertTriangle
+  AlertTriangle,
+  Fingerprint,
+  Cpu,
+  Zap,
+  LayoutDashboard
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
@@ -33,13 +37,13 @@ const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.05 }
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
   }
 };
 
 const item = {
-  hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 350, damping: 25 } }
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 20 } }
 };
 
 const Dashboard = () => {
@@ -109,10 +113,10 @@ const Dashboard = () => {
     const approvedCount = submissions.filter(s => ['APPROVED', 'MERGED'].includes(s.status)).length;
 
     return [
-      { label: "Total XP", value: profile.xp || 0, icon: Trophy, color: "text-yellow-500", bg: "bg-yellow-500/10 border-yellow-500/20" },
-      { label: "Reputation", value: profile.reputationScore || 0, icon: Sparkles, color: "text-indigo-500", bg: "bg-indigo-500/10 border-indigo-500/20" },
-      { label: "Testing / Review", value: pendingCount, icon: Clock, color: "text-orange-500", bg: "bg-orange-500/10 border-orange-500/20" },
-      { label: "Merged / Approved", value: approvedCount, icon: Award, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
+      { label: "Aggregate XP", value: profile.xp || 0, icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
+      { label: "Engineering Rep", value: profile.reputationScore || 0, icon: Sparkles, color: "text-primary", bg: "bg-primary/10 border-primary/20" },
+      { label: "Active Review", value: pendingCount, icon: Clock, color: "text-orange-500", bg: "bg-orange-500/10 border-orange-500/20" },
+      { label: "Nodes Merged", value: approvedCount, icon: Award, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
     ];
   }, [profile]);
 
@@ -134,69 +138,89 @@ const Dashboard = () => {
   }, [profile]);
 
   if (isLoading) return (
-    <div className="flex flex-col items-center justify-center py-32">
-      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p className="text-muted-foreground font-bold font-mono text-xs uppercase tracking-widest">Synchronizing engineering data...</p>
+    <div className="flex flex-col items-center justify-center py-40 space-y-6">
+      <div className="relative">
+        <div className="w-16 h-16 border-2 border-primary/20 rounded-full" />
+        <div className="absolute inset-0 w-16 h-16 border-t-2 border-primary rounded-full animate-spin" />
+      </div>
+      <p className="text-muted-foreground font-black font-mono text-[10px] uppercase tracking-[0.3em] animate-pulse">Establishing Command Link...</p>
     </div>
   );
 
   if (error) return (
-    <div className="py-20 text-center">
-      <AlertCircle size={48} className="mx-auto text-destructive mb-4" />
-      <h2 className="text-2xl font-black mb-2 tracking-tight">System Desync</h2>
-      <p className="text-muted-foreground mb-8">Failed to establish link with command center.</p>
-      <button onClick={() => window.location.reload()} className="btn-primary px-8">Reinitialize</button>
+    <div className="py-32 text-center max-w-md mx-auto">
+      <div className="w-20 h-20 bg-destructive/10 text-destructive rounded-3xl flex items-center justify-center mx-auto mb-8 border border-destructive/20">
+        <AlertTriangle size={40} />
+      </div>
+      <h2 className="text-3xl font-black mb-4 tracking-tight">System desynchronization.</h2>
+      <p className="text-muted-foreground mb-10 font-medium leading-relaxed px-6">We encountered a critical failure while attempting to synchronize with your command node.</p>
+      <button onClick={() => window.location.reload()} className="btn-primary w-full">Reinitialize System</button>
     </div>
   );
 
   return (
-    <div className="py-20 max-w-7xl mx-auto px-4 md:px-6 relative selection:bg-primary/30">
+    <div className="py-12 max-w-7xl mx-auto px-6 lg:px-8 relative selection:bg-primary/20">
       
-      {/* Header Section */}
+      {/* Dynamic Header Section */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16"
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 mb-16"
       >
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-tr from-primary via-indigo-500 to-blue-400 p-[3px] shadow-2xl shadow-primary/20 animate-glow">
-              <div className="w-full h-full rounded-[1.8rem] bg-background flex items-center justify-center overflow-hidden border-4 border-background">
+        <div className="flex items-center gap-8">
+          <div className="relative group">
+            <motion.div 
+              whileHover={{ rotate: 5, scale: 1.05 }}
+              className="w-24 h-24 rounded-[2rem] bg-gradient-to-tr from-primary via-indigo-500 to-blue-400 p-[2.5px] shadow-2xl shadow-primary/30 relative z-10"
+            >
+              <div className="w-full h-full rounded-[1.8rem] bg-background flex items-center justify-center overflow-hidden border-[6px] border-background">
                  {profile?.avatarUrl ? (
                    <img src={profile.avatarUrl} alt={profile.username} className="w-full h-full object-cover" />
                  ) : (
-                   <Activity size={32} className="text-primary" />
+                   <div className="w-full h-full bg-secondary flex items-center justify-center text-primary">
+                     <Fingerprint size={40} />
+                   </div>
                  )}
               </div>
-            </div>
-            <div className="absolute -bottom-2 -right-2 bg-primary text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-lg border-2 border-background">
+            </motion.div>
+            <div className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground text-[10px] font-black px-3 py-1.5 rounded-xl shadow-xl border-4 border-background z-20">
               LVL {profile?.level || 1}
             </div>
+            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full -z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
           </div>
-          <div>
-            <h1 className="text-4xl font-black tracking-tighter mb-2">Command Center</h1>
-            <p className="text-muted-foreground flex items-center gap-2 font-black uppercase text-[10px] tracking-[0.2em] opacity-70">
-              <Award size={14} className="text-primary" />
-              <span>{profile?.username} • Strategic Contributor</span>
-            </p>
+          <div className="space-y-1">
+            <h1 className="text-4xl font-black tracking-tight text-gradient">Control Center</h1>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 bg-primary/5 px-3 py-1 rounded-lg border border-primary/10">@{profile?.username}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Engineering Cluster Active</span>
+            </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-4">
-          <button 
+        
+        <div className="flex flex-wrap items-center gap-4">
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setShowWizard(true)}
-            className="px-6 py-3 bg-primary/10 text-primary border border-primary/20 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center gap-2"
+            className="px-6 py-3 bg-secondary/80 text-foreground border border-border/50 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-secondary transition-all flex items-center gap-2.5 shadow-sm"
           >
-            <Rocket size={16} /> Ignition Guide
-          </button>
-          <button 
+            <Rocket size={16} className="text-primary" /> Ignition Protocol
+          </motion.button>
+          
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setIsEditing(!isEditing)}
-            className="group btn-secondary px-6 py-3 flex items-center gap-3 rounded-2xl border border-border/50 bg-background/50 backdrop-blur-xl hover:border-primary/30 transition-all"
+            className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2.5 border ${isEditing ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-secondary/80 text-foreground border-border/50 hover:bg-secondary'}`}
           >
-            {isEditing ? <><X size={18} /> Discard</> : <><Edit3 size={18} className="group-hover:rotate-12 transition-transform" /> Preferences</>}
-          </button>
-          <Link to="/projects/new" className="btn-primary px-8 py-3 shadow-[0_15px_30px_-5px_rgba(99,102,241,0.3)] hover:shadow-primary/40 flex items-center gap-3 rounded-2xl font-black uppercase tracking-widest text-xs">
-            <Plus size={20} /> New Mission
+            {isEditing ? <><X size={16} /> Abort Edit</> : <><Edit3 size={16} /> Registry Update</>}
+          </motion.button>
+          
+          <Link to="/projects/new" className="btn-primary group">
+            <Plus size={18} className="group-hover:rotate-90 transition-transform duration-500" />
+            <span className="text-[10px] uppercase tracking-widest">New Mission</span>
           </Link>
         </div>
       </motion.header>
@@ -205,82 +229,87 @@ const Dashboard = () => {
         {showWizard && <SetupWizard onClose={() => setShowWizard(false)} />}
       </AnimatePresence>
 
-      {/* Edit Profile Panel */}
+      {/* Profile Modification Node */}
       <AnimatePresence>
         {isEditing && (
           <motion.div
-            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-            animate={{ opacity: 1, height: "auto", marginBottom: "3rem" }}
-            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-            className="overflow-hidden"
+            initial={{ opacity: 0, y: -20, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -20, height: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden mb-12"
           >
-            <div className="bg-card border border-primary/20 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 relative overflow-hidden text-foreground">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-              <h2 className="text-2xl font-black mb-8 flex items-center gap-3 tracking-tight">
-                <Edit3 size={24} className="text-primary" />
-                Engineering Profile
-              </h2>
-              <form onSubmit={handleUpdateProfile} className="space-y-8 relative z-10">
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="glass-card rounded-[2.5rem] p-10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
+              <div className="flex items-center gap-4 mb-10">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <Fingerprint size={20} />
+                </div>
+                <h2 className="text-xl font-black tracking-tight uppercase tracking-widest">Biometric Data Update</h2>
+              </div>
+              
+              <form onSubmit={handleUpdateProfile} className="space-y-10 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Encrypted Email Address</label>
+                    <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Secure Email Channel</label>
                     <input
                       type="email"
-                      className="w-full px-5 py-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all font-bold text-sm outline-none text-foreground"
-                      placeholder="Transmission contact..."
+                      className="w-full px-6 py-4 bg-background/50 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-bold text-sm outline-none shadow-inner"
+                      placeholder="Enter encrypted email..."
                       value={editData.email}
                       onChange={(e) => setEditData({ ...editData, email: e.target.value })}
                     />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Mobile Contact</label>
+                    <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Direct Telemetry Line</label>
                     <input
                       type="tel"
-                      className="w-full px-5 py-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all font-bold text-sm outline-none text-foreground"
-                      placeholder="Secure channel number..."
+                      className="w-full px-6 py-4 bg-background/50 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-bold text-sm outline-none shadow-inner"
+                      placeholder="Enter secure contact..."
                       value={editData.phone}
                       onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Professional Summary</label>
+                    <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Mission Directive (Bio)</label>
                     <textarea
                       rows={4}
-                      className="w-full px-5 py-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all font-medium resize-none text-sm outline-none text-foreground"
-                      placeholder="High-level overview of your expertise..."
+                      className="w-full px-6 py-5 bg-background/50 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium resize-none text-sm outline-none shadow-inner custom-scrollbar"
+                      placeholder="Define your engineering objective..."
                       value={editData.bio}
                       onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                     />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Tech Stack (CSV)</label>
+                    <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Core Tech Matrix (CSV)</label>
                     <input
                       type="text"
-                      className="w-full px-5 py-4 bg-muted/20 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all font-bold text-sm outline-none text-foreground"
-                      placeholder="React, Rust, AWS, etc."
+                      className="w-full px-6 py-4 bg-background/50 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-bold text-sm outline-none shadow-inner"
+                      placeholder="React, Next.js, Rust, Go..."
                       value={editData.skills}
                       onChange={(e) => setEditData({ ...editData, skills: e.target.value })}
                     />
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase mt-2 opacity-50">Comma-separated values</p>
+                    <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest mt-2 opacity-50 px-1">Synchronize skills across the cluster</p>
                   </div>
                 </div>
-                <div className="flex justify-end gap-4">
-                  <button 
+                
+                <div className="flex justify-end pt-4">
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     disabled={isUpdatingProfile}
                     type="submit"
-                    className="btn-primary px-10 py-4 flex items-center gap-3 shadow-xl shadow-primary/20 rounded-2xl font-black uppercase tracking-widest text-xs"
+                    className="btn-primary min-w-[240px] gap-3"
                   >
                     {isUpdatingProfile ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                     ) : (
-                      <><Save size={18} /> Synchronize Profile</>
+                      <><Save size={18} /> Commit Changes</>
                     )}
-                  </button>
+                  </motion.button>
                 </div>
               </form>
             </div>
@@ -292,166 +321,197 @@ const Dashboard = () => {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-16 p-8 bg-secondary/30 backdrop-blur-3xl rounded-[2.5rem] border border-border/50 relative group"
+          className="mb-16 p-10 bg-secondary/20 backdrop-blur-3xl rounded-[3rem] border border-border/50 relative group overflow-hidden"
         >
-          <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 rounded-full group-hover:bg-primary transition-colors"></div>
-          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-4">Transmission_Bio</h3>
-          <p className="text-xl font-bold leading-relaxed text-foreground/90 italic">"{profile.bio}"</p>
-          {profile.skills?.length > 0 && (
-            <div className="flex flex-wrap gap-3 mt-8">
-              {profile.skills.map((skill, i) => (
-                <span key={i} className="px-4 py-1.5 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl border border-primary/10">
-                  {skill}
-                </span>
-              ))}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-primary/20 rounded-full group-hover:bg-primary transition-all duration-700" />
+          <div className="relative z-10 space-y-8">
+            <div className="space-y-2">
+              <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-primary/60">Registry_Status_Report</h3>
+              <p className="text-2xl font-bold leading-relaxed text-foreground/90 italic max-w-4xl tracking-tight">"{profile.bio}"</p>
             </div>
-          )}
+            {profile.skills?.length > 0 && (
+              <div className="flex flex-wrap gap-2.5">
+                {profile.skills.map((skill, i) => (
+                  <span key={i} className="px-4 py-2 bg-background/50 text-foreground text-[9px] font-black uppercase tracking-widest rounded-xl border border-border/50 hover:border-primary/30 transition-all shadow-sm">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </motion.div>
       )}
 
-      {/* Ranks & Engineering Metrics Dashboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-16">
-        {/* Stats Summary Grid */}
-        <div className="lg:col-span-2 flex flex-col justify-between gap-10">
+      {/* Ranks & Engineering Metrics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-20">
+        <div className="lg:col-span-2 space-y-12">
           <motion.div 
             variants={container}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-6"
           >
             {stats.map((stat, i) => (
-              <motion.div variants={item} key={i} className="bg-card p-8 rounded-[2rem] border border-border/50 shadow-sm flex items-center gap-6 group hover:border-primary/20 transition-all">
-                <div className={`w-16 h-16 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
+              <motion.div variants={item} key={i} className="card-premium p-8 flex items-center gap-8 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className={`w-16 h-16 rounded-[1.5rem] ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl shadow-black/5`}>
                   <stat.icon size={28} strokeWidth={2.5} />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1 opacity-60">{stat.label}</p>
-                  <p className="text-4xl font-black tracking-tighter text-foreground">{stat.value}</p>
+                <div className="relative z-10 space-y-1">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em] opacity-60 leading-none">{stat.label}</p>
+                  <p className="text-4xl font-black tracking-tighter text-foreground tabular-nums">{stat.value}</p>
                 </div>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Badges Preview Section */}
-          <div className="bg-card border border-border/50 p-8 rounded-[2.5rem] w-full h-full flex flex-col justify-between shadow-2xl">
-            <div>
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-8">Achievements_Log</h3>
+          {/* Achievement Registry */}
+          <div className="card-premium p-10 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full" />
+            <div className="relative z-10 space-y-10">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/10">
+                  <Trophy size={20} />
+                </div>
+                <h3 className="text-sm font-black uppercase tracking-[0.3em]">Achievement Registry</h3>
+              </div>
+              
               {profile?.badges?.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
                   {profile.badges.map((badge, idx) => (
-                    <div key={idx} className="p-5 bg-card border border-border/50 rounded-3xl flex flex-col items-center text-center group hover:border-yellow-500/20 hover:bg-yellow-500/5 transition-all">
-                      <div className="w-12 h-12 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-xl shadow-inner">
-                        {badge.icon || <Trophy size={22} />}
+                    <motion.div 
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      key={idx} 
+                      className="p-6 bg-background/40 border border-border/50 rounded-[2rem] flex flex-col items-center text-center group hover:border-amber-500/30 hover:bg-amber-500/5 transition-all shadow-xl shadow-black/5"
+                    >
+                      <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform text-2xl relative shadow-inner">
+                        <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full scale-0 group-hover:scale-150 transition-transform duration-700" />
+                        <span className="relative z-10">{badge.icon || "🏆"}</span>
                       </div>
-                      <p className="text-xs font-black text-foreground mb-1 tracking-tight">{badge.name}</p>
-                      <p className="text-[9px] text-muted-foreground leading-relaxed font-bold uppercase tracking-tighter opacity-60">{badge.description}</p>
-                    </div>
+                      <p className="text-xs font-black text-foreground mb-1.5 tracking-tight uppercase tracking-widest">{badge.name}</p>
+                      <p className="text-[9px] text-muted-foreground leading-relaxed font-bold uppercase tracking-widest opacity-40">{badge.description}</p>
+                    </motion.div>
                   ))}
                 </div>
               ) : (
-                <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
-                  Awaiting Achievement Unlocks...
+                <div className="py-16 text-center space-y-4">
+                  <Trophy size={48} className="mx-auto text-muted-foreground opacity-10" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-30">
+                    Awaiting Achievement Unlocks
+                  </p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Interactive Engineering Radar Chart */}
+        {/* Engineering Radar Matrix */}
         <div className="w-full flex justify-center lg:justify-end">
-          <EngineeringRadarChart stats={profile} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="w-full max-w-sm"
+          >
+            <EngineeringRadarChart stats={profile} />
+          </motion.div>
         </div>
       </div>
 
-      {/* Tab Selectors */}
-      <div className="flex border-b border-border/50 mb-12 gap-10 text-xs font-black uppercase tracking-[0.2em] overflow-x-auto no-scrollbar pb-1">
+      {/* Mission Deck Tabs */}
+      <div className="flex border-b border-border/30 mb-12 gap-10 text-[10px] font-black uppercase tracking-[0.3em] overflow-x-auto no-scrollbar pb-0.5 relative">
         {[
-          { id: "kanban", label: "Contribution Deck", icon: Kanban },
-          { id: "management", label: "Managed Nodes", icon: Layers },
-          { id: "timeline", label: "Activity Stream", icon: History }
+          { id: "kanban", label: "Mission Deck", icon: Kanban },
+          { id: "management", label: "Directed Nodes", icon: Cpu },
+          { id: "timeline", label: "Signal Feed", icon: Activity }
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
-            className={`pb-5 border-b-2 flex items-center gap-3 px-2 transition-all shrink-0 ${
-              activeTab === tab.id ? "border-primary text-primary opacity-100" : "border-transparent text-muted-foreground hover:text-foreground opacity-50"
+            className={`pb-5 border-b-2 flex items-center gap-3 px-1 transition-all relative shrink-0 ${
+              activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground opacity-60"
             }`}
           >
-
-            <tab.icon size={16} /> {tab.label}
+            <tab.icon size={16} /> 
+            {tab.label}
+            {activeTab === tab.id && (
+              <motion.div layoutId="tab-active" className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-primary" />
+            )}
           </button>
         ))}
       </div>
 
-      {/* Tabs Content */}
+      {/* Deck Content Node */}
       <AnimatePresence mode="wait">
         {activeTab === "kanban" && (
           <motion.div
             key="kanban"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
           >
-            {/* Column 1: Planned / Accepted */}
+            {/* Column: Awaiting Action */}
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-muted animate-pulse"></div>
-                  Accepted
-                </span>
-                <span className="text-[9px] font-black bg-muted text-foreground px-2.5 py-1 rounded-lg border border-border/50">{kanbanData.accepted.length}</span>
+              <div className="flex items-center justify-between px-2 pb-4 border-b border-border/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-primary/40" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground opacity-70">Accepted</span>
+                </div>
+                <span className="text-[9px] font-black bg-secondary/80 text-foreground px-2.5 py-1 rounded-lg border border-border/50 tabular-nums">{kanbanData.accepted.length}</span>
               </div>
-              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+              <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                 {kanbanData.accepted.length > 0 ? (
                   kanbanData.accepted.map((project) => (
                     <motion.div 
-                      whileHover={{ y: -5 }}
-                      key={project._id || project} 
-                      className="bg-card p-6 border border-border/50 rounded-3xl space-y-6 hover:border-primary/40 transition-all group shadow-xl hover:shadow-primary/5"
+                      key={project._id || project}
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      className="bg-card/50 border border-border/50 rounded-[2rem] p-7 space-y-8 hover:border-primary/40 hover:bg-card transition-all group shadow-xl shadow-black/5"
                     >
-                      <p className="font-black text-sm leading-tight group-hover:text-primary transition-colors tracking-tight text-foreground">{project.title || "Elite Mission"}</p>
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-primary font-black bg-primary/5 px-3 py-1.5 rounded-xl border border-primary/10 tracking-widest uppercase">{project.difficulty || 'Easy'}</span>
-                        <Link to={`/projects/${project._id || project}`} className="font-black uppercase tracking-[0.2em] text-primary hover:underline flex items-center gap-1.5 group/btn">
-                          Execute <ChevronRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
+                      <p className="font-black text-sm leading-tight group-hover:text-primary transition-colors tracking-tight text-foreground line-clamp-2">{project.title || "Unknown Mission"}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-primary bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10">{project.difficulty || 'Easy'}</span>
+                        <Link to={`/projects/${project._id || project}`} className="text-[9px] font-black uppercase tracking-[0.3em] text-primary hover:brightness-125 flex items-center gap-2 group/btn">
+                          Engage <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                         </Link>
                       </div>
                     </motion.div>
                   ))
                 ) : (
-                  <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-2 border-dashed border-border rounded-3xl opacity-30">
-                    Station_Idle
+                  <div className="py-20 text-center border-2 border-dashed border-border/40 rounded-[2.5rem] bg-secondary/5 opacity-40">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Deck Empty</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Column 2: In Review / Testing */}
+            {/* Column: Intelligence Validation */}
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                  Testing
-                </span>
-                <span className="text-[9px] font-black bg-blue-500/10 text-blue-500 px-2.5 py-1 rounded-lg border border-blue-500/20">{kanbanData.reviewing.length}</span>
+              <div className="flex items-center justify-between px-2 pb-4 border-b border-border/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-blue-500">Validation</span>
+                </div>
+                <span className="text-[9px] font-black bg-blue-500/10 text-blue-500 px-2.5 py-1 rounded-lg border border-blue-500/20 tabular-nums">{kanbanData.reviewing.length}</span>
               </div>
-              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+              <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                 {kanbanData.reviewing.length > 0 ? (
                   kanbanData.reviewing.map((sub) => (
                     <motion.div 
-                      whileHover={{ y: -5 }}
-                      key={sub._id} 
-                      className="bg-card p-6 border border-border/50 rounded-3xl space-y-6 hover:border-blue-500/40 transition-all shadow-xl hover:shadow-blue-500/5"
+                      key={sub._id}
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      className="bg-card/50 border border-border/50 rounded-[2rem] p-7 space-y-8 hover:border-blue-500/40 hover:bg-card transition-all shadow-xl shadow-black/5"
                     >
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-blue-500/10 text-blue-500 rounded-lg border border-blue-500/20">{sub.status}</span>
-                        <span className="text-[9px] font-black text-muted-foreground opacity-50">{new Date(sub.createdAt).toLocaleDateString()}</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg border border-blue-500/20">{sub.status.replace('_', ' ')}</span>
+                        <Clock size={14} className="text-blue-500/50" />
                       </div>
-                      <p className="font-black text-sm leading-tight tracking-tight text-foreground">{sub.project?.title || "Quantum Module"}</p>
-                      <div className="flex items-center gap-3">
+                      <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Project Solution"}</p>
+                      <div className="pt-2">
                         {sub.prNumber && (
-                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-xl border border-border">
+                          <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-2 bg-secondary/80 px-4 py-2 rounded-xl border border-border/50 transition-all">
                             <Github size={12} /> PR #{sub.prNumber}
                           </a>
                         )}
@@ -459,82 +519,82 @@ const Dashboard = () => {
                     </motion.div>
                   ))
                 ) : (
-                  <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-2 border-dashed border-border rounded-3xl opacity-30">
-                    No_Active_Reviews
+                  <div className="py-20 text-center border-2 border-dashed border-border/40 rounded-[2.5rem] bg-secondary/5 opacity-40">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Signals Quiet</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Column 3: Changes Requested */}
+            {/* Column: Necessary Protocol Adjustments */}
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                  Actions
-                </span>
-                <span className="text-[9px] font-black bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-lg border border-orange-500/20">{kanbanData.changes.length}</span>
+              <div className="flex items-center justify-between px-2 pb-4 border-b border-border/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse shadow-sm shadow-orange-500/40" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-500">Refactor</span>
+                </div>
+                <span className="text-[9px] font-black bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-lg border border-orange-500/20 tabular-nums">{kanbanData.changes.length}</span>
               </div>
-              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+              <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                 {kanbanData.changes.length > 0 ? (
                   kanbanData.changes.map((sub) => (
                     <motion.div 
-                      whileHover={{ y: -5 }}
-                      key={sub._id} 
-                      className="bg-card p-6 border border-orange-500/30 rounded-3xl space-y-6 hover:border-orange-500/50 transition-all shadow-xl hover:shadow-orange-500/5"
+                      key={sub._id}
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      className="bg-card/50 border border-orange-500/30 rounded-[2rem] p-7 space-y-8 hover:border-orange-500/50 hover:bg-card transition-all shadow-xl shadow-orange-500/5"
                     >
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-orange-500/10 text-orange-500 rounded-lg border border-orange-500/20">Refactor</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] px-3 py-1 bg-orange-500/10 text-orange-500 rounded-lg border border-orange-500/20">Operational Change</span>
                         <AlertCircle size={14} className="text-orange-500" />
                       </div>
-                      <p className="font-black text-sm leading-tight tracking-tight text-foreground">{sub.project?.title || "Code Module"}</p>
-                      <Link to={`/projects/${sub.project?._id}`} className="block text-center w-full py-3 bg-orange-500/10 text-orange-500 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-orange-500 hover:text-white transition-all">
-                        Fix Discrepancies
+                      <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Module Patch"}</p>
+                      <Link to={`/projects/${sub.project?._id}`} className="block text-center w-full py-3 bg-orange-500 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-xl shadow-lg shadow-orange-500/20 hover:brightness-110 active:scale-95 transition-all">
+                        Execute Fix
                       </Link>
                     </motion.div>
                   ))
                 ) : (
-                  <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-2 border-dashed border-border rounded-3xl opacity-30">
-                    All_Systems_Nominal
+                  <div className="py-20 text-center border-2 border-dashed border-border/40 rounded-[2.5rem] bg-secondary/5 opacity-40">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">No Discrepancies</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Column 4: Merged / Completed */}
+            {/* Column: Merged / Deployed */}
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                  Deployed
-                </span>
-                <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-lg border border-emerald-500/20">{kanbanData.completed.length}</span>
+              <div className="flex items-center justify-between px-2 pb-4 border-b border-border/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-500">Merged</span>
+                </div>
+                <span className="text-[9px] font-black bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-lg border border-emerald-500/20 tabular-nums">{kanbanData.completed.length}</span>
               </div>
-              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+              <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                 {kanbanData.completed.length > 0 ? (
                   kanbanData.completed.map((sub) => (
                     <motion.div 
-                      whileHover={{ y: -5 }}
-                      key={sub._id} 
-                      className="bg-card p-6 border border-emerald-500/30 rounded-3xl space-y-6 hover:border-emerald-500/50 transition-all shadow-xl hover:shadow-emerald-500/5"
+                      key={sub._id}
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      className="bg-card/50 border border-emerald-500/30 rounded-[2rem] p-7 space-y-8 hover:border-emerald-500/50 hover:bg-card transition-all shadow-xl shadow-emerald-500/5"
                     >
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20">Archived</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20">Mission Complete</span>
                         <CheckCircle2 size={14} className="text-emerald-500" />
                       </div>
-                      <p className="font-black text-sm leading-tight tracking-tight text-foreground">{sub.project?.title || "Project Solution"}</p>
+                      <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Solved Protocol"}</p>
                       <div className="flex items-center justify-between pt-2">
                         <div className="flex -space-x-2">
-                           <div className="w-6 h-6 rounded-full bg-primary border-2 border-background"></div>
-                           <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-background"></div>
+                           <div className="w-6 h-6 rounded-full bg-primary border-2 border-background shadow-sm"></div>
+                           <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-background shadow-sm"></div>
                         </div>
-                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">+200 XP Earned</span>
+                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">+200 XP Credited</span>
                       </div>
                     </motion.div>
                   ))
                 ) : (
-                  <div className="py-12 text-center text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] border-2 border-dashed border-border rounded-3xl opacity-30">
-                    Mission_Pending
+                  <div className="py-20 text-center border-2 border-dashed border-border/40 rounded-[2.5rem] bg-secondary/5 opacity-40">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Registry Empty</p>
                   </div>
                 )}
               </div>
@@ -545,54 +605,66 @@ const Dashboard = () => {
         {activeTab === "management" && (
           <motion.div
             key="management"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.4 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {kanbanData.owned.length > 0 ? (
               kanbanData.owned.map((project) => (
-                <div key={project._id} className="bg-card border border-border/50 rounded-3xl p-8 space-y-6 hover:border-primary/30 transition-all shadow-xl">
-                  <div className="flex justify-between items-start">
-                    <div className="p-3 bg-primary/5 rounded-2xl">
-                      <Terminal size={24} className="text-primary" />
+                <div key={project._id} className="card-premium p-10 space-y-10 group relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+                  
+                  <div className="flex justify-between items-start relative z-10">
+                    <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20 text-primary shadow-xl shadow-primary/5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                      <Terminal size={24} />
                     </div>
                     <div className="flex gap-2">
-                       <button 
+                       <motion.button 
+                         whileHover={{ scale: 1.1, rotate: 5 }}
+                         whileTap={{ scale: 0.9 }}
                          onClick={() => navigate(`/projects/${project._id}`)}
-                         className="p-2 rounded-xl bg-muted/50 text-muted-foreground hover:text-primary transition-colors"
+                         className="p-2.5 rounded-xl bg-background border border-border/50 text-muted-foreground hover:text-primary transition-colors shadow-sm"
                        >
                          <Edit3 size={18} />
-                       </button>
-                       <button 
+                       </motion.button>
+                       <motion.button 
+                         whileHover={{ scale: 1.1, rotate: -5 }}
+                         whileTap={{ scale: 0.9 }}
                          onClick={() => handleDeleteProject(project._id)}
-                         className="p-2 rounded-xl bg-muted/50 text-muted-foreground hover:text-red-500 transition-colors"
+                         className="p-2.5 rounded-xl bg-background border border-border/50 text-muted-foreground hover:text-destructive transition-colors shadow-sm"
                        >
                          <X size={18} />
-                       </button>
+                       </motion.button>
                     </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-black mb-2 tracking-tight text-foreground">{project.title}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2 font-medium leading-relaxed">{project.description}</p>
+                  
+                  <div className="space-y-3 relative z-10">
+                    <h3 className="text-xl font-black tracking-tight text-foreground group-hover:text-primary transition-colors">{project.title}</h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2 font-medium leading-relaxed opacity-80">{project.description}</p>
                   </div>
-                  <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                  
+                  <div className="flex items-center justify-between pt-6 border-t border-border/30 relative z-10">
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        <Activity size={12} className="text-blue-500" />
-                        {project.contributors?.length || 0} Nodes
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground bg-background/50 px-3 py-1.5 rounded-xl border border-border/50">
+                        <Activity size={14} className="text-blue-500" />
+                        <span>{project.contributors?.length || 0} Nodes Linked</span>
                       </div>
                     </div>
-                    <Link to={`/projects/${project._id}`} className="btn-secondary px-4 py-2 text-[10px] font-black uppercase rounded-xl">
-                      Manage Briefing
+                    <Link to={`/projects/${project._id}`} className="text-[10px] font-black uppercase tracking-widest text-primary hover:brightness-125 transition-all flex items-center gap-2">
+                      Manage Briefing <ChevronRight size={14} />
                     </Link>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="col-span-full py-20 text-center border-2 border-dashed border-border rounded-[3rem] bg-muted/5">
-                <ShieldCheck size={40} className="mx-auto text-muted-foreground/30 mb-4" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">No Nodes Under Management</p>
+              <div className="col-span-full py-32 text-center border-2 border-dashed border-border/30 rounded-[3rem] bg-secondary/5 space-y-6">
+                <ShieldCheck size={56} className="mx-auto text-muted-foreground opacity-10" />
+                <div className="space-y-2">
+                  <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">No Directed Nodes Under Management</p>
+                  <Link to="/projects/new" className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline">Initialize New Protocol</Link>
+                </div>
               </div>
             )}
           </motion.div>
@@ -601,41 +673,66 @@ const Dashboard = () => {
         {activeTab === "timeline" && (
           <motion.div
             key="timeline"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="max-w-3xl mx-auto w-full space-y-6"
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.4 }}
+            className="max-w-3xl mx-auto w-full space-y-8"
           >
             {kanbanData.allSubmissions.length > 0 ? (
               kanbanData.allSubmissions.map((sub, idx) => (
-                <div key={sub._id} className="relative pl-10 pb-8 last:pb-0 group">
+                <div key={sub._id} className="relative pl-12 pb-12 last:pb-0 group">
                   {idx !== kanbanData.allSubmissions.length - 1 && (
-                    <div className="absolute left-[11px] top-10 bottom-0 w-0.5 bg-border/50 group-hover:bg-primary/30 transition-colors"></div>
+                    <div className="absolute left-[15px] top-12 bottom-0 w-px bg-border/40 group-hover:bg-primary/30 transition-all duration-700" />
                   )}
-                  <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-background border-2 border-primary flex items-center justify-center z-10 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                  <div className="absolute left-0 top-1.5 w-8 h-8 rounded-xl bg-background border-2 border-border/50 flex items-center justify-center z-10 shadow-xl group-hover:border-primary/50 transition-all group-hover:scale-110">
+                    <div className={`w-2.5 h-2.5 rounded-full ${sub.status === 'MERGED' ? 'bg-emerald-500' : sub.status === 'CHANGES_REQUESTED' ? 'bg-orange-500' : 'bg-primary'} animate-pulse shadow-sm`} />
                   </div>
-                  <div className="bg-card border border-border/50 rounded-3xl p-6 hover:border-primary/20 transition-all shadow-xl shadow-black/5">
-                    <div className="flex justify-between items-start mb-4">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10">
-                        {sub.status.replace('_', ' ')}
-                      </span>
-                      <span className="text-[10px] font-bold text-muted-foreground opacity-50">{new Date(sub.createdAt).toLocaleDateString()}</span>
+                  
+                  <motion.div 
+                    whileHover={{ x: 5 }}
+                    className="glass-card rounded-[2.5rem] p-8 hover:border-primary/20 transition-all shadow-2xl shadow-black/5"
+                  >
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 pb-6 border-b border-border/20">
+                      <div className="flex items-center gap-3">
+                        <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] ${sub.status === 'MERGED' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : sub.status === 'CHANGES_REQUESTED' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' : 'bg-primary/10 text-primary border border-primary/20'}`}>
+                          {sub.status.replace('_', ' ')}
+                        </span>
+                        <div className="h-4 w-px bg-border/40" />
+                        <span className="text-[9px] font-black text-muted-foreground opacity-50 uppercase tracking-widest">{new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                      <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.3em] font-mono">TX_ID: {sub._id.slice(-8)}</span>
                     </div>
-                    <p className="font-bold text-base mb-2 text-foreground">{sub.project?.title || "Project Solution"}</p>
-                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-4">Transmission ID: {sub._id.slice(-8)}</p>
-                    <div className="flex items-center gap-3">
-                       <a href={sub.prUrl} target="_blank" rel="noreferrer" className="btn-secondary px-4 py-2 text-[10px] font-black uppercase rounded-xl flex items-center gap-2">
-                         <Github size={12} /> View Source
-                       </a>
+                    
+                    <div className="space-y-4">
+                      <h4 className="font-black text-xl tracking-tight text-foreground leading-tight">{sub.project?.title || "Project Solution"}</h4>
+                      <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] flex items-center gap-2">
+                        <Zap size={14} className="text-primary" /> Signal Synchronized via Global Grid
+                      </p>
                     </div>
-                  </div>
+                    
+                    <div className="flex items-center gap-4 pt-8">
+                       <motion.a 
+                         whileHover={{ scale: 1.05 }}
+                         whileTap={{ scale: 0.95 }}
+                         href={sub.prUrl} 
+                         target="_blank" 
+                         rel="noreferrer" 
+                         className="px-6 py-3 bg-secondary/80 text-foreground border border-border/50 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl flex items-center gap-2.5 transition-all hover:bg-secondary"
+                       >
+                         <Github size={14} /> Open Source
+                       </motion.a>
+                       <Link to={`/projects/${sub.project?._id}`} className="text-[10px] font-black uppercase tracking-widest text-primary hover:brightness-125 transition-all flex items-center gap-2">
+                         View Protocol <ChevronRight size={14} />
+                       </Link>
+                    </div>
+                  </motion.div>
                 </div>
               ))
             ) : (
-              <div className="py-20 text-center border-2 border-dashed border-border rounded-[3rem] bg-muted/5">
-                <History size={40} className="mx-auto text-muted-foreground/30 mb-4" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Awaiting Data Streams</p>
+              <div className="py-32 text-center border-2 border-dashed border-border/30 rounded-[3rem] bg-secondary/5 space-y-6">
+                <History size={56} className="mx-auto text-muted-foreground opacity-10" />
+                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Awaiting Signal Data Streams</p>
               </div>
             )}
           </motion.div>
@@ -646,3 +743,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
