@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Rocket, Send, AlertCircle, CheckCircle2, RefreshCcw, Target, Cpu, Zap, ChevronDown, BookOpen, Layers, Terminal } from "lucide-react";
+import { Rocket, Send, AlertCircle, CheckCircle2, RefreshCcw, Target, Cpu, Zap, ChevronDown, BookOpen, Layers, Terminal, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import RepoPicker from "../components/RepoPicker";
 import BranchPicker from "../components/BranchPicker";
