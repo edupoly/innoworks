@@ -44,7 +44,7 @@ submissionSchema.index({ status: 1 });
 submissionSchema.index({ user: 1, project: 1 });
 
 // Cascading delete middleware
-submissionSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function(next) {
+submissionSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function() {
   const query = this.getQuery();
   const submissions = await this.model.find(query);
   const submissionIds = submissions.map(s => s._id);
@@ -54,7 +54,6 @@ submissionSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async func
     // Delete Reviews
     await mongoose.model('Review').deleteMany({ submission: { $in: submissionIds } });
   }
-  next();
 });
 
 export const Submission = mongoose.model('Submission', submissionSchema);

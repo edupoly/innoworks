@@ -58,7 +58,7 @@ userSchema.index({ xp: -1 });
 userSchema.index({ reputationScore: -1 });
 
 // Cascading delete middleware
-userSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function(next) {
+userSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function() {
   const query = this.getQuery();
   const users = await this.model.find(query);
   const userIds = users.map(u => u._id);
@@ -66,16 +66,15 @@ userSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function(n
   if (userIds.length > 0) {
     const mongoose = this.model.base;
     
-    // Delete Projects owned by these users
+    // Delete Projects owned by these users (triggers Project cascading)
     await mongoose.model('Project').deleteMany({ owner: { $in: userIds } });
     
-    // Delete Submissions by these users
+    // Delete Submissions by these users (triggers Submission cascading)
     await mongoose.model('Submission').deleteMany({ user: { $in: userIds } });
     
     // Delete Notifications for these users
     await mongoose.model('Notification').deleteMany({ user: { $in: userIds } });
   }
-  next();
 });
 
 // Pre-save hook to cap scores at 100
