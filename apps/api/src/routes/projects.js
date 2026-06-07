@@ -186,7 +186,7 @@ router.post("/:id/issues", authenticate, validateObjectId, async (req, res) => {
   }
 });
 
-// 5. Close a GitHub Issue (Owner only)
+// 5. Close a GitHub Issue (Owner or Admin only)
 router.patch("/:id/issues/:issueNumber/close", authenticate, validateObjectId, verifyOwnership, async (req, res) => {
   try {
     const { issueNumber } = req.params;
@@ -206,7 +206,7 @@ router.patch("/:id/issues/:issueNumber/close", authenticate, validateObjectId, v
   }
 });
 
-// 6. Owner Permissions: Create Labels on GitHub repository
+// 6. Owner Permissions: Create Labels on GitHub repository (Owner or Admin)
 router.post("/:id/labels", authenticate, validateObjectId, verifyOwnership, async (req, res) => {
   const { name, color } = req.body;
   if (!name) return res.status(400).json({ message: "Label name is required." });
@@ -229,7 +229,7 @@ router.post("/:id/labels", authenticate, validateObjectId, verifyOwnership, asyn
     );
 
     // Save label locally in the Project document
-    req.project.labels.push({ name, color: `#${cleanColor}` });
+    req.project.labels = [...(req.project.labels || []), { name, color: `#${cleanColor}` }];
     await req.project.save();
 
     res.status(201).json(response.data);
@@ -238,16 +238,17 @@ router.post("/:id/labels", authenticate, validateObjectId, verifyOwnership, asyn
   }
 });
 
-// 7. Owner Permissions: Manage Contributors
+// 7. Owner Permissions: Manage Contributors (Owner or Admin)
 router.put("/:id/contributors", authenticate, validateObjectId, verifyOwnership, async (req, res) => {
   const { contributorId, action } = req.body; // action: 'add' or 'remove'
   try {
+    const contributors = req.project.contributors || [];
     if (action === 'add') {
-      if (!req.project.contributors.includes(contributorId)) {
-        req.project.contributors.push(contributorId);
+      if (!contributors.includes(contributorId)) {
+        req.project.contributors = [...contributors, contributorId];
       }
     } else {
-      req.project.contributors = req.project.contributors.filter(id => id.toString() !== contributorId);
+      req.project.contributors = contributors.filter(id => id && id.toString() !== contributorId);
     }
     await req.project.save();
     res.json(req.project);
@@ -256,16 +257,17 @@ router.put("/:id/contributors", authenticate, validateObjectId, verifyOwnership,
   }
 });
 
-// 8. Owner Permissions: Manage Testers
+// 8. Owner Permissions: Manage Testers (Owner or Admin)
 router.put("/:id/testers", authenticate, validateObjectId, verifyOwnership, async (req, res) => {
   const { testerId, action } = req.body; // action: 'add' or 'remove'
   try {
+    const testers = req.project.testers || [];
     if (action === 'add') {
-      if (!req.project.testers.includes(testerId)) {
-        req.project.testers.push(testerId);
+      if (!testers.includes(testerId)) {
+        req.project.testers = [...testers, testerId];
       }
     } else {
-      req.project.testers = req.project.testers.filter(id => id.toString() !== testerId);
+      req.project.testers = testers.filter(id => id && id.toString() !== testerId);
     }
     await req.project.save();
     res.json(req.project);
@@ -300,8 +302,9 @@ router.post("/", authenticate, async (req, res) => {
       console.warn("⚠️ Failed to sync repo stats on creation:", apiError.message);
     }
 
-    if (!user.roles.includes('PROJECT_OWNER')) {
-      user.roles.push('PROJECT_OWNER');
+    // Role management: If user is a Developer, upgrade them to Project Owner
+    if (user.role === 'Developer') {
+      user.role = 'Project Owner';
       await user.save();
     }
 
@@ -338,7 +341,7 @@ router.post("/", authenticate, async (req, res) => {
 router.get("/:id", validateObjectId, cacheMiddleware(60), async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate('owner', 'username avatarUrl roles')
+      .populate('owner', 'username avatarUrl role')
       .populate('contributors', 'username avatarUrl')
       .populate('testers', 'username avatarUrl');
     
@@ -349,7 +352,7 @@ router.get("/:id", validateObjectId, cacheMiddleware(60), async (req, res) => {
   }
 });
 
-// 11. Owner Permissions: Edit & Archive Project
+// 11. Owner Permissions: Edit & Archive Project (Owner or Admin)
 router.put("/:id", authenticate, validateObjectId, verifyOwnership, validateProject, async (req, res) => {
   const { title, description, difficulty, status, requiredSkills, techStack, bounty } = req.body;
   try {
@@ -377,6 +380,7 @@ router.put("/:id", authenticate, validateObjectId, verifyOwnership, validateProj
     res.status(500).json({ message: "Error editing project" });
   }
 });
+
 
 // 12. Accept challenge / auto-fork
 router.post("/:id/accept", authenticate, validateObjectId, async (req, res) => {

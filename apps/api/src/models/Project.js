@@ -8,32 +8,38 @@ const projectSchema = new mongoose.Schema({
   difficulty: { type: String, enum: ['Easy', 'Medium', 'Hard'], required: true },
   bounty: { type: Number, default: 100 },
   deadline: { type: Date },
-  requiredSkills: [String],
+  requiredSkills: { type: [String], default: [] },
   status: { type: String, enum: ['OPEN', 'ARCHIVED'], default: 'OPEN' },
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  techStack: [String],
-  topics: [String],
-  languages: [String],
-  labels: [{
-    name: { type: String },
-    color: { type: String, default: '#6366f1' }
-  }],
-  contributors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  testers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  techStack: { type: [String], default: [] },
+  topics: { type: [String], default: [] },
+  languages: { type: [String], default: [] },
+  labels: {
+    type: [{
+      name: { type: String },
+      color: { type: String, default: '#6366f1' }
+    }],
+    default: []
+  },
+  contributors: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], default: [] },
+  testers: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], default: [] },
   // GitHub Repository Metadata Metrics
   stars: { type: Number, default: 0 },
   forks: { type: Number, default: 0 },
   contributorsCount: { type: Number, default: 0 },
   openIssuesCount: { type: Number, default: 0 },
-  wikiPages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'WikiPage' }],
-  dockerAssets: [{
-    filename: String,
-    url: String,
-    assetType: { type: String, enum: ['Dockerfile', 'docker-compose', 'k8s', 'script'] },
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    status: { type: String, enum: ['Pending', 'Approved'], default: 'Pending' },
-    uploadedAt: { type: Date, default: Date.now }
-  }],
+  wikiPages: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'WikiPage' }], default: [] },
+  dockerAssets: {
+    type: [{
+      filename: String,
+      url: String,
+      assetType: { type: String, enum: ['Dockerfile', 'docker-compose', 'k8s', 'script'] },
+      uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      status: { type: String, enum: ['Pending', 'Approved'], default: 'Pending' },
+      uploadedAt: { type: Date, default: Date.now }
+    }],
+    default: []
+  },
 }, { timestamps: true });
 
 projectSchema.index({ status: 1 });

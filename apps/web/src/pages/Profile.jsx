@@ -103,7 +103,7 @@ const Profile = () => {
               <div className="space-y-3">
                 <h1 className="text-3xl font-black tracking-tighter text-gradient leading-none uppercase">@{profile.username}</h1>
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] opacity-60">
-                  {profile.roles?.join(" • ") || "Engineering Node"}
+                  {profile.role || "Engineering Node"}
                 </p>
               </div>
 

@@ -8,23 +8,23 @@ const migrateRoles = async () => {
     await connectDB();
     console.log("🚀 Starting Role Migration...");
 
-    const users = await User.find({ role: { $exists: false } });
+    const users = await User.find({ role: { $exists: false } }).lean();
     console.log(`🔍 Found ${users.length} users needing migration.`);
 
     let count = 0;
     for (const user of users) {
       let newRole = 'Developer';
+      const legacyRoles = user.roles || [];
       
-      if (user.roles.includes('PROJECT_OWNER')) {
+      if (legacyRoles.includes('PROJECT_OWNER') || legacyRoles.includes('Project Owner')) {
         newRole = 'Project Owner';
-      } else if (user.roles.includes('ADMIN')) {
+      } else if (legacyRoles.includes('ADMIN') || legacyRoles.includes('Admin')) {
         newRole = 'Admin';
-      } else if (user.roles.includes('TEAM')) {
+      } else if (legacyRoles.includes('TEAM') || legacyRoles.includes('Team')) {
         newRole = 'Team';
       }
 
-      user.role = newRole;
-      await user.save();
+      await User.findByIdAndUpdate(user._id, { $set: { role: newRole } });
       count++;
     }
 

@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
     enum: ['Active', 'Blocked'],
     default: 'Active'
   },
-  permissions: [String],
+  permissions: { type: [String], default: [] },
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
   reputationScore: { type: Number, default: 0 },
@@ -48,9 +48,9 @@ const userSchema = new mongoose.Schema({
   communicationScore: { type: Number, default: 0 },
   perfectionScore: { type: Number, default: 0 },
   adaptabilityScore: { type: Number, default: 0 },
-  skills: [String],
-  acceptedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
-  badges: [badgeSchema],
+  skills: { type: [String], default: [] },
+  acceptedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: [] }],
+  badges: { type: [badgeSchema], default: [] },
 }, { timestamps: true });
 
 // Indices for performance

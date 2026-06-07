@@ -399,8 +399,8 @@ export const fetchGraphQLRepositoryIntelligence = async (accessToken, owner, rep
   // Calculate top commit contributors and frequency
   const contributorsMap = {};
   commitNodes.forEach(c => {
-    const authorName = c.author?.user?.login || c.author?.name || "Anonymous";
-    const avatar = c.author?.avatarUrl;
+    const authorName = c?.author?.user?.login || c?.author?.name || "Anonymous";
+    const avatar = c?.author?.avatarUrl;
     if (!contributorsMap[authorName]) {
       contributorsMap[authorName] = { username: authorName, avatarUrl: avatar, commitCount: 0 };
     }
@@ -411,11 +411,11 @@ export const fetchGraphQLRepositoryIntelligence = async (accessToken, owner, rep
 
   // Parse issue types & aggregates
   const issueNodes = repository.issuesList?.nodes || [];
-  const goodFirstIssues = issueNodes.filter(i => i.labels?.nodes?.some(l => l.name.toLowerCase().includes("good first"))).length;
-  const bugIssues = issueNodes.filter(i => i.labels?.nodes?.some(l => l.name.toLowerCase().includes("bug"))).length;
-  const docIssues = issueNodes.filter(i => i.labels?.nodes?.some(l => l.name.toLowerCase().includes("doc"))).length;
-  const featureIssues = issueNodes.filter(i => i.labels?.nodes?.some(l => l.name.toLowerCase().includes("feat"))).length;
-  const enhancementIssues = issueNodes.filter(i => i.labels?.nodes?.some(l => l.name.toLowerCase().includes("enhance"))).length;
+  const goodFirstIssues = issueNodes.filter(i => i?.labels?.nodes?.some(l => l?.name?.toLowerCase().includes("good first"))).length;
+  const bugIssues = issueNodes.filter(i => i?.labels?.nodes?.some(l => l?.name?.toLowerCase().includes("bug"))).length;
+  const docIssues = issueNodes.filter(i => i?.labels?.nodes?.some(l => l?.name?.toLowerCase().includes("doc"))).length;
+  const featureIssues = issueNodes.filter(i => i?.labels?.nodes?.some(l => l?.name?.toLowerCase().includes("feat"))).length;
+  const enhancementIssues = issueNodes.filter(i => i?.labels?.nodes?.some(l => l?.name?.toLowerCase().includes("enhance"))).length;
 
   const assignedIssues = issueNodes.filter(i => i.assignees?.nodes?.length > 0).length;
   const unassignedIssues = issueNodes.filter(i => i.assignees?.nodes?.length === 0).length;

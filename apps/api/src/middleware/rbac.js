@@ -46,7 +46,8 @@ export const hasPermission = (permission) => {
       return next();
     }
 
-    if (req.user && req.user.permissions && req.user.permissions.includes(permission)) {
+    const permissions = req.user?.permissions || [];
+    if (req.user && permissions.includes(permission)) {
       return next();
     }
 

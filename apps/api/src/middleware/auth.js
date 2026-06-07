@@ -69,12 +69,13 @@ export const verifyProjectOwnership = (ProjectModel) => async (req, res, next) =
     const project = await ProjectModel.findById(projectId);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    if (project.owner.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Access denied. Only the Project Owner can perform this action." });
+    // Allow Admins to bypass ownership check
+    if (req.user.role === 'Admin' || project.owner.toString() === req.user.userId) {
+      req.project = project;
+      return next();
     }
 
-    req.project = project;
-    next();
+    return res.status(403).json({ message: "Access denied. Only the Project Owner or an Admin can perform this action." });
   } catch (error) {
     console.error("❌ Ownership Validation Error:", error.message);
     res.status(500).json({ message: "Ownership validation failed" });

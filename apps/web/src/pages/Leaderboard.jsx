@@ -49,9 +49,9 @@ const LeaderboardRow = memo(({ user, rank, period }) => {
                  <Fingerprint size={12} className="text-primary opacity-60" />
               </div>
             </div>
-            <div className="space-y-1.5">
-              <h3 className="text-xl font-black tracking-tighter flex items-center gap-3">
-                {user.username}
+            <div className="space-y-1.5 min-w-0 flex-1">
+              <h3 className="text-xl font-black tracking-tighter flex items-center gap-3 truncate max-w-[200px] md:max-w-xs">
+                <span className="truncate">{user.username}</span>
                 {user.badges?.length > 0 && (
                   <Badge variant="default" className="shadow-lg shadow-primary/20">
                     {user.badges[0].icon || "🏆"} {user.badges[0].name}

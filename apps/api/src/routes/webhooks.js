@@ -257,9 +257,10 @@ if (githubApp) {
         await submission.save();
 
         // Add contributor to project contributors array if not present
-        if (!project.contributors.includes(submission.user._id)) {
-          project.contributors.push(submission.user._id);
-          project.contributorsCount += 1;
+        const contributors = project.contributors || [];
+        if (!contributors.includes(submission.user._id)) {
+          project.contributors = [...contributors, submission.user._id];
+          project.contributorsCount = project.contributors.length;
           await project.save();
         }
 

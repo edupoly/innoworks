@@ -431,15 +431,18 @@ router.get("/:id/reviews", validateObjectId, async (req, res) => {
   }
 });
 
-// 7. Merge a submission (Project Owner only)
+// 7. Merge a submission (Project Owner or Admin)
 router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
   try {
     const submission = await Submission.findById(req.params.id).populate('project');
     if (!submission) return res.status(404).json({ message: "Submission not found" });
 
-    // Verify project ownership
-    if (submission.project.owner.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Only the project owner can merge submissions" });
+    // Verify project ownership or Admin role
+    const isOwner = submission.project.owner.toString() === req.user.userId;
+    const isAdmin = req.user.role === 'Admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "Only the project owner or an Admin can merge submissions" });
     }
 
     if (submission.status === 'MERGED') {
@@ -471,7 +474,7 @@ router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
     submission.status = 'MERGED';
     submission.timeline.push({
       action: 'MERGED',
-      description: 'Submission merged into the base branch.',
+      description: `Submission merged into the base branch by ${isAdmin ? 'Admin' : 'Owner'}.`,
       actor: req.user.userId
     });
     await submission.save();
@@ -501,15 +504,18 @@ router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
   }
 });
 
-// 8. Reject a submission (Project Owner only)
+// 8. Reject a submission (Project Owner or Admin)
 router.post("/:id/reject", authenticate, validateObjectId, async (req, res) => {
   try {
     const submission = await Submission.findById(req.params.id).populate('project');
     if (!submission) return res.status(404).json({ message: "Submission not found" });
 
-    // Verify project ownership
-    if (submission.project.owner.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "Only the project owner can reject submissions" });
+    // Verify project ownership or Admin role
+    const isOwner = submission.project.owner.toString() === req.user.userId;
+    const isAdmin = req.user.role === 'Admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "Only the project owner or an Admin can reject submissions" });
     }
 
     if (!submission.prNumber) {
@@ -539,7 +545,7 @@ router.post("/:id/reject", authenticate, validateObjectId, async (req, res) => {
     submission.status = 'REJECTED';
     submission.timeline.push({
       action: 'REJECTED',
-      description: 'Submission rejected and PR closed.',
+      description: `Submission rejected and PR closed by ${isAdmin ? 'Admin' : 'Owner'}.`,
       actor: req.user.userId
     });
     await submission.save();
@@ -548,7 +554,7 @@ router.post("/:id/reject", authenticate, validateObjectId, async (req, res) => {
     await sendNotification(
       submission.user,
       'REVIEW_REJECTED',
-      `❌ Your contribution for "${submission.project.title}" has been closed/rejected by the maintainer.`,
+      `❌ Your contribution for "${submission.project.title}" has been closed/rejected by the ${isAdmin ? 'Admin' : 'maintainer'}.`,
       `/dashboard`
     );
 
