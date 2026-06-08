@@ -190,6 +190,60 @@ export const createIssue = async (accessToken, owner, repo, title, body, labels)
 };
 
 
+/**
+ * Get a file from a GitHub repository
+ */
+export const getGithubFile = async (accessToken, owner, repo, path) => {
+  try {
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+      {
+        headers: {
+          Authorization: `token ${accessToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return null;
+    }
+    console.error("❌ GitHub Get File Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to get file from GitHub");
+  }
+};
+
+/**
+ * Create or update a file in a GitHub repository
+ */
+export const createOrUpdateGithubFile = async (accessToken, owner, repo, path, message, content, sha = null) => {
+  try {
+    const body = {
+      message,
+      content: Buffer.from(content).toString('base64'),
+    };
+    if (sha) {
+      body.sha = sha;
+    }
+
+    const response = await axios.put(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+      body,
+      {
+        headers: {
+          Authorization: `token ${accessToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("❌ GitHub Create/Update File Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to create/update file on GitHub");
+  }
+};
+
 // --- GITHUB REPOSITORY INTELLIGENCE VIA GRAPHQL ---
 
 /**

@@ -386,16 +386,16 @@ const ProjectDetails = () => {
                   </Button>
                 </Link>
                 <Button
-                  variant={activeTab === "dev_flow" ? "primary" : "secondary"}
-                  onClick={() => { if (!isAccepted) acceptProjectHandler(); setActiveTab("dev_flow"); }}
+                  variant={activeTab === "engineering" ? "primary" : "secondary"}
+                  onClick={() => { if (!isAccepted) acceptProjectHandler(); setActiveTab("engineering"); }}
                   className="gap-3"
                 >
                   <Terminal size={18} /> Initialize Dev_Flow
                 </Button>
                 <Button 
-                  variant={activeTab === "test_flow" ? "primary" : "secondary"}
-                  onClick={() => setActiveTab("test_flow")}
-                  className={activeTab === "test_flow" ? "bg-emerald-600 border-emerald-600 hover:bg-emerald-700" : "text-emerald-600 bg-emerald-600/10 border-emerald-600/20 hover:bg-emerald-600/20"}
+                  variant={activeTab === "engineering" ? "primary" : "secondary"}
+                  onClick={() => setActiveTab("engineering")}
+                  className={activeTab === "engineering" ? "bg-emerald-600 border-emerald-600 hover:bg-emerald-700" : "text-emerald-600 bg-emerald-600/10 border-emerald-600/20 hover:bg-emerald-600/20"}
                 >
                   <ShieldCheck size={18} /> Initialize QA_Flow
                 </Button>
@@ -406,22 +406,21 @@ const ProjectDetails = () => {
       </motion.div>
 
       {/* Premium Tab Navigation */}
-      <div className="flex border-b border-border/30 mb-12 gap-10 text-[10px] font-black uppercase tracking-[0.35em] overflow-x-auto no-scrollbar relative">
+      <div className="flex border-b border-border/30 mb-12 text-[10px] font-black uppercase tracking-[0.35em] overflow-x-auto no-scrollbar relative">
         {[
-          { id: "overview", label: "Mission Overview", icon: Target },
-          { id: "stats", label: "Intelligence", icon: Activity },
-          { id: "signals", label: "Telemetry", icon: AlertTriangle },
+          { id: "overview", label: "Mission", icon: Target },
+          { id: "intelligence", label: "Intelligence", icon: Activity },
           { id: "assets", label: "Resources", icon: Layers },
           ...((project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? 
             [{ id: "management", label: "Directives", icon: ClipboardList }] : 
-            [{ id: "dev_flow", label: "Engineering", icon: Terminal }, { id: "test_flow", label: "Validation", icon: Cpu }]
+            [{ id: "engineering", label: "Engineering", icon: Terminal }]
           ),
-          { id: "activity", label: "Audit Log", icon: History }
+          { id: "activity", label: "Activity", icon: History }
         ].map(tab => (
           <button 
             key={tab.id}
             onClick={() => setActiveTab(tab.id)} 
-            className={`pb-5 border-b-2 flex items-center gap-3 transition-all relative shrink-0 ${activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground opacity-60"}`}
+            className={`pb-5 border-b-2 flex items-center gap-6 mr-10 transition-all relative shrink-0 ${activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground opacity-60"}`}
           >
             <tab.icon size={16} />
             {tab.label}
@@ -553,8 +552,8 @@ const ProjectDetails = () => {
           </motion.div>
         )}
 
-        {activeTab === "stats" && (
-          <motion.div key="stats" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12">
+        {activeTab === "intelligence" && (
+          <motion.div key="intelligence" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
               {stats.map((m, idx) => (
                 <motion.div 
@@ -573,40 +572,6 @@ const ProjectDetails = () => {
               ))}
             </div>
 
-            <div className="card-premium p-12 relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5">
-               <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-               <div className="flex items-center gap-4 mb-16">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
-                    <Activity size={20} />
-                  </div>
-                  <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Mission Velocity Graph</h3>
-               </div>
-               <div className="h-80 w-full flex items-end justify-between gap-3 pt-12 px-6">
-                  {[40, 70, 45, 90, 65, 80, 55, 75, 95, 60, 85, 100, 70, 85].map((h, i) => (
-                    <motion.div 
-                      key={i}
-                      initial={{ height: 0 }}
-                      animate={{ height: `${h}%` }}
-                      transition={{ delay: i * 0.04, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                      className="flex-1 bg-gradient-to-t from-primary/20 via-primary/60 to-primary rounded-t-xl relative group cursor-crosshair"
-                    >
-                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-foreground text-background px-3 py-1.5 rounded-lg text-[9px] font-black opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-2xl z-20 pointer-events-none scale-90 group-hover:scale-100">
-                        {h} VAL
-                      </div>
-                      <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-xl" />
-                    </motion.div>
-                  ))}
-               </div>
-               <div className="flex justify-between mt-8 px-6 text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40">
-                 <span className="flex items-center gap-2"><Clock size={12} /> INITIALIZATION_MAY</span>
-                 <span className="flex items-center gap-2">SYNCHRONIZATION_JUNE <Clock size={12} /></span>
-               </div>
-            </div>
-          </motion.div>
-        )}
-
-        {activeTab === "signals" && (
-          <motion.div key="signals" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
             <ProjectIssues projectId={id} />
           </motion.div>
         )}
@@ -758,385 +723,386 @@ const ProjectDetails = () => {
           </motion.div>
         )}
 
-        {activeTab === "dev_flow" && (
-          <motion.div key="dev_flow" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-             <div className="lg:col-span-2 space-y-10">
-                <div className="card-premium p-10 lg:p-12 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
-                  <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[120px] -mr-40 -mt-40 pointer-events-none" />
-                  <div className="flex items-center gap-4 mb-12">
-                    <div className="w-12 h-12 rounded-[1.25rem] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
-                      <GitFork size={24} />
-                    </div>
-                    <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Phase 1: Environment Sync</h3>
-                  </div>
-                  
-                  {!isAccepted ? (
-                    <div className="space-y-10 max-w-2xl">
-                      <p className="text-xl font-medium text-foreground/70 leading-relaxed tracking-tight">
-                        Initializing this protocol will generate a high-bandwidth fork of the upstream repository, establishing a secure telemetry link to your workspace.
-                      </p>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => acceptProjectHandler()}
-                        disabled={isAccepting}
-                        className="btn-primary py-6 px-16 rounded-[2rem] text-[11px] uppercase tracking-[0.3em] gap-4 shadow-[0_30px_60px_-12px_rgba(99,102,241,0.5)]"
-                      >
-                        {isAccepting ? (
-                          <RefreshCcw size={20} className="animate-spin" />
-                        ) : (
-                          <><Rocket size={20} /> Execute Fork Sequence</>
-                        )}
-                      </motion.button>
-                    </div>
-                  ) : (
-                    <div className="space-y-12">
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-8 p-8 bg-emerald-500/5 border border-emerald-500/20 rounded-[2.5rem] shadow-sm"
-                      >
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 shadow-lg shadow-emerald-500/5">
-                          <CheckCircle2 size={36} />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[11px] font-black text-emerald-500 uppercase tracking-[0.3em]">Telemetry Link Established</p>
-                          <p className="text-sm font-medium text-muted-foreground leading-relaxed">System identity verified. The mission workspace is now synchronized with your engineering node.</p>
-                        </div>
-                      </motion.div>
-                      
-                      {forkStatus?.forkExists ? (
-                        <div className="space-y-8">
-                          {mySubmissions.length > 0 && (
-                            <div className="p-8 bg-primary/5 border border-primary/20 rounded-[2.5rem] space-y-6 shadow-sm relative overflow-hidden">
-                               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
-                               <div className="flex items-center justify-between relative z-10">
-                                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Live Mission Intelligence</h4>
-                                  <span className="px-4 py-1.5 bg-primary text-primary-foreground rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">{mySubmissions[0].status.replace('_', ' ')}</span>
-                               </div>
-                               <div className="flex items-center gap-5 relative z-10">
-                                  <div className="w-14 h-14 rounded-2xl bg-background border border-border/50 flex items-center justify-center text-primary shadow-xl shadow-black/5">
-                                     <GitPullRequest size={28} strokeWidth={1.5} />
-                                  </div>
-                                  <div className="space-y-1">
-                                     <p className="text-sm font-black text-foreground uppercase tracking-widest">TRANSMISSION PR #{mySubmissions[0].prNumber || 'SYNC_PENDING'}</p>
-                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                                       <GitBranch size={12} className="text-primary/60" /> NODE_TARGET: {mySubmissions[0].branchName}
-                                     </p>
-                                  </div>
-                               </div>
-                               {mySubmissions[0].linkedIssue && (
-                                 <div className="p-4 bg-background/60 border border-border/50 rounded-2xl flex items-center gap-4 relative z-10 shadow-inner">
-                                    <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 font-black text-[11px] shadow-sm">#{mySubmissions[0].linkedIssue}</div>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Resolving Targeted Signal Anomaly</p>
-                                 </div>
-                               )}
-                            </div>
-                          )}
-
-                          <div className="p-10 bg-secondary/30 border border-border/50 rounded-[2.5rem] space-y-8 shadow-sm">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">Registry_Personal_Pointer</span>
-                              <span className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 shadow-sm">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> CLUSTER_NODE_LIVE
-                              </span>
-                            </div>
-                            <div className="p-6 bg-background/80 border border-border/50 rounded-[1.5rem] font-mono text-xs lg:text-[14px] text-foreground/90 break-all select-all hover:border-primary/50 transition-all shadow-inner leading-relaxed">
-                              {forkStatus.forkFullName}
-                            </div>
-                            <div className="flex flex-wrap gap-4 pt-2">
-                              <motion.a 
-                                whileHover={{ scale: 1.02, y: -2 }}
-                                whileTap={{ scale: 0.98 }}
-                                href={forkStatus.forkUrl} 
-                                target="_blank" 
-                                rel="noreferrer" 
-                                className="px-8 py-4 bg-foreground text-background rounded-2xl text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-3 shadow-2xl shadow-black/20"
-                              >
-                                <Github size={18} /> Open Repository
-                              </motion.a>
-                              <motion.button 
-                                whileHover={{ scale: 1.02, y: -2 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => {
-                                  navigator.clipboard.writeText(`git clone ${forkStatus.forkUrl}`);
-                                }}
-                                className="px-8 py-4 bg-background text-foreground border border-border/50 rounded-2xl text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-3 shadow-xl hover:bg-secondary transition-all"
-                              >
-                                <Terminal size={18} /> Copy Clone Protocol
-                              </motion.button>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-16 bg-amber-500/5 border border-amber-500/20 rounded-[3rem] flex flex-col items-center text-center gap-8 shadow-inner">
-                           <div className="relative">
-                             <div className="w-24 h-24 rounded-[2rem] bg-amber-500/10 flex items-center justify-center text-amber-500">
-                               <RefreshCcw size={48} className="animate-spin" style={{ animationDuration: '4s' }} />
-                             </div>
-                             <div className="absolute inset-0 flex items-center justify-center">
-                               <GitFork size={24} className="text-amber-500 animate-pulse" />
-                             </div>
-                           </div>
-                           <div className="space-y-3">
-                             <p className="text-2xl font-black text-amber-500 uppercase tracking-widest tracking-tighter">Propagation in Progress</p>
-                             <p className="text-sm font-medium text-muted-foreground max-w-sm mx-auto leading-relaxed">GitHub is finalizing your mission environment. This typically resolves within 15 seconds. Maintain position.</p>
-                           </div>
-                           <motion.button 
-                             whileHover={{ scale: 1.05 }}
-                             whileTap={{ scale: 0.95 }}
-                             onClick={checkFork} 
-                             className="px-10 py-3.5 bg-amber-500/10 text-amber-500 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-amber-500/20 hover:bg-amber-500/20 transition-all shadow-sm"
-                           >
-                             Manual Signal Ping
-                           </motion.button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="card-premium p-10 space-y-10 lg:p-12">
-                   <div className="flex items-center gap-4">
-                     <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
-                       <ShieldCheck size={20} />
-                     </div>
-                     <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Engineering Standards Matrix</h3>
-                   </div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                      {[
-                        { title: "Branching_Logic", desc: "Pushing to 'main' is forbidden. Initialize a unique feature branch for every protocol solution." },
-                        { title: "Validation_Suites", desc: "Local test matrices must return 100% compliance before initializing deployment sequence." },
-                        { title: "Symmetry_Check", desc: "Adhere to established Prettier and ESLint configurations across the entire cluster." },
-                        { title: "Documentation_Sync", desc: "Update README stream if architectural changes introduce new technical debt." }
-                      ].map((s, i) => (
-                        <div key={i} className="flex gap-6 group">
-                          <div className="w-8 h-8 rounded-xl bg-secondary/80 border border-border/50 flex items-center justify-center text-primary text-[11px] font-black shrink-0 shadow-sm group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-500">{i+1}</div>
-                          <div className="space-y-2">
-                            <p className="text-[11px] font-black uppercase tracking-widest text-foreground tracking-tighter">{s.title}</p>
-                            <p className="text-xs font-medium text-muted-foreground leading-relaxed tracking-tight">{s.desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                   </div>
-                </div>
-             </div>
-
-             <div className="space-y-10">
-                <div className="card-premium p-10 relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none" />
-                  <div className="flex items-center gap-4 mb-12">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
-                      <Send size={20} />
-                    </div>
-                    <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Phase 2: Deployment</h3>
-                  </div>
-                  
-                  {devSuccess ? (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex flex-col items-center justify-center py-16 text-center space-y-8"
-                    >
-                      <div className="w-24 h-24 rounded-[2.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 border border-emerald-500/20 shadow-[0_20px_50px_rgba(16,185,129,0.2)]">
-                        <CheckCircle2 size={56} />
+        {activeTab === "engineering" && (
+          <div className="space-y-16">
+            {/* Dev Flow Section */}
+            <motion.div key="engineering_dev" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+               <div className="lg:col-span-2 space-y-10">
+                  <div className="card-premium p-10 lg:p-12 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[120px] -mr-40 -mt-40 pointer-events-none" />
+                    <div className="flex items-center gap-4 mb-12">
+                      <div className="w-12 h-12 rounded-[1.25rem] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
+                        <GitFork size={24} />
                       </div>
-                      <div className="space-y-3">
-                        <h4 className="text-2xl font-black tracking-tighter uppercase tracking-widest">Signal Locked</h4>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] leading-relaxed max-w-[240px] mx-auto opacity-60">
-                          Solution deployed to validation queue. Monitoring live status feed.
+                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Phase 1: Environment Sync</h3>
+                    </div>
+                    
+                    {!isAccepted ? (
+                      <div className="space-y-10 max-w-2xl">
+                        <p className="text-xl font-medium text-foreground/70 leading-relaxed tracking-tight">
+                          Initializing this protocol will generate a high-bandwidth fork of the upstream repository, establishing a secure telemetry link to your workspace.
                         </p>
-                      </div>
-                      <motion.button 
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate("/dashboard")}
-                        className="btn-primary w-full py-5 rounded-[1.5rem] text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20"
-                      >
-                        Return to Dashboard
-                      </motion.button>
-                    </motion.div>
-                  ) : (
-                    <form onSubmit={handleDevSubmit} className="space-y-10">
-                      {devError && (
-                        <motion.div 
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="p-6 bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-black uppercase tracking-widest rounded-[1.5rem] flex items-center gap-4"
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => acceptProjectHandler()}
+                          disabled={isAccepting}
+                          className="btn-primary py-6 px-16 rounded-[2rem] text-[11px] uppercase tracking-[0.3em] gap-4 shadow-[0_30px_60px_-12px_rgba(99,102,241,0.5)]"
                         >
-                          <AlertCircle size={20} className="shrink-0" />
-                          {devError}
+                          {isAccepting ? (
+                            <RefreshCcw size={20} className="animate-spin" />
+                          ) : (
+                            <><Rocket size={20} /> Execute Fork Sequence</>
+                          )}
+                        </motion.button>
+                      </div>
+                    ) : (
+                      <div className="space-y-12">
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex items-center gap-8 p-8 bg-emerald-500/5 border border-emerald-500/20 rounded-[2.5rem] shadow-sm"
+                        >
+                          <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 shadow-lg shadow-emerald-500/5">
+                            <CheckCircle2 size={36} />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[11px] font-black text-emerald-500 uppercase tracking-[0.3em]">Telemetry Link Established</p>
+                            <p className="text-sm font-medium text-muted-foreground leading-relaxed">System identity verified. The mission workspace is now synchronized with your engineering node.</p>
+                          </div>
                         </motion.div>
-                      )}
-                      
-                      <div className="space-y-10">
-                        {selectedIssue && (
-                          <motion.div 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="p-6 bg-primary/10 border border-primary/20 rounded-[1.5rem] flex items-center justify-between shadow-sm"
-                          >
-                             <div className="flex items-center gap-5">
-                                <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-[12px] shadow-lg shadow-primary/30">#{selectedIssue.number}</div>
-                                <div className="min-w-0 space-y-0.5">
-                                   <p className="text-sm font-black text-foreground truncate uppercase tracking-tighter">{selectedIssue.title}</p>
-                                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">Resolving Signal Anomaly</p>
-                                </div>
-                             </div>
-                             <button onClick={() => setSelectedIssue(null)} className="p-2.5 hover:bg-secondary rounded-xl text-muted-foreground transition-all"><X size={16} /></button>
-                          </motion.div>
-                        )}
+                        
+                        {forkStatus?.forkExists ? (
+                          <div className="space-y-8">
+                            {mySubmissions.length > 0 && (
+                              <div className="p-8 bg-primary/5 border border-primary/20 rounded-[2.5rem] space-y-6 shadow-sm relative overflow-hidden">
+                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
+                                 <div className="flex items-center justify-between relative z-10">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Live Mission Intelligence</h4>
+                                    <span className="px-4 py-1.5 bg-primary text-primary-foreground rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">{mySubmissions[0].status.replace('_', ' ')}</span>
+                                 </div>
+                                 <div className="flex items-center gap-5 relative z-10">
+                                    <div className="w-14 h-14 rounded-2xl bg-background border border-border/50 flex items-center justify-center text-primary shadow-xl shadow-black/5">
+                                       <GitPullRequest size={28} strokeWidth={1.5} />
+                                    </div>
+                                    <div className="space-y-1">
+                                       <p className="text-sm font-black text-foreground uppercase tracking-widest">TRANSMISSION PR #{mySubmissions[0].prNumber || 'SYNC_PENDING'}</p>
+                                       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                                         <GitBranch size={12} className="text-primary/60" /> NODE_TARGET: {mySubmissions[0].branchName}
+                                       </p>
+                                    </div>
+                                 </div>
+                                 {mySubmissions[0].linkedIssue && (
+                                   <div className="p-4 bg-background/60 border border-border/50 rounded-2xl flex items-center gap-4 relative z-10 shadow-inner">
+                                      <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 font-black text-[11px] shadow-sm">#{mySubmissions[0].linkedIssue}</div>
+                                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Resolving Targeted Signal Anomaly</p>
+                                   </div>
+                                 )}
+                              </div>
+                            )}
 
-                        {!selectedIssue && intelligence?.issueAnalytics?.openIssuesList?.length > 0 && (
-                          <div className="space-y-4">
-                            <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Target Anomaly (Optional)</label>
-                            <div className="relative group">
-                              <select 
-                                onChange={(e) => setSelectedIssue(intelligence.issueAnalytics.openIssuesList.find(i => i.number === parseInt(e.target.value)))}
-                                className="w-full px-6 py-5 bg-background/50 border border-border/50 rounded-[1.5rem] font-bold text-[12px] text-foreground focus:outline-none focus:ring-4 focus:ring-primary/10 appearance-none shadow-inner cursor-pointer transition-all group-hover:border-primary/30"
-                              >
-                                <option value="">Identify an issue to resolve...</option>
-                                {intelligence.issueAnalytics.openIssuesList.map(issue => (
-                                  <option key={issue.number} value={issue.number}>SIGNAL #{issue.number}: {issue.title}</option>
-                                ))}
-                              </select>
-                              <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
-                                <ChevronDown size={18} />
+                            <div className="p-10 bg-secondary/30 border border-border/50 rounded-[2.5rem] space-y-8 shadow-sm">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">Registry_Personal_Pointer</span>
+                                <span className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 shadow-sm">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> CLUSTER_NODE_LIVE
+                                </span>
+                              </div>
+                              <div className="p-6 bg-background/80 border border-border/50 rounded-[1.5rem] font-mono text-xs lg:text-[14px] text-foreground/90 break-all select-all hover:border-primary/50 transition-all shadow-inner leading-relaxed">
+                                {forkStatus.forkFullName}
+                              </div>
+                              <div className="flex flex-wrap gap-4 pt-2">
+                                <motion.a 
+                                  whileHover={{ scale: 1.02, y: -2 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  href={forkStatus.forkUrl} 
+                                  target="_blank" 
+                                  rel="noreferrer" 
+                                  className="px-8 py-4 bg-foreground text-background rounded-2xl text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-3 shadow-2xl shadow-black/20"
+                                >
+                                  <Github size={18} /> Open Repository
+                                </motion.a>
+                                <motion.button 
+                                  whileHover={{ scale: 1.02, y: -2 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(`git clone ${forkStatus.forkUrl}`);
+                                  }}
+                                  className="px-8 py-4 bg-background text-foreground border border-border/50 rounded-2xl text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-3 shadow-xl hover:bg-secondary transition-all"
+                                >
+                                  <Terminal size={18} /> Copy Clone Protocol
+                                </motion.button>
                               </div>
                             </div>
                           </div>
+                        ) : (
+                          <div className="p-16 bg-amber-500/5 border border-amber-500/20 rounded-[3rem] flex flex-col items-center text-center gap-8 shadow-inner">
+                             <div className="relative">
+                               <div className="w-24 h-24 rounded-[2rem] bg-amber-500/10 flex items-center justify-center text-amber-500">
+                                 <RefreshCcw size={48} className="animate-spin" style={{ animationDuration: '4s' }} />
+                               </div>
+                               <div className="absolute inset-0 flex items-center justify-center">
+                                 <GitFork size={24} className="text-amber-500 animate-pulse" />
+                               </div>
+                             </div>
+                             <div className="space-y-3">
+                               <p className="text-2xl font-black text-amber-500 uppercase tracking-widest tracking-tighter">Propagation in Progress</p>
+                               <p className="text-sm font-medium text-muted-foreground max-w-sm mx-auto leading-relaxed">GitHub is finalizing your mission environment. This typically resolves within 15 seconds. Maintain position.</p>
+                             </div>
+                             <motion.button 
+                               whileHover={{ scale: 1.05 }}
+                               whileTap={{ scale: 0.95 }}
+                               onClick={checkFork} 
+                               className="px-10 py-3.5 bg-amber-500/10 text-amber-500 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-amber-500/20 hover:bg-amber-500/20 transition-all shadow-sm"
+                             >
+                               Manual Signal Ping
+                             </motion.button>
+                          </div>
                         )}
-
-                        <div className="space-y-4">
-                          <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Local Workspace Node</label>
-                          <RepoPicker onSelect={setSelectedRepo} selectedRepo={selectedRepo} />
-                        </div>
-                        
-                        <div className="space-y-4">
-                          <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Logic Signal (Branch)</label>
-                          <BranchPicker 
-                            owner={selectedRepo?.owner?.login || authUser?.username} 
-                            repo={selectedRepo?.name} 
-                            onSelect={setSelectedBranch} 
-                            selectedBranch={selectedBranch} 
-                          />
-                        </div>
                       </div>
+                    )}
+                  </div>
 
-                      <div className="pt-6">
+                  <div className="card-premium p-10 space-y-10 lg:p-12">
+                     <div className="flex items-center gap-4">
+                       <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
+                         <ShieldCheck size={20} />
+                       </div>
+                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Engineering Standards Matrix</h3>
+                     </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        {[
+                          { title: "Branching_Logic", desc: "Pushing to 'main' is forbidden. Initialize a unique feature branch for every protocol solution." },
+                          { title: "Validation_Suites", desc: "Local test matrices must return 100% compliance before initializing deployment sequence." },
+                          { title: "Symmetry_Check", desc: "Adhere to established Prettier and ESLint configurations across the entire cluster." },
+                          { title: "Documentation_Sync", desc: "Update README stream if architectural changes introduce new technical debt." }
+                        ].map((s, i) => (
+                          <div key={i} className="flex gap-6 group">
+                            <div className="w-8 h-8 rounded-xl bg-secondary/80 border border-border/50 flex items-center justify-center text-primary text-[11px] font-black shrink-0 shadow-sm group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-500">{i+1}</div>
+                            <div className="space-y-2">
+                              <p className="text-[11px] font-black uppercase tracking-widest text-foreground tracking-tighter">{s.title}</p>
+                              <p className="text-xs font-medium text-muted-foreground leading-relaxed tracking-tight">{s.desc}</p>
+                            </div>
+                          </div>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+
+               <div className="space-y-10">
+                  <div className="card-premium p-10 relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none" />
+                    <div className="flex items-center gap-4 mb-12">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
+                        <Send size={20} />
+                      </div>
+                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Phase 2: Deployment</h3>
+                    </div>
+                    
+                    {devSuccess ? (
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex flex-col items-center justify-center py-16 text-center space-y-8"
+                      >
+                        <div className="w-24 h-24 rounded-[2.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 border border-emerald-500/20 shadow-[0_20px_50px_rgba(16,185,129,0.2)]">
+                          <CheckCircle2 size={56} />
+                        </div>
+                        <div className="space-y-3">
+                          <h4 className="text-2xl font-black tracking-tighter uppercase tracking-widest">Signal Locked</h4>
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] leading-relaxed max-w-[240px] mx-auto opacity-60">
+                            Solution deployed to validation queue. Monitoring live status feed.
+                          </p>
+                        </div>
                         <motion.button 
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          type="submit" 
-                          disabled={!selectedRepo || !selectedBranch || submittingDev || !isAccepted} 
-                          className="w-full btn-primary py-6 text-[11px] uppercase tracking-[0.4em] rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(99,102,241,0.5)] flex items-center justify-center gap-4 disabled:opacity-40 disabled:scale-100 disabled:shadow-none transition-all"
+                          onClick={() => navigate("/dashboard")}
+                          className="btn-primary w-full py-5 rounded-[1.5rem] text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20"
                         >
-                          {submittingDev ? (
-                            <RefreshCcw size={20} className="animate-spin" />
-                          ) : (
-                            <><Rocket size={20} /> Commit to Validation</>
-                          )}
+                          Return to Dashboard
                         </motion.button>
-                        {!isAccepted && (
-                          <p className="mt-6 text-[9px] text-center text-red-500/70 font-black uppercase tracking-[0.3em]">Initialize Environment protocol first.</p>
+                      </motion.div>
+                    ) : (
+                      <form onSubmit={handleDevSubmit} className="space-y-10">
+                        {devError && (
+                          <motion.div 
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="p-6 bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-black uppercase tracking-widest rounded-[1.5rem] flex items-center gap-4"
+                          >
+                            <AlertCircle size={20} className="shrink-0" />
+                            {devError}
+                          </motion.div>
                         )}
-                      </div>
-                      
-                      <p className="text-[9px] text-center text-muted-foreground font-bold uppercase tracking-[0.3em] opacity-40 leading-relaxed px-4">
-                        Executing this sequence will create an automated Pull Request on the upstream master cluster.
-                      </p>
-                    </form>
-                  )}
-                </div>
-             </div>
-          </motion.div>
-        )}
+                        
+                        <div className="space-y-10">
+                          {selectedIssue && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="p-6 bg-primary/10 border border-primary/20 rounded-[1.5rem] flex items-center justify-between shadow-sm"
+                            >
+                               <div className="flex items-center gap-5">
+                                  <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-[12px] shadow-lg shadow-primary/30">#{selectedIssue.number}</div>
+                                  <div className="min-w-0 space-y-0.5">
+                                     <p className="text-sm font-black text-foreground truncate uppercase tracking-tighter">{selectedIssue.title}</p>
+                                     <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">Resolving Signal Anomaly</p>
+                                  </div>
+                               </div>
+                               <button onClick={() => setSelectedIssue(null)} className="p-2.5 hover:bg-secondary rounded-xl text-muted-foreground transition-all"><X size={16} /></button>
+                            </motion.div>
+                          )}
 
-        {activeTab === "test_flow" && (
-          <motion.div key="test_flow" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-             <div className="lg:col-span-1 space-y-8">
-               <div className="card-premium p-8 lg:p-10 space-y-10 h-fit">
-                 <div className="flex items-center gap-4">
-                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-                     <ClipboardList size={20} />
-                   </div>
-                   <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Audit Queue</h3>
-                 </div>
+                          {!selectedIssue && intelligence?.issueAnalytics?.openIssuesList?.length > 0 && (
+                            <div className="space-y-4">
+                              <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Target Anomaly (Optional)</label>
+                              <div className="relative group">
+                                <select 
+                                  onChange={(e) => setSelectedIssue(intelligence.issueAnalytics.openIssuesList.find(i => i.number === parseInt(e.target.value)))}
+                                  className="w-full px-6 py-5 bg-background/50 border border-border/50 rounded-[1.5rem] font-bold text-[12px] text-foreground focus:outline-none focus:ring-4 focus:ring-primary/10 appearance-none shadow-inner cursor-pointer transition-all group-hover:border-primary/30"
+                                >
+                                  <option value="">Identify an issue to resolve...</option>
+                                  {intelligence.issueAnalytics.openIssuesList.map(issue => (
+                                    <option key={issue.number} value={issue.number}>SIGNAL #{issue.number}: {issue.title}</option>
+                                  ))}
+                                </select>
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
+                                  <ChevronDown size={18} />
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
-                 {activeSubmissions.filter(s => s.user?._id !== authUser?._id && s.user !== authUser?._id).length > 0 ? (
-                   <div className="space-y-5">
-                     {activeSubmissions.filter(s => s.user?._id !== authUser?._id && s.user !== authUser?._id).map(sub => (
-                       <motion.div 
-                         key={sub._id} 
-                         whileHover={{ scale: 1.02 }}
-                         onClick={() => { setSelectedPR(sub); setTestSuccess(false); setTestError(""); }}
-                         className={`p-6 border rounded-[2.5rem] cursor-pointer transition-all flex flex-col gap-6 relative overflow-hidden group shadow-sm ${selectedPR?._id === sub._id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border/50 bg-secondary/30 hover:border-primary/30 hover:bg-secondary/50'}`}
-                       >
-                         {selectedPR?._id === sub._id && <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-[40px] pointer-events-none" />}
-                         <div className="flex items-center gap-4 relative z-10">
-                           <div className="relative">
-                             <img src={sub.user?.avatarUrl} alt={sub.user?.username} className="w-12 h-12 rounded-[1.2rem] border border-border/50 shadow-lg" />
-                             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-background rounded-lg border border-border/50 flex items-center justify-center shadow-sm">
-                               <Github size={12} className="text-muted-foreground" />
-                             </div>
-                           </div>
-                           <div className="min-w-0 flex-1 space-y-1">
-                             <p className="text-sm font-black tracking-tight text-foreground uppercase truncate tracking-tighter">@{sub.user?.username}</p>
-                             <div className="flex items-center gap-1.5 opacity-60">
-                               <GitBranch size={10} className="text-primary" />
-                               <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest truncate">{sub.branchName}</p>
-                             </div>
-                           </div>
-                         </div>
-                         <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-[0.25em] relative z-10">
-                           <span className={`px-3 py-1.5 rounded-lg border ${sub.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
-                             {sub.status}
-                           </span>
-                           <motion.span whileHover={{ x: 3 }} className="text-primary flex items-center gap-1.5">INITIATE AUDIT <ChevronRight size={14} /></motion.span>
-                         </div>
-                       </motion.div>
-                     ))}
-                   </div>
-                 ) : (
-                   <div className="text-center py-24 bg-secondary/10 border-2 border-dashed border-border/40 rounded-[3rem] space-y-6">
-                     <ShieldCheck size={56} className="mx-auto text-muted-foreground opacity-10" />
-                     <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 max-w-[180px] mx-auto leading-relaxed">No pending audit signals found in local grid sector.</p>
-                   </div>
-                 )}
+                          <div className="space-y-4">
+                            <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Local Workspace Node</label>
+                            <RepoPicker onSelect={setSelectedRepo} selectedRepo={selectedRepo} />
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Logic Signal (Branch)</label>
+                            <BranchPicker 
+                              owner={selectedRepo?.owner?.login || authUser?.username} 
+                              repo={selectedRepo?.name} 
+                              onSelect={setSelectedBranch} 
+                              selectedBranch={selectedBranch} 
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-6">
+                          <motion.button 
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            type="submit" 
+                            disabled={!selectedRepo || !selectedBranch || submittingDev || !isAccepted} 
+                            className="w-full btn-primary py-6 text-[11px] uppercase tracking-[0.4em] rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(99,102,241,0.5)] flex items-center justify-center gap-4 disabled:opacity-40 disabled:scale-100 disabled:shadow-none transition-all"
+                          >
+                            {submittingDev ? (
+                              <RefreshCcw size={20} className="animate-spin" />
+                            ) : (
+                              <><Rocket size={20} /> Commit to Validation</>
+                            )}
+                          </motion.button>
+                          {!isAccepted && (
+                            <p className="mt-6 text-[9px] text-center text-red-500/70 font-black uppercase tracking-[0.3em]">Initialize Environment protocol first.</p>
+                          )}
+                        </div>
+                        
+                        <p className="text-[9px] text-center text-muted-foreground font-bold uppercase tracking-[0.3em] opacity-40 leading-relaxed px-4">
+                          Executing this sequence will create an automated Pull Request on the upstream master cluster.
+                        </p>
+                      </form>
+                    )}
+                  </div>
                </div>
-             </div>
+            </motion.div>
 
-             <div className="lg:col-span-2">
-               <div className="card-premium p-10 lg:p-12 h-full relative overflow-hidden bg-gradient-to-br from-card via-card to-emerald-500/5">
-                 {selectedPR ? (
-                   <AnimatePresence mode="wait">
-                     <motion.div 
-                       key={selectedPR._id}
-                       initial={{ opacity: 0, y: 10 }}
-                       animate={{ opacity: 1, y: 0 }}
-                       className="space-y-12"
-                     >
-                       <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-[120px] -mr-40 -mt-40 pointer-events-none" />
-                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-border/30 relative z-10">
-                         <div className="flex items-center gap-6">
-                           <div className="relative">
-                             <img src={selectedPR.user?.avatarUrl} alt={selectedPR.user?.username} className="w-20 h-20 rounded-[2rem] border-2 border-background shadow-2xl" />
-                             <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-emerald-500 text-white rounded-xl flex items-center justify-center shadow-lg border-2 border-background">
-                               <Check size={14} strokeWidth={3} />
+            {/* QA Flow / Audit Queue Section */}
+            <motion.div key="engineering_test" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+               <div className="lg:col-span-1 space-y-8">
+                 <div className="card-premium p-8 lg:p-10 space-y-10 h-fit">
+                   <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                       <ClipboardList size={20} />
+                     </div>
+                     <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Audit Queue</h3>
+                   </div>
+
+                   {activeSubmissions.filter(s => s.user?._id !== authUser?._id && s.user !== authUser?._id).length > 0 ? (
+                     <div className="space-y-5">
+                       {activeSubmissions.filter(s => s.user?._id !== authUser?._id && s.user !== authUser?._id).map(sub => (
+                         <motion.div 
+                           key={sub._id} 
+                           whileHover={{ scale: 1.02 }}
+                           onClick={() => { setSelectedPR(sub); setTestSuccess(false); setTestError(""); }}
+                           className={`p-6 border rounded-[2.5rem] cursor-pointer transition-all flex flex-col gap-6 relative overflow-hidden group shadow-sm ${selectedPR?._id === sub._id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border/50 bg-secondary/30 hover:border-primary/30 hover:bg-secondary/50'}`}
+                         >
+                           {selectedPR?._id === sub._id && <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-[40px] pointer-events-none" />}
+                           <div className="flex items-center gap-4 relative z-10">
+                             <div className="relative">
+                               <img src={sub.user?.avatarUrl} alt={sub.user?.username} className="w-12 h-12 rounded-[1.2rem] border border-border/50 shadow-lg" />
+                               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-background rounded-lg border border-border/50 flex items-center justify-center shadow-sm">
+                                 <Github size={12} className="text-muted-foreground" />
+                               </div>
+                             </div>
+                             <div className="min-w-0 flex-1 space-y-1">
+                               <p className="text-sm font-black tracking-tight text-foreground uppercase truncate tracking-tighter">@{sub.user?.username}</p>
+                               <div className="flex items-center gap-1.5 opacity-60">
+                                 <GitBranch size={10} className="text-primary" />
+                                 <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest truncate">{sub.branchName}</p>
+                               </div>
                              </div>
                            </div>
-                           <div className="space-y-2">
-                             <h3 className="text-2xl font-black tracking-tighter text-foreground uppercase">Audit Node: @{selectedPR.user?.username}</h3>
-                             <div className="flex items-center gap-4">
-                               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">Source Link:</p>
-                               <motion.a 
-                                 whileHover={{ scale: 1.05 }}
-                                 href={selectedPR.forkUrl} target="_blank" rel="noreferrer" 
-                                 className="px-4 py-1.5 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border border-primary/20 flex items-center gap-2 hover:bg-primary hover:text-white transition-all shadow-sm"
-                               >
-                                 <Monitor size={12} /> Inspect Code
-                               </motion.a>
+                           <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-[0.25em] relative z-10">
+                             <span className={`px-3 py-1.5 rounded-lg border ${sub.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
+                               {sub.status}
+                             </span>
+                             <motion.span whileHover={{ x: 3 }} className="text-primary flex items-center gap-1.5">INITIATE AUDIT <ChevronRight size={14} /></motion.span>
+                           </div>
+                         </motion.div>
+                       ))}
+                     </div>
+                   ) : (
+                     <div className="text-center py-24 bg-secondary/10 border-2 border-dashed border-border/40 rounded-[3rem] space-y-6">
+                       <ShieldCheck size={56} className="mx-auto text-muted-foreground opacity-10" />
+                       <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 max-w-[180px] mx-auto leading-relaxed">No pending audit signals found in local grid sector.</p>
+                     </div>
+                   )}
+                 </div>
+               </div>
+
+               <div className="lg:col-span-2">
+                 <div className="card-premium p-10 lg:p-12 h-full relative overflow-hidden bg-gradient-to-br from-card via-card to-emerald-500/5">
+                   {selectedPR ? (
+                     <AnimatePresence mode="wait">
+                       <motion.div 
+                         key={selectedPR._id}
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         className="space-y-12"
+                       >
+                         <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-[120px] -mr-40 -mt-40 pointer-events-none" />
+                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-border/30 relative z-10">
+                           <div className="flex items-center gap-6">
+                             <div className="relative">
+                               <img src={selectedPR.user?.avatarUrl} alt={selectedPR.user?.username} className="w-20 h-20 rounded-[2rem] border-2 border-background shadow-2xl" />
+                               <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-emerald-500 text-white rounded-xl flex items-center justify-center shadow-lg border-2 border-background">
+                                 <Check size={14} strokeWidth={3} />
+                               </div>
                              </div>
+                             <div className="space-y-2">
+                               <h3 className="text-2xl font-black tracking-tighter text-foreground uppercase">Audit Node: @{selectedPR.user?.username}</h3>
+                               <div className="flex items-center gap-4">
+                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">Source Link:</p>
+                                 <motion.a 
+                                   whileHover={{ scale: 1.05 }}
+                                   href={selectedPR.forkUrl} target="_blank" rel="noreferrer" 
+                                   className="px-4 py-1.5 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border border-primary/20 flex items-center gap-2 hover:bg-primary hover:text-white transition-all shadow-sm"
+                                 >
+                                   <Monitor size={12} /> Inspect Code
+                                 </motion.a>
+                               </div>
                            </div>
                          </div>
                          <motion.button 
@@ -1148,20 +1114,22 @@ const ProjectDetails = () => {
                            <X size={20} />
                          </motion.button>
                        </div>
-
+                       
                        {testSuccess ? (
                          <motion.div 
-                           initial={{ opacity: 0, scale: 0.95 }}
+                           initial={{ opacity: 0, scale: 0.9 }}
                            animate={{ opacity: 1, scale: 1 }}
-                           className="flex flex-col items-center justify-center py-24 text-center space-y-8"
+                           className="flex flex-col items-center justify-center py-12 text-center space-y-8"
                          >
-                           <div className="w-28 h-28 rounded-[3rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-[0_30px_60px_-12px_rgba(16,185,129,0.3)] animate-glow">
-                             <ShieldCheck size={64} strokeWidth={1.5} />
-                           </div>
-                           <div className="space-y-3">
-                             <h4 className="text-3xl font-black tracking-tighter uppercase tracking-widest text-emerald-500">Node Verified</h4>
-                             <p className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.4em] leading-relaxed max-w-sm mx-auto opacity-60">Audit stream submitted and synchronized with global registry. Reward sequence initialized.</p>
-                           </div>
+                            <div className="w-24 h-24 rounded-[2.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 border border-emerald-500/20 shadow-[0_20px_50px_rgba(16,185,129,0.2)]">
+                              <CheckCircle2 size={56} />
+                            </div>
+                            <div className="space-y-3">
+                              <h4 className="text-2xl font-black tracking-tighter uppercase tracking-widest">Audit Completed</h4>
+                              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] leading-relaxed max-w-[280px] mx-auto opacity-60">
+                                Your validation signature has been appended to this protocol. The contributor has been notified.
+                              </p>
+                            </div>
                          </motion.div>
                        ) : (
                          <form onSubmit={handleTestSubmit} className="space-y-12 relative z-10">
@@ -1282,22 +1250,22 @@ const ProjectDetails = () => {
                      </motion.div>
                    </AnimatePresence>
                  ) : (
-                   <div className="text-center py-48 bg-secondary/5 rounded-[4rem] border-2 border-dashed border-border/50 space-y-10 shadow-inner">
-                     <div className="relative inline-block">
-                       <ShieldCheck size={120} className="mx-auto text-primary opacity-10" />
-                       <div className="absolute inset-0 flex items-center justify-center">
-                         <Cpu size={56} className="text-primary opacity-30 animate-pulse" />
-                       </div>
-                     </div>
-                     <div className="space-y-3">
-                       <h4 className="text-2xl font-black tracking-tighter opacity-40 uppercase tracking-[0.2em]">Audit Hub Standby</h4>
-                       <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.4em] max-w-sm mx-auto leading-relaxed opacity-40 px-8">Identify an incoming signal from the Audit Queue to initiate high-fidelity engineering audit.</p>
-                     </div>
+                   <div className="flex flex-col items-center justify-center h-full py-32 text-center space-y-8 opacity-40">
+                      <div className="w-24 h-24 rounded-[3rem] bg-secondary flex items-center justify-center border-2 border-dashed border-border">
+                        <Cpu size={48} className="text-muted-foreground" />
+                      </div>
+                      <div className="space-y-3">
+                        <h4 className="text-xl font-black uppercase tracking-widest">Awaiting Selection</h4>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] max-w-[200px] leading-relaxed">
+                          Initialize an audit signal from the queue to begin peer validation.
+                        </p>
+                      </div>
                    </div>
                  )}
                </div>
              </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
 
         {activeTab === "activity" && (

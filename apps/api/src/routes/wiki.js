@@ -3,8 +3,10 @@ import { WikiPage } from '../models/WikiPage.js';
 import { WikiVersion } from '../models/WikiVersion.js';
 import { ApprovalRequest } from '../models/ApprovalRequest.js';
 import { Project } from '../models/Project.js';
+import { User } from '../models/User.js';
 import { authenticate } from '../middleware/auth.js';
 import { authorize, logAudit } from '../middleware/rbac.js';
+import { getGithubFile, createOrUpdateGithubFile, parseRepoUrl } from '../lib/github.js';
 import slugify from 'slugify';
 
 const router = Router();
@@ -14,11 +16,53 @@ const getSlug = (text) => slugify(text, { lower: true, strict: true });
 
 /**
  * GET /projects/:projectId/wiki
- * List all published wiki pages for a project
+ * List all published wiki pages for a project (Syncs with GitHub first if possible)
  */
-router.get("/:projectId", async (req, res) => {
+router.get("/:projectId", authenticate, async (req, res) => {
   try {
     const { projectId } = req.params;
+    
+    // Try to sync with GitHub
+    try {
+      const project = await Project.findById(projectId);
+      const user = await User.findById(req.user.userId);
+      
+      if (project && user && user.githubAccessToken && project.repoUrl) {
+        const { owner, repo } = parseRepoUrl(project.repoUrl);
+        
+        // Fetch contents of the 'wiki' folder
+        const wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'wiki').catch(() => null);
+        
+        if (Array.isArray(wikiFolder)) {
+          for (const file of wikiFolder) {
+            if (file.name.endsWith('.md')) {
+              const slug = file.name.replace('.md', '');
+              const existingPage = await WikiPage.findOne({ project: projectId, slug });
+              
+              if (!existingPage) {
+                // Fetch file content
+                const fileContent = await getGithubFile(user.githubAccessToken, owner, repo, file.path);
+                const decodedContent = Buffer.from(fileContent.content, 'base64').toString('utf-8');
+                
+                // Create local page
+                const title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                await WikiPage.create({
+                  title,
+                  slug,
+                  content: decodedContent,
+                  project: projectId,
+                  author: user._id, // Assume current user is author for imported pages
+                  status: 'Published' // Mark as published if it's coming from main repo
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch (syncError) {
+      console.error("⚠️ Failed to sync wiki from GitHub:", syncError.message);
+    }
+
     const pages = await WikiPage.find({ project: projectId, status: 'Published' })
       .select('title slug status author updatedAt')
       .populate('author', 'username avatarUrl');
@@ -180,9 +224,10 @@ router.put("/:projectId/:pageId/approve", authenticate, authorize('Project Owner
     const request = await ApprovalRequest.findById(requestId);
     if (!request) return res.status(404).json({ message: "Approval request not found" });
 
+    const project = await Project.findById(page.project);
+    
     // If not Admin, check if user is the Project Owner of THIS project
     if (req.user.role !== 'Admin') {
-      const project = await Project.findById(page.project);
       if (project.owner.toString() !== req.user.userId) {
         return res.status(403).json({ message: "Only the Project Owner can approve this request." });
       }
@@ -198,6 +243,39 @@ router.put("/:projectId/:pageId/approve", authenticate, authorize('Project Owner
       request.comments.push({ user: req.user.userId, text: comment });
     }
     await request.save();
+
+    // Replicate to GitHub
+    try {
+      const user = await User.findById(req.user.userId);
+      if (user && user.githubAccessToken && project.repoUrl) {
+        const { owner, repo } = parseRepoUrl(project.repoUrl);
+        const path = `wiki/${page.slug}.md`;
+        let sha = null;
+        
+        // Try to get existing file to get its SHA
+        try {
+          const existingFile = await getGithubFile(user.githubAccessToken, owner, repo, path);
+          if (existingFile && existingFile.sha) {
+            sha = existingFile.sha;
+          }
+        } catch (e) {
+          // File might not exist yet, ignore
+        }
+
+        await createOrUpdateGithubFile(
+          user.githubAccessToken,
+          owner,
+          repo,
+          path,
+          `docs: Update wiki page ${page.title}`,
+          page.content,
+          sha
+        );
+      }
+    } catch (ghError) {
+      console.error("⚠️ Failed to replicate wiki to GitHub:", ghError.message);
+      // We don't fail the approval if GitHub sync fails, just log it
+    }
 
     await logAudit(req, 'APPROVE_WIKI_PAGE', 'WikiPage', pageId, { requestId: request._id });
 

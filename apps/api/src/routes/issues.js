@@ -4,17 +4,72 @@ import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { authenticate } from '../middleware/auth.js';
 import { authorize, logAudit } from '../middleware/rbac.js';
-import { createIssue as createGithubIssue, parseRepoUrl } from '../lib/github.js';
+import { createIssue as createGithubIssue, parseRepoUrl, runGraphQL } from '../lib/github.js';
 
 const router = Router();
 
 /**
  * GET /issues/:projectId
- * List all issues for a project
+ * List all issues for a project (Syncs with GitHub first)
  */
-router.get("/:projectId", async (req, res) => {
+router.get("/:projectId", authenticate, async (req, res) => {
   try {
     const { projectId } = req.params;
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    const user = await User.findById(req.user.userId);
+    if (user && user.githubAccessToken && project.repoUrl) {
+      try {
+        const { owner, repo } = parseRepoUrl(project.repoUrl);
+        const query = `
+          query GetIssues($owner: String!, $name: String!) {
+            repository(owner: $owner, name: $name) {
+              issues(first: 50, orderBy: {field: CREATED_AT, direction: DESC}) {
+                nodes {
+                  number
+                  title
+                  body
+                  state
+                  createdAt
+                  url
+                }
+              }
+            }
+          }
+        `;
+        const rawData = await runGraphQL(user.githubAccessToken, query, { owner, name: repo });
+        const githubIssues = rawData.repository?.issues?.nodes || [];
+
+        // Sync to local DB
+        for (const ghIssue of githubIssues) {
+          const existingIssue = await Issue.findOne({ project: projectId, githubIssueNumber: ghIssue.number });
+          if (existingIssue) {
+            existingIssue.state = ghIssue.state.toUpperCase();
+            await existingIssue.save();
+          } else {
+            await Issue.create({
+              title: ghIssue.title,
+              description: ghIssue.body || '',
+              project: projectId,
+              githubIssueNumber: ghIssue.number,
+              githubIssueUrl: ghIssue.url,
+              state: ghIssue.state.toUpperCase(),
+              author: req.user.userId, // Default to user who initiated sync for now
+              timeline: [{
+                action: 'SYNCED_FROM_GITHUB',
+                actor: req.user.userId,
+                timestamp: Date.now()
+              }]
+            });
+          }
+        }
+      } catch (ghError) {
+        console.error("⚠️ Failed to sync issues from GitHub:", ghError.message);
+        // Continue and return local issues even if sync fails
+      }
+    }
+
     const issues = await Issue.find({ project: projectId })
       .populate('author', 'username avatarUrl')
       .populate('assignees', 'username avatarUrl')

@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['Admin', 'Project Owner', 'Team', 'Developer'],
+    enum: ['Admin', 'Project Owner', 'Team', 'Developer', 'ADMIN', 'PROJECT_OWNER', 'TEAM', 'DEVELOPER'],
     default: 'Developer'
   },
   status: {
@@ -77,7 +77,7 @@ userSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function()
   }
 });
 
-// Pre-save hook to cap scores at 100
+// Pre-save hook to cap scores at 100 and normalize role
 userSchema.pre('save', async function() {
   const scores = [
     'collaborationScore', 'innovationScore', 'consistencyScore', 
@@ -88,6 +88,19 @@ userSchema.pre('save', async function() {
     if (this[score] > 100) this[score] = 100;
     if (this[score] < 0) this[score] = 0;
   });
+
+  // Normalize role
+  if (this.role) {
+    const roleMap = {
+      'ADMIN': 'Admin',
+      'PROJECT_OWNER': 'Project Owner',
+      'TEAM': 'Team',
+      'DEVELOPER': 'Developer'
+    };
+    if (roleMap[this.role.toUpperCase()]) {
+      this.role = roleMap[this.role.toUpperCase()];
+    }
+  }
 
   // Dynamically calculate level based on XP (every 500 XP is a level)
   this.level = Math.floor(this.xp / 500) + 1;
