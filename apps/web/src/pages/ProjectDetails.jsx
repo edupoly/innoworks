@@ -294,7 +294,7 @@ const ProjectDetails = () => {
   const stats = [
     { label: "Activity", value: lastActive, icon: Activity, color: "text-amber-500", bg: "bg-amber-500/10" },
     { label: "Forks", value: intelligence?.statistics?.forks, icon: GitFork, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Signals", value: intelligence?.statistics?.openIssues, icon: AlertCircle, color: "text-red-500", bg: "bg-red-500/10" },
+    { label: "Issues", value: intelligence?.statistics?.openIssues, icon: AlertCircle, color: "text-red-500", bg: "bg-red-500/10" },
     { label: "Watchers", value: intelligence?.statistics?.watchers, icon: Eye, color: "text-emerald-500", bg: "bg-emerald-500/10" },
   ];
 
@@ -309,7 +309,7 @@ const ProjectDetails = () => {
           <div className="p-1 rounded-lg bg-secondary/50 group-hover:bg-primary/10 transition-colors">
             <ChevronLeft size={10} className="group-hover:-translate-x-0.5 transition-transform" />
           </div>
-          Registry Index
+          Back to Projects
         </Link>
       </motion.div>
 
@@ -738,7 +738,7 @@ const ProjectDetails = () => {
                  ) : (
                    <div className="py-32 text-center border-2 border-dashed border-border/30 rounded-2xl bg-secondary/5 space-y-6">
                      <ShieldCheck size={56} className="mx-auto text-muted-foreground opacity-10" />
-                     <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Grid_Idle: No Incoming Signals Detected</p>
+                     <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">No Submissions Detected</p>
                    </div>
                  )}
                </div>
@@ -818,7 +818,7 @@ const ProjectDetails = () => {
                                  {mySubmissions[0].linkedIssue && (
                                    <div className="p-4 bg-background/60 border border-border/50 rounded-2xl flex items-center gap-4 relative z-10 shadow-inner">
                                       <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 font-black text-[11px] shadow-sm">#{mySubmissions[0].linkedIssue}</div>
-                                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Resolving Targeted Signal Anomaly</p>
+                                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Resolving Target Issue</p>
                                    </div>
                                  )}
                               </div>
@@ -826,7 +826,7 @@ const ProjectDetails = () => {
 
                             <div className="p-5 bg-secondary/30 border border-border/50 rounded-xl space-y-8 shadow-sm">
                               <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">Registry_Personal_Pointer</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">Personal Fork</span>
                                 <span className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 shadow-sm">
                                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> CLUSTER_NODE_LIVE
                                 </span>
@@ -878,7 +878,7 @@ const ProjectDetails = () => {
                                onClick={checkFork} 
                                className="px-10 py-3.5 bg-amber-500/10 text-amber-500 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-amber-500/20 hover:bg-amber-500/20 transition-all shadow-sm"
                              >
-                               Manual Signal Ping
+                               Manual Ping
                              </motion.button>
                           </div>
                         )}
@@ -932,7 +932,7 @@ const ProjectDetails = () => {
                           <CheckCircle2 size={56} />
                         </div>
                         <div className="space-y-3">
-                          <h4 className="text-2xl font-black tracking-tighter uppercase tracking-widest">Signal Locked</h4>
+                          <h4 className="text-2xl font-black tracking-tighter uppercase tracking-widest">Deployment Locked</h4>
                           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] leading-relaxed max-w-[240px] mx-auto opacity-60">
                             Solution deployed to validation queue. Monitoring live status feed.
                           </p>
@@ -970,7 +970,7 @@ const ProjectDetails = () => {
                                   <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-[12px] shadow-lg shadow-primary/30">#{selectedIssue.number}</div>
                                   <div className="min-w-0 space-y-0.5">
                                      <p className="text-sm font-black text-foreground truncate uppercase tracking-tighter">{selectedIssue.title}</p>
-                                     <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">Resolving Signal Anomaly</p>
+                                     <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">Resolving Issue</p>
                                   </div>
                                </div>
                                <button onClick={() => setSelectedIssue(null)} className="p-2.5 hover:bg-secondary rounded-xl text-muted-foreground transition-all"><X size={16} /></button>
@@ -987,7 +987,7 @@ const ProjectDetails = () => {
                                 >
                                   <option value="">Identify an issue to resolve...</option>
                                   {intelligence.issueAnalytics.openIssuesList.map(issue => (
-                                    <option key={issue.number} value={issue.number}>SIGNAL #{issue.number}: {issue.title}</option>
+                                    <option key={issue.number} value={issue.number}>ISSUE #{issue.number}: {issue.title}</option>
                                   ))}
                                 </select>
                                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
@@ -1003,7 +1003,7 @@ const ProjectDetails = () => {
                           </div>
                           
                           <div className="space-y-4">
-                            <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Logic Signal (Branch)</label>
+                            <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Target Branch</label>
                             <BranchPicker 
                               owner={selectedRepo?.owner?.login || authUser?.username} 
                               repo={selectedRepo?.name} 
@@ -1089,7 +1089,7 @@ const ProjectDetails = () => {
                    ) : (
                      <div className="text-center py-24 bg-secondary/10 border-2 border-dashed border-border/40 rounded-2xl space-y-6">
                        <ShieldCheck size={56} className="mx-auto text-muted-foreground opacity-10" />
-                       <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 max-w-[180px] mx-auto leading-relaxed">No pending audit signals found in local grid sector.</p>
+                       <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 max-w-[180px] mx-auto leading-relaxed">No pending reviews found in local grid sector.</p>
                      </div>
                    )}
                  </div>
@@ -1280,7 +1280,7 @@ const ProjectDetails = () => {
                       <div className="space-y-3">
                         <h4 className="text-xl font-black uppercase tracking-widest">Awaiting Selection</h4>
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] max-w-[200px] leading-relaxed">
-                          Initialize an audit signal from the queue to begin peer validation.
+                          Select a submission from the queue to begin peer validation.
                         </p>
                       </div>
                    </div>
@@ -1295,7 +1295,7 @@ const ProjectDetails = () => {
           <motion.div key="activity" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-6">
-                  {/* Unified Live Signal Feed */}
+                  {/* Activity Feed */}
                   <div className="card-premium p-5 lg:p-6 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
                     <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] -mr-48 -mt-48" />
                     <div className="flex items-center justify-between mb-6 relative z-10">
@@ -1303,7 +1303,7 @@ const ProjectDetails = () => {
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
                           <Terminal size={20} />
                         </div>
-                        <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Master Signal Feed</h3>
+                        <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Activity Feed</h3>
                       </div>
                       <span className="flex items-center gap-2.5 px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 shadow-sm">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> GRID_SYNC_ACTIVE
@@ -1326,7 +1326,7 @@ const ProjectDetails = () => {
                                 <span className="opacity-80">
                                   {event.type === "commit" && `injected commit: ${event.title}`}
                                   {event.type === "pull_request" && `initialized pull sequence: ${event.title}`}
-                                  {event.type === "issue" && `detected signal anomaly: ${event.title}`}
+                                  {event.type === "issue" && `opened issue: ${event.title}`}
                                 </span>
                               </p>
                               <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 flex items-center gap-2">
@@ -1339,7 +1339,7 @@ const ProjectDetails = () => {
                         <div className="py-24 text-center space-y-6">
                           <Activity size={64} className="mx-auto text-muted-foreground opacity-10" />
                           <div className="space-y-2">
-                            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground/40">Aggregating Signal Streams...</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground/40">Loading Activity...</p>
                             <p className="text-[10px] font-medium text-muted-foreground/30 max-w-xs mx-auto leading-relaxed px-6">No recent events detected in this mission cluster. Commits and reviews will appear here in real-time.</p>
                           </div>
                         </div>
@@ -1347,14 +1347,14 @@ const ProjectDetails = () => {
                     </div>
                   </div>
 
-                  {/* Historical Registry */}
+                  {/* Commit History */}
                   <div className="card-premium p-5 lg:p-6 relative overflow-hidden bg-gradient-to-br from-card via-card to-indigo-500/5">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
                     <div className="flex items-center gap-4 mb-6 relative z-10">
                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
                          <History size={20} />
                        </div>
-                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Core Registry History</h3>
+                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Commit History</h3>
                     </div>
                     <div className="space-y-6 relative z-10">
                       {intelligence?.commitAnalytics?.recentCommits?.length > 0 ? intelligence.commitAnalytics.recentCommits.slice(0, 10).map((commit, i) => (
@@ -1372,7 +1372,7 @@ const ProjectDetails = () => {
                           </div>
                         </motion.div>
                       )) : (
-                        <p className="text-[11px] font-black text-muted-foreground/30 text-center py-16 uppercase tracking-[0.4em]">Scanning core registry records...</p>
+                        <p className="text-[11px] font-black text-muted-foreground/30 text-center py-16 uppercase tracking-[0.4em]">Scanning commit history...</p>
                       )}
                     </div>
                   </div>
@@ -1416,7 +1416,7 @@ const ProjectDetails = () => {
                   >
                      <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
                      <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/80">Intelligence_Directive</h4>
-                     <p className="text-xs font-bold leading-relaxed text-foreground/70 tracking-tight">Signal logs are aggregated via global GitHub Webhooks. Pull sequences and commits are synchronized across the cluster in real-time. Unauthorized tampering will trigger a link reset.</p>
+                     <p className="text-xs font-bold leading-relaxed text-foreground/70 tracking-tight">Activity logs are aggregated via global GitHub Webhooks. Pull sequences and commits are synchronized across the cluster in real-time. Unauthorized tampering will trigger a link reset.</p>
                   </motion.div>
                 </div>
              </div>

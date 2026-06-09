@@ -49,7 +49,7 @@ const Profile = () => {
         onClick={() => navigate("/leaderboard")} 
         className="btn-primary w-full py-3 rounded-xl text-[9px] uppercase tracking-[0.2em]"
       >
-        Return to Registry
+        Back to Leaderboard
       </motion.button>
     </div>
   );
@@ -75,7 +75,7 @@ const Profile = () => {
           className="mb-8 flex items-center gap-2.5 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-all group bg-secondary/50 px-3 py-1.5 rounded-lg border border-border/50 shadow-sm"
         >
           <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-          Registry Index
+          Back to Leaderboard
         </motion.button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -289,7 +289,7 @@ const Profile = () => {
                 ) : (
                   <div className="py-16 text-center bg-card rounded-2xl border-2 border-dashed border-border/50 space-y-4">
                     <Activity size={40} className="mx-auto text-muted-foreground opacity-10" />
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">Portfolio registry offline.</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">No portfolio projects found.</p>
                   </div>
                 )}
               </div>

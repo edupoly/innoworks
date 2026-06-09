@@ -292,7 +292,7 @@ const Navbar = () => {
                   }`}
                 >
                   <LayoutDashboard size={12} />
-                  <span>Operations Hub</span>
+                  <span>Dashboard</span>
                 </Link>
                 
                 <div className="flex items-center gap-1.5 bg-secondary/30 p-1 rounded-xl border border-border/50">

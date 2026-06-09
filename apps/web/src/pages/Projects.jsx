@@ -102,79 +102,79 @@ const Projects = () => {
                <div className="flex items-center gap-2">
                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-sm shadow-blue-500/50" />
                  <span className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">
-                   {projects?.reduce((acc, p) => acc + (p.openIssuesCount || 0), 0) || 0} GLOBAL SIGNALS
-                 </span>
-               </div>
-             </div>
-          </div>
-        </motion.div>
+                   {projects?.reduce((acc, p) => acc + (p.openIssuesCount || 0), 0) || 0} GLOBAL ISSUES
+                   </span>
+                   </div>
+                   </div>
+                   </div>
+                   </motion.div>
 
-        {/* Intelligence Filters Dashboard */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="glass-card rounded-2xl p-6 mb-6 space-y-5 shadow-xl shadow-black/5 border border-border/50 relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Project Search */}
-            <div className="space-y-1.5">
-              <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Search Registry</label>
-              <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors z-10" size={16} />
-                <Input
-                  type="text"
-                  placeholder="Filter by title..."
-                  value={search}
-                  onChange={handleSetSearch}
-                  className="pl-10 h-10 text-xs"
-                />
-              </div>
-            </div>
+                   {/* Intelligence Filters Dashboard */}
+                   <motion.div 
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ duration: 0.6, delay: 0.1 }}
+                   className="glass-card rounded-2xl p-6 mb-6 space-y-5 shadow-xl shadow-black/5 border border-border/50 relative overflow-hidden"
+                   >
+                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
 
-            {/* Difficulty Selector */}
-            <div className="space-y-1.5">
-              <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Complexity</label>
-              <div className="relative group">
-                <select
-                  value={difficulty}
-                  onChange={handleSetDifficulty}
-                  className="w-full h-10 px-4 bg-background/50 border border-border/50 rounded-lg font-black text-[9px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
-                >
-                  <option value="">All Levels</option>
-                  <option value="Easy">Standard</option>
-                  <option value="Medium">Advanced</option>
-                  <option value="Hard">Elite</option>
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
-                  <ChevronDown size={14} />
-                </div>
-              </div>
-            </div>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                   {/* Project Search */}
+                   <div className="space-y-1.5">
+                   <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Search Projects</label>
+                   <div className="relative group">
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors z-10" size={16} />
+                   <Input
+                   type="text"
+                   placeholder="Filter by title..."
+                   value={search}
+                   onChange={handleSetSearch}
+                   className="pl-10 h-10 text-xs"
+                   />
+                   </div>
+                   </div>
 
-            {/* Sort Priority */}
-            <div className="space-y-1.5">
-              <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Optimization</label>
-              <div className="relative group">
-                <select
-                  value={sort}
-                  onChange={handleSetSort}
-                  className="w-full h-10 px-4 bg-background/50 border border-border/50 rounded-lg font-black text-[9px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
-                >
-                  <option value="recent">Timestamp</option>
-                  <option value="trending">Popularity</option>
-                  <option value="most_active">Active Issues</option>
-                  <option value="most_contributors">Collaboration</option>
-                  <option value="bounty">XP Yield</option>
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
-                  <ChevronDown size={14} />
-                </div>
-              </div>
-            </div>
-          </div>
+                   {/* Difficulty Selector */}
+                   <div className="space-y-1.5">
+                   <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Complexity</label>
+                   <div className="relative group">
+                   <select
+                   value={difficulty}
+                   onChange={handleSetDifficulty}
+                   className="w-full h-10 px-4 bg-background/50 border border-border/50 rounded-lg font-black text-[9px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
+                   >
+                   <option value="">All Levels</option>
+                   <option value="Easy">Standard</option>
+                   <option value="Medium">Advanced</option>
+                   <option value="Hard">Elite</option>
+                   </select>
+                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
+                   <ChevronDown size={14} />
+                   </div>
+                   </div>
+                   </div>
+
+                   {/* Sort Priority */}
+                   <div className="space-y-1.5">
+                   <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Sort By</label>
+                   <div className="relative group">
+                   <select
+                   value={sort}
+                   onChange={handleSetSort}
+                   className="w-full h-10 px-4 bg-background/50 border border-border/50 rounded-lg font-black text-[9px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
+                   >
+                   <option value="recent">Timestamp</option>
+                   <option value="trending">Popularity</option>
+                   <option value="most_active">Active Issues</option>
+                   <option value="most_contributors">Collaboration</option>
+                   <option value="bounty">XP Yield</option>
+                   </select>
+                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
+                   <ChevronDown size={14} />
+                   </div>
+                   </div>
+                   </div>
+                   </div>
 
           {/* Tech Matrix Filters */}
           <div className="pt-5 border-t border-border/30 flex flex-wrap items-center gap-1.5">
@@ -238,7 +238,7 @@ const Projects = () => {
               <Search size={32} className="text-primary opacity-20" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-black tracking-tighter uppercase tracking-[0.1em]">No Signals</h2>
+              <h2 className="text-2xl font-black tracking-tighter uppercase tracking-[0.1em]">No Projects Found</h2>
               <p className="text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed opacity-60 px-8 uppercase text-[9px] tracking-[0.2em]">Your intelligence matrix returned zero matches. Adjust filters to reconnect.</p>
             </div>
             <Button 
@@ -330,7 +330,7 @@ const ProjectCard = ({ project, isSolved }) => {
           </p>
         </div>
 
-        {/* Meta Signals Registry */}
+        {/* Project Meta */}
         <div className="grid grid-cols-2 gap-y-1 gap-x-2 mb-3 text-[7px] font-black uppercase tracking-[0.15em] text-muted-foreground/60 border-y border-border/20 py-2 relative z-10 group-hover:border-primary/10 transition-colors">
           <div className="flex items-center gap-1">
             <Activity size={10} className="text-amber-500" />

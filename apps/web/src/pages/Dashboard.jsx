@@ -191,7 +191,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-xl font-black tracking-tight text-gradient">Operations Hub</h1>
+            <h1 className="text-xl font-black tracking-tight text-gradient">Dashboard</h1>
             <div className="flex items-center gap-2">
               <span className="text-[8px] font-black uppercase tracking-[0.1em] text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10">@{profile?.username}</span>
               <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
@@ -248,7 +248,7 @@ const Dashboard = () => {
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
                   <Fingerprint size={18} />
                 </div>
-                <h2 className="text-lg font-black tracking-tight uppercase tracking-widest">Registry Update</h2>
+                <h2 className="text-lg font-black tracking-tight uppercase tracking-widest">Profile Update</h2>
               </div>
               
               <form onSubmit={handleUpdateProfile} className="space-y-8 relative z-10">
@@ -369,7 +369,7 @@ const Dashboard = () => {
             ))}
           </motion.div>
 
-          {/* Achievement Registry */}
+          {/* Achievements */}
           <Card className="p-6 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
             <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 blur-[60px] rounded-full" />
             <div className="relative z-10 space-y-6">
@@ -400,7 +400,7 @@ const Dashboard = () => {
                 <div className="py-8 text-center space-y-3">
                   <Trophy size={32} className="mx-auto text-muted-foreground opacity-10" />
                   <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-30">
-                    Registry Empty
+                    Empty
                   </p>
                 </div>
               )}
@@ -602,7 +602,7 @@ const Dashboard = () => {
                   ))
                 ) : (
                   <div className="py-12 text-center border-2 border-dashed border-border/40 rounded-2xl bg-secondary/5 opacity-40">
-                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">Registry Empty</p>
+                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">Empty</p>
                   </div>
                 )}
               </div>
@@ -732,7 +732,7 @@ const Dashboard = () => {
             ) : (
               <div className="py-24 text-center border-2 border-dashed border-border/30 rounded-2xl bg-secondary/5 space-y-5">
                 <History size={48} className="mx-auto text-muted-foreground opacity-10" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40">Awaiting Signal Data</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40">Awaiting Activity Data</p>
               </div>
             )}
           </motion.div>

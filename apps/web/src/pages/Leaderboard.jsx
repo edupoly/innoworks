@@ -251,7 +251,7 @@ const Leaderboard = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors z-10" size={16} />
             <Input
               type="text"
-              placeholder="Search registry..."
+              placeholder="Search users..."
               className="pl-12 pr-5 h-10 rounded-lg backdrop-blur-3xl text-xs"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -304,7 +304,7 @@ const Leaderboard = () => {
               <Trophy size={36} className="text-primary opacity-10" />
             </div>
             <div className="space-y-1.5">
-              <h2 className="text-xl font-black tracking-tighter uppercase tracking-[0.1em]">Registry Empty</h2>
+              <h2 className="text-xl font-black tracking-tighter uppercase tracking-[0.1em]">Leaderboard Empty</h2>
               <p className="text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed opacity-60 uppercase text-[8px] tracking-[0.3em]">
                 The leaderboard is awaiting data synchronization.
               </p>

@@ -71,7 +71,7 @@ const AdminDashboard = () => {
     if (window.confirm("CRITICAL WARNING: Are you sure you want to permanently delete this user? This action cannot be undone.")) {
       try {
         await deleteUser(userId).unwrap();
-        alert("User successfully purged from the registry.");
+        alert("User successfully deleted.");
       } catch (err) {
         console.error("Failed to delete user:", err);
         alert(err.data?.message || "Failed to delete user node.");

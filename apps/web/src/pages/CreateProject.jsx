@@ -36,7 +36,7 @@ const CreateProject = () => {
       return;
     }
     if (!branchName) {
-      setError("Please identify the target logic signal (branch).");
+      setError("Please identify the target branch.");
       return;
     }
 

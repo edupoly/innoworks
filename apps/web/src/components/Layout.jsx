@@ -249,7 +249,7 @@ const Layout = () => {
           <div className="flex flex-wrap items-center justify-center gap-8">
             <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
               <Link to="/projects" className="hover:text-primary transition-colors">Logistics</Link>
-              <Link to="/leaderboard" className="hover:text-primary transition-colors">Registry</Link>
+              <Link to="/leaderboard" className="hover:text-primary transition-colors">Leaderboard</Link>
               <a href="#" className="hover:text-primary transition-colors">Protocol</a>
             </div>
             
@@ -294,7 +294,7 @@ const Layout = () => {
               <div className="flex-grow min-w-0 pr-2 space-y-1">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">Intelligence Signal</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/70">Intelligence</p>
                 </div>
                 <p className="text-xs font-bold leading-relaxed text-foreground/90">{toast.message}</p>
               </div>
