@@ -131,7 +131,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
                 ref={inputRef}
                 type="text" 
                 className="w-full bg-transparent border-0 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-0 text-base font-medium"
-                placeholder="Type a command or search active missions..."
+                placeholder="Type a command or search active projects..."
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -152,7 +152,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
               {/* Dynamic Project Query results */}
               {projects.length > 0 && (
                 <div className="space-y-1">
-                  <div className="px-3 py-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Challenges</div>
+                  <div className="px-3 py-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Projects</div>
                   {projects.map((project, idx) => {
                     const actualIdx = filteredNavigation.length + idx;
                     const isSelected = actualIdx === selectedIndex;
@@ -175,7 +175,7 @@ const CommandPalette = ({ isOpen, onClose }) => {
                             isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary border border-primary/20"
                           }`}>{project.difficulty}</span>
                         </div>
-                        <span className="text-[10px] font-bold opacity-60">Open Mission</span>
+                        <span className="text-[10px] font-bold opacity-60">Open Project</span>
                       </button>
                     );
                   })}

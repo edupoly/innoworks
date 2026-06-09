@@ -286,22 +286,22 @@ const ProjectDetails = () => {
   );
 
   const stats = [
-    { label: "Stars", value: intelligence?.statistics?.stars, icon: Star, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: "Activity", value: lastActive, icon: Activity, color: "text-amber-500", bg: "bg-amber-500/10" },
     { label: "Forks", value: intelligence?.statistics?.forks, icon: GitFork, color: "text-primary", bg: "bg-primary/10" },
     { label: "Signals", value: intelligence?.statistics?.openIssues, icon: AlertCircle, color: "text-red-500", bg: "bg-red-500/10" },
     { label: "Watchers", value: intelligence?.statistics?.watchers, icon: Eye, color: "text-emerald-500", bg: "bg-emerald-500/10" },
   ];
 
   return (
-    <div className="py-12 max-w-7xl mx-auto px-6 lg:px-8 selection:bg-primary/20">
+    <div className="py-8 max-w-7xl mx-auto px-6 lg:px-8 selection:bg-primary/20">
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="mb-10"
+        className="mb-8"
       >
-        <Link to="/projects" className="inline-flex items-center gap-2.5 text-muted-foreground hover:text-primary transition-all font-black text-[10px] uppercase tracking-widest group">
-          <div className="p-2 rounded-lg bg-secondary/50 group-hover:bg-primary/10 transition-colors">
-            <ChevronLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+        <Link to="/projects" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-all font-black text-[9px] uppercase tracking-widest group">
+          <div className="p-1.5 rounded-lg bg-secondary/50 group-hover:bg-primary/10 transition-colors">
+            <ChevronLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
           </div>
           Registry Index
         </Link>
@@ -312,124 +312,127 @@ const ProjectDetails = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative mb-12 glass-card rounded-[3rem] p-10 lg:p-12 overflow-hidden"
+        className="relative mb-10 glass-card rounded-2xl p-8 overflow-hidden border border-border/50"
       >
         <div className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-l from-primary/10 to-transparent blur-[100px] pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
-          <div className="flex flex-col md:flex-row items-start gap-10">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+          <div className="flex flex-col md:flex-row items-start gap-8">
             <motion.div 
-              whileHover={{ rotate: -5, scale: 1.05 }}
-              className="w-24 h-24 rounded-[2rem] bg-foreground text-background flex items-center justify-center shrink-0 shadow-2xl shadow-black/20 border-4 border-background/10 relative overflow-hidden group"
+              whileHover={{ rotate: -3, scale: 1.02 }}
+              className="w-20 h-20 rounded-xl bg-foreground text-background flex items-center justify-center shrink-0 shadow-xl shadow-black/20 border-2 border-background/10 relative overflow-hidden group"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <Github size={44} strokeWidth={1.5} className="relative z-10" />
+              <Github size={36} strokeWidth={1.5} className="relative z-10" />
             </motion.div>
             
-            <div className="space-y-6">
-              <div className="flex flex-wrap items-center gap-4">
-                <h1 className="text-4xl font-black tracking-tighter text-gradient leading-none">{project?.title}</h1>
-                <div className="flex items-center gap-2">
-                  <Badge variant={project?.difficulty === 'Hard' ? 'destructive' : project?.difficulty === 'Medium' ? 'default' : 'success'} className="px-4 py-1.5 border-none">
-                    {project?.difficulty} PROTOCOL
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-black tracking-tighter text-gradient leading-none">{project?.title}</h1>
+                <div className="flex items-center gap-1.5">
+                  <Badge variant={project?.difficulty === 'Hard' ? 'destructive' : project?.difficulty === 'Medium' ? 'default' : 'success'} className="px-2.5 py-0.5 border-none text-[8px] h-5">
+                    {project?.difficulty === 'Hard' ? 'Elite' : project?.difficulty}
                   </Badge>
-                  <Badge variant="default" className="bg-amber-500/10 text-amber-500 border-amber-500/20 px-4 py-1.5 gap-2 border-none">
-                    <Trophy size={12} className="fill-amber-500/20" /> {project?.bounty} XP
+                  <Badge variant="default" className="bg-amber-500/10 text-amber-500 border-amber-500/20 px-2.5 py-0.5 gap-1 border-none text-[8px] h-5">
+                    <Trophy size={8} className="fill-amber-500/20" /> {project?.bounty} XP
                   </Badge>
                 </div>
               </div>
-              
-              <div className="flex flex-wrap items-center gap-6 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/60">
-                <div className="flex items-center gap-2">
-                  <Lock size={12} className="text-primary/60" />
-                  <span>{intelligence?.overview?.license || 'MIT'} ENCRYPTION</span>
+
+              <div className="flex flex-wrap items-center gap-4 text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                <div className="flex items-center gap-1.5">
+                  <Lock size={10} className="text-primary/60" />
+                  <span>{intelligence?.overview?.license || 'MIT'}</span>
                 </div>
                 <div className="w-1 h-1 rounded-full bg-border" />
-                <div className="flex items-center gap-2">
-                  <GitBranch size={12} className="text-primary/60" />
-                  <span>NODE: {intelligence?.overview?.defaultBranch || 'main'}</span>
+                <div className="flex items-center gap-1.5">
+                  <GitBranch size={10} className="text-primary/60" />
+                  <span>{intelligence?.overview?.defaultBranch || 'main'}</span>
                 </div>
                 <div className="w-1 h-1 rounded-full bg-border" />
-                <div className="flex items-center gap-2">
-                  <Globe size={12} className="text-emerald-500/60" />
-                  <span className="text-emerald-500/80">SIGNAL_LIVE</span>
+                <div className="flex items-center gap-1.5">
+                  <Globe size={10} className="text-emerald-500/60" />
+                  <span className="text-emerald-500/80">LIVE_LINK</span>
                 </div>
               </div>
             </div>
-          </div>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2">
             {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
                 <Link to={`/projects/${id}/wiki`}>
-                  <Button variant="secondary" size="icon" className="w-12 h-12" title="Documentation">
-                    <Book size={20} />
+                  <Button variant="secondary" size="icon" className="w-9 h-9" title="Documentation">
+                    <Book size={16} />
                   </Button>
                 </Link>
-                <Button variant="destructive" size="icon" onClick={handleDelete} className="w-12 h-12">
-                  <Trash2 size={20} />
+                <Button variant="destructive" size="icon" onClick={handleDelete} className="w-9 h-9">
+                  <Trash2 size={16} />
                 </Button>
                 <Button
                   variant={activeTab === "management" ? "primary" : "secondary"}
+                  size="sm"
                   onClick={() => setActiveTab("management")}
-                  className="gap-3"
+                  className="h-9 px-4 text-[9px] uppercase tracking-widest gap-2"
                 >
-                  <Layers size={18} /> Directive Panel
+                  <Layers size={14} /> Hub
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <Link to={`/projects/${id}/wiki`}>
-                  <Button variant="secondary" size="icon" className="w-12 h-12">
-                    <BookOpen size={20} />
+                  <Button variant="secondary" size="icon" className="w-9 h-9">
+                    <BookOpen size={16} />
                   </Button>
                 </Link>
                 <Button
                   variant={activeTab === "engineering" ? "primary" : "secondary"}
+                  size="sm"
                   onClick={() => { if (!isAccepted) acceptProjectHandler(); setActiveTab("engineering"); }}
-                  className="gap-3"
+                  className="h-9 px-4 text-[9px] uppercase tracking-widest gap-2"
                 >
-                  <Terminal size={18} /> Initialize Dev_Flow
+                  <Terminal size={14} /> Deploy
                 </Button>
                 <Button 
                   variant={activeTab === "engineering" ? "primary" : "secondary"}
+                  size="sm"
                   onClick={() => setActiveTab("engineering")}
-                  className={activeTab === "engineering" ? "bg-emerald-600 border-emerald-600 hover:bg-emerald-700" : "text-emerald-600 bg-emerald-600/10 border-emerald-600/20 hover:bg-emerald-600/20"}
+                  className={`h-9 px-4 text-[9px] uppercase tracking-widest gap-2 ${activeTab === "engineering" ? "bg-emerald-600 border-emerald-600 hover:bg-emerald-700" : "text-emerald-600 bg-emerald-600/10 border-emerald-600/20 hover:bg-emerald-600/20"}`}
                 >
-                  <ShieldCheck size={18} /> Initialize QA_Flow
+                  <ShieldCheck size={14} /> QA Mode
                 </Button>
               </div>
             )}
-          </div>
-        </div>
-      </motion.div>
+            </div>
+            </div>
+            </motion.div>
 
-      {/* Premium Tab Navigation */}
-      <div className="flex border-b border-border/30 mb-12 text-[10px] font-black uppercase tracking-[0.35em] overflow-x-auto no-scrollbar relative">
-        {[
-          { id: "overview", label: "Mission", icon: Target },
-          { id: "intelligence", label: "Intelligence", icon: Activity },
-          { id: "assets", label: "Resources", icon: Layers },
-          ...((project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? 
+            {/* Premium Tab Navigation */}
+            <div className="flex border-b border-border/30 mb-8 text-[10px] font-black uppercase tracking-[0.3em] overflow-x-auto no-scrollbar relative">
+            {[
+            { id: "overview", label: "Project", icon: Target },
+            { id: "intelligence", label: "Stats", icon: Activity },
+            { id: "assets", label: "Assets", icon: Layers },
+            ...((project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? 
             [{ id: "management", label: "Directives", icon: ClipboardList }] : 
             [{ id: "engineering", label: "Engineering", icon: Terminal }]
-          ),
-          { id: "activity", label: "Activity", icon: History }
-        ].map(tab => (
-          <button 
+            ),
+            { id: "activity", label: "Activity", icon: History }
+            ].map(tab => (
+            <button 
             key={tab.id}
             onClick={() => setActiveTab(tab.id)} 
-            className={`pb-5 border-b-2 flex items-center gap-6 mr-10 transition-all relative shrink-0 ${activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground opacity-60"}`}
-          >
-            <tab.icon size={16} />
+            className={`pb-4 border-b-2 flex items-center gap-4 mr-8 transition-all relative shrink-0 ${activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground opacity-60"}`}
+            >
+            <tab.icon size={14} />
             {tab.label}
             {activeTab === tab.id && (
               <motion.div layoutId="active-project-tab" className="absolute bottom-[-2px] inset-x-0 h-0.5 bg-primary" />
             )}
-          </button>
-        ))}
-      </div>
+            </button>
+            ))}
+            </div>
 
       <AnimatePresence mode="wait">
         {activeTab === "overview" && (
@@ -507,17 +510,17 @@ const ProjectDetails = () => {
                   </motion.a>
                 </div>
 
-                <div className="pt-10 border-t border-border/30 space-y-6">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Mission Parameters</h4>
-                  <div className="space-y-5">
+                <div className="pt-4 space-y-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Project Parameters</h4>
+                  <div className="space-y-4">
                     {[
                       { label: "State", value: project?.status, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
                       { label: "Matrix", value: project?.techStack?.join(", ") || "Unknown", color: "text-primary", bg: "bg-primary/10 border-primary/20" },
                       { label: "Award", value: `${project?.bounty} Verified XP`, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" }
                     ].map((l, i) => (
-                      <div key={i} className="space-y-2">
+                      <div key={i} className="space-y-1.5">
                         <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1 opacity-60">{l.label}</span>
-                        <div className={`px-4 py-3 rounded-xl border font-black text-[11px] uppercase tracking-widest ${l.bg} ${l.color}`}>
+                        <div className={`px-4 py-2.5 rounded-xl border font-black text-[10px] uppercase tracking-widest ${l.bg} ${l.color}`}>
                           {l.value}
                         </div>
                       </div>

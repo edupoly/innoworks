@@ -161,67 +161,68 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="py-12 max-w-7xl mx-auto px-6 lg:px-8 relative selection:bg-primary/20">
+    <div className="py-8 max-w-7xl mx-auto px-6 lg:px-8 relative selection:bg-primary/20">
       
       {/* Dynamic Header Section */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 mb-16"
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-10"
       >
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6">
           <div className="relative group">
             <motion.div 
-              whileHover={{ rotate: 5, scale: 1.05 }}
-              className="w-24 h-24 rounded-[2rem] bg-gradient-to-tr from-primary via-indigo-500 to-blue-400 p-[2.5px] shadow-2xl shadow-primary/30 relative z-10"
+              whileHover={{ rotate: 3, scale: 1.02 }}
+              className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-primary via-indigo-500 to-blue-400 p-[2px] shadow-xl shadow-primary/20 relative z-10"
             >
-              <div className="w-full h-full rounded-[1.8rem] bg-background flex items-center justify-center overflow-hidden border-[6px] border-background">
+              <div className="w-full h-full rounded-[14px] bg-background flex items-center justify-center overflow-hidden border-[4px] border-background">
                  {profile?.avatarUrl ? (
                    <img src={profile.avatarUrl} alt={profile.username} className="w-full h-full object-cover" />
                  ) : (
                    <div className="w-full h-full bg-secondary flex items-center justify-center text-primary">
-                     <Fingerprint size={40} />
+                     <Fingerprint size={32} />
                    </div>
                  )}
               </div>
             </motion.div>
-            <div className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground text-[10px] font-black px-3 py-1.5 rounded-xl shadow-xl border-4 border-background z-20">
+            <div className="absolute -bottom-1.5 -right-1.5 bg-primary text-primary-foreground text-[9px] font-black px-2.5 py-1 rounded-lg shadow-lg border-2 border-background z-20">
               LVL {profile?.level || 1}
             </div>
-            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full -z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
           </div>
-          <div className="space-y-1">
-            <h1 className="text-4xl font-black tracking-tight text-gradient">Control Center</h1>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 bg-primary/5 px-3 py-1 rounded-lg border border-primary/10">@{profile?.username}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Engineering Cluster Active</span>
+          <div className="space-y-0.5">
+            <h1 className="text-2xl font-black tracking-tight text-gradient">Operations Hub</h1>
+            <div className="flex items-center gap-2.5">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/70 bg-primary/5 px-2.5 py-0.5 rounded-md border border-primary/10">@{profile?.username}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">System Online</span>
             </div>
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Button 
             variant="secondary"
+            size="sm"
             onClick={() => setShowWizard(true)}
-            className="flex items-center gap-2.5 shadow-sm"
+            className="h-9 px-4 text-[9px] font-black uppercase tracking-widest gap-2 shadow-sm"
           >
-            <Rocket size={16} className="text-primary" /> Ignition Protocol
+            <Rocket size={12} className="text-primary" /> Onboarding
           </Button>
           
           <Button 
             variant={isEditing ? "destructive" : "secondary"}
+            size="sm"
             onClick={() => setIsEditing(!isEditing)}
-            className="flex items-center gap-2.5"
+            className="h-9 px-4 text-[9px] font-black uppercase tracking-widest gap-2"
           >
-            {isEditing ? <><X size={16} /> Abort Edit</> : <><Edit3 size={16} /> Registry Update</>}
+            {isEditing ? <><X size={12} /> Abort</> : <><Edit3 size={12} /> Edit Profile</>}
           </Button>
           
           <Link to="/projects/new">
-            <Button className="group gap-2">
-              <Plus size={18} className="group-hover:rotate-90 transition-transform duration-500" />
-              New Mission
+            <Button size="sm" className="group h-9 px-5 text-[9px] font-black uppercase tracking-widest gap-2">
+              <Plus size={14} className="group-hover:rotate-90 transition-transform duration-500" />
+              New Project
             </Button>
           </Link>
         </div>
@@ -239,72 +240,75 @@ const Dashboard = () => {
             animate={{ opacity: 1, y: 0, height: "auto" }}
             exit={{ opacity: 0, y: -20, height: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden mb-12"
+            className="overflow-hidden mb-10"
           >
-            <div className="glass-card rounded-[2.5rem] p-10 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                  <Fingerprint size={20} />
+            <div className="glass-card rounded-2xl p-8 relative overflow-hidden border border-border/50">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <Fingerprint size={18} />
                 </div>
-                <h2 className="text-xl font-black tracking-tight uppercase tracking-widest">Biometric Data Update</h2>
+                <h2 className="text-lg font-black tracking-tight uppercase tracking-widest">Registry Update</h2>
               </div>
               
-              <form onSubmit={handleUpdateProfile} className="space-y-10 relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Secure Email Channel</label>
+              <form onSubmit={handleUpdateProfile} className="space-y-8 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Email Channel</label>
                     <Input
                       type="email"
-                      placeholder="Enter encrypted email..."
+                      placeholder="Enter contact email..."
                       value={editData.email}
                       onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                      className="h-10 text-xs"
                     />
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Direct Telemetry Line</label>
+                  <div className="space-y-2">
+                    <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Contact Line</label>
                     <Input
                       type="tel"
-                      placeholder="Enter secure contact..."
+                      placeholder="Enter phone number..."
                       value={editData.phone}
                       onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                      className="h-10 text-xs"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Mission Directive (Bio)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Engineering Bio</label>
                     <textarea
-                      rows={4}
-                      className="w-full px-6 py-5 bg-background/50 border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium resize-none text-sm outline-none shadow-inner custom-scrollbar"
+                      rows={3}
+                      className="w-full px-5 py-4 bg-background/50 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all font-medium resize-none text-xs outline-none shadow-inner custom-scrollbar"
                       placeholder="Define your engineering objective..."
                       value={editData.bio}
                       onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                     />
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Core Tech Matrix (CSV)</label>
+                  <div className="space-y-2">
+                    <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">Tech Matrix (CSV)</label>
                     <Input
                       type="text"
-                      placeholder="React, Next.js, Rust, Go..."
+                      placeholder="React, Next.js, Rust..."
                       value={editData.skills}
                       onChange={(e) => setEditData({ ...editData, skills: e.target.value })}
+                      className="h-10 text-xs"
                     />
-                    <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest mt-2 opacity-50 px-1">Synchronize skills across the cluster</p>
+                    <p className="text-[7px] text-muted-foreground font-black uppercase tracking-widest mt-1.5 opacity-50 px-1">Synchronize skills across the grid</p>
                   </div>
                 </div>
                 
-                <div className="flex justify-end pt-4">
+                <div className="flex justify-end pt-2">
                   <Button 
                     disabled={isUpdatingProfile}
                     type="submit"
-                    className="min-w-[240px] gap-3"
+                    className="min-w-[180px] h-10 gap-2 text-[10px] uppercase tracking-widest"
                   >
                     {isUpdatingProfile ? (
                       <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                     ) : (
-                      <><Save size={18} /> Commit Changes</>
+                      <><Save size={16} /> Save Changes</>
                     )}
                   </Button>
                 </div>
@@ -318,19 +322,19 @@ const Dashboard = () => {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-16 p-10 bg-secondary/20 backdrop-blur-3xl rounded-[3rem] border border-border/50 relative group overflow-hidden"
+          className="mb-10 p-8 bg-secondary/20 backdrop-blur-2xl rounded-2xl border border-border/50 relative group overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute top-0 left-0 w-1.5 h-full bg-primary/20 rounded-full group-hover:bg-primary transition-all duration-700" />
-          <div className="relative z-10 space-y-8">
-            <div className="space-y-2">
-              <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-primary/60">Registry_Status_Report</h3>
-              <p className="text-2xl font-bold leading-relaxed text-foreground/90 italic max-w-4xl tracking-tight">"{profile.bio}"</p>
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl" />
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 rounded-full group-hover:bg-primary transition-all duration-700" />
+          <div className="relative z-10 space-y-6">
+            <div className="space-y-1.5">
+              <h3 className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/60">Status_Report</h3>
+              <p className="text-xl font-bold leading-snug text-foreground/90 italic max-w-4xl tracking-tight">"{profile.bio}"</p>
             </div>
             {profile.skills?.length > 0 && (
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-2">
                 {profile.skills.map((skill, i) => (
-                  <span key={i} className="px-4 py-2 bg-background/50 text-foreground text-[9px] font-black uppercase tracking-widest rounded-xl border border-border/50 hover:border-primary/30 transition-all shadow-sm">
+                  <span key={i} className="px-3 py-1 bg-background/50 text-foreground text-[8px] font-black uppercase tracking-widest rounded-lg border border-border/50 hover:border-primary/30 transition-all shadow-sm">
                     {skill}
                   </span>
                 ))}
@@ -341,24 +345,24 @@ const Dashboard = () => {
       )}
 
       {/* Ranks & Engineering Metrics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-20">
-        <div className="lg:col-span-2 space-y-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div className="lg:col-span-2 space-y-6">
           <motion.div 
             variants={container}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-5"
           >
             {stats.map((stat, i) => (
               <motion.div variants={item} key={i}>
-                <Card className="p-8 flex items-center gap-8 group relative overflow-hidden h-full">
+                <Card className="p-5 flex items-center gap-5 group relative overflow-hidden h-full">
                   <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                  <div className={`w-16 h-16 rounded-[1.5rem] ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl shadow-black/5`}>
-                    <stat.icon size={28} strokeWidth={2.5} />
+                  <div className={`w-10 h-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:rotate-2 transition-all duration-500 shadow-lg shadow-black/5`}>
+                    <stat.icon size={20} strokeWidth={2.5} />
                   </div>
-                  <div className="relative z-10 space-y-1">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em] opacity-60 leading-none">{stat.label}</p>
-                    <p className="text-4xl font-black tracking-tighter text-foreground tabular-nums">{stat.value}</p>
+                  <div className="relative z-10 space-y-0.5">
+                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60 leading-none">{stat.label}</p>
+                    <p className="text-2xl font-black tracking-tighter text-foreground tabular-nums">{stat.value}</p>
                   </div>
                 </Card>
               </motion.div>
@@ -366,38 +370,37 @@ const Dashboard = () => {
           </motion.div>
 
           {/* Achievement Registry */}
-          <Card className="p-10 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full" />
-            <div className="relative z-10 space-y-10">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/10">
-                  <Trophy size={20} />
+          <Card className="p-6 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 blur-[60px] rounded-full" />
+            <div className="relative z-10 space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/10">
+                  <Trophy size={16} />
                 </div>
-                <h3 className="text-sm font-black uppercase tracking-[0.3em]">Achievement Registry</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Achievements</h3>
               </div>
               
               {profile?.badges?.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {profile.badges.map((badge, idx) => (
                     <motion.div 
-                      whileHover={{ y: -5, scale: 1.02 }}
+                      whileHover={{ y: -3, scale: 1.01 }}
                       key={idx} 
-                      className="p-6 bg-background/40 border border-border/50 rounded-[2rem] flex flex-col items-center text-center group hover:border-amber-500/30 hover:bg-amber-500/5 transition-all shadow-xl shadow-black/5"
+                      className="p-4 bg-background/40 border border-border/50 rounded-xl flex flex-col items-center text-center group hover:border-amber-500/30 hover:bg-amber-500/5 transition-all shadow-lg shadow-black/5"
                     >
-                      <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform text-2xl relative shadow-inner">
-                        <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full scale-0 group-hover:scale-150 transition-transform duration-700" />
+                      <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform text-lg relative shadow-inner">
                         <span className="relative z-10">{badge.icon || "🏆"}</span>
                       </div>
-                      <p className="text-xs font-black text-foreground mb-1.5 tracking-tight uppercase tracking-widest">{badge.name}</p>
-                      <p className="text-[9px] text-muted-foreground leading-relaxed font-bold uppercase tracking-widest opacity-40">{badge.description}</p>
+                      <p className="text-[9px] font-black text-foreground mb-0.5 tracking-tight uppercase tracking-widest">{badge.name}</p>
+                      <p className="text-[7px] text-muted-foreground leading-relaxed font-bold uppercase tracking-widest opacity-40 line-clamp-1">{badge.description}</p>
                     </motion.div>
                   ))}
                 </div>
               ) : (
-                <div className="py-16 text-center space-y-4">
-                  <Trophy size={48} className="mx-auto text-muted-foreground opacity-10" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-30">
-                    Awaiting Achievement Unlocks
+                <div className="py-8 text-center space-y-3">
+                  <Trophy size={32} className="mx-auto text-muted-foreground opacity-10" />
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-30">
+                    Registry Empty
                   </p>
                 </div>
               )}
@@ -411,28 +414,28 @@ const Dashboard = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="w-full max-w-sm"
+            className="w-full max-w-[280px]"
           >
             <EngineeringRadarChart stats={profile} />
           </motion.div>
         </div>
       </div>
 
-      {/* Mission Deck Tabs */}
-      <div className="flex border-b border-border/30 mb-12 gap-10 text-[10px] font-black uppercase tracking-[0.3em] overflow-x-auto no-scrollbar pb-0.5 relative">
+      {/* Project Deck Tabs */}
+      <div className="flex border-b border-border/30 mb-6 gap-6 text-[9px] font-black uppercase tracking-[0.25em] overflow-x-auto no-scrollbar pb-0.5 relative">
         {[
-          { id: "kanban", label: "Mission Deck", icon: Kanban },
-          { id: "management", label: "Directed Nodes", icon: Cpu },
-          { id: "timeline", label: "Signal Feed", icon: Activity }
+          { id: "kanban", label: "Task Matrix", icon: Kanban },
+          { id: "management", label: "My Nodes", icon: Cpu },
+          { id: "timeline", label: "Feed", icon: Activity }
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
-            className={`pb-5 border-b-2 flex items-center gap-3 px-1 transition-all relative shrink-0 ${
+            className={`pb-4 border-b-2 flex items-center gap-2 px-0.5 transition-all relative shrink-0 ${
               activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground opacity-60"
             }`}
           >
-            <tab.icon size={16} /> 
+            <tab.icon size={14} /> 
             {tab.label}
             {activeTab === tab.id && (
               <motion.div layoutId="tab-active" className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-primary" />
@@ -450,69 +453,69 @@ const Dashboard = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           >
-            {/* Column: Awaiting Action */}
-            <div className="space-y-6">
-              <div className="flex items-center justify-between px-2 pb-4 border-b border-border/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary/40" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground opacity-70">Accepted</span>
+            {/* Column: Accepted */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-1 pb-3 border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">Accepted</span>
                 </div>
-                <span className="text-[9px] font-black bg-secondary/80 text-foreground px-2.5 py-1 rounded-lg border border-border/50 tabular-nums">{kanbanData.accepted.length}</span>
+                <span className="text-[8px] font-black bg-secondary/80 text-foreground px-2 py-0.5 rounded-md border border-border/50 tabular-nums">{kanbanData.accepted.length}</span>
               </div>
-              <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
                 {kanbanData.accepted.length > 0 ? (
                   kanbanData.accepted.map((project) => (
                     <motion.div 
                       key={project._id || project}
-                      whileHover={{ y: -5, scale: 1.02 }}
+                      whileHover={{ y: -3, scale: 1.01 }}
                     >
-                      <Card className="p-7 space-y-8 bg-card/50 hover:bg-card">
-                        <p className="font-black text-sm leading-tight group-hover:text-primary transition-colors tracking-tight text-foreground line-clamp-2">{project.title || "Unknown Mission"}</p>
+                      <Card className="p-5 space-y-6 bg-card/50 hover:bg-card">
+                        <p className="font-black text-xs leading-tight tracking-tight text-foreground line-clamp-2">{project.title || "Unknown"}</p>
                         <div className="flex items-center justify-between">
-                          <Badge variant="default">{project.difficulty || 'Easy'}</Badge>
-                          <Link to={`/projects/${project._id || project}`} className="text-[9px] font-black uppercase tracking-[0.3em] text-primary hover:brightness-125 flex items-center gap-2 group/btn">
-                            Engage <ChevronRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                          <Badge variant="default" className="text-[8px] px-2 py-0 h-4">{project.difficulty || 'Easy'}</Badge>
+                          <Link to={`/projects/${project._id || project}`} className="text-[8px] font-black uppercase tracking-[0.2em] text-primary hover:brightness-125 flex items-center gap-1.5 group/btn">
+                            Engage <ChevronRight size={12} className="group-hover/btn:translate-x-1 transition-transform" />
                           </Link>
                         </div>
                       </Card>
                     </motion.div>
                   ))
                 ) : (
-                  <div className="py-20 text-center border-2 border-dashed border-border/40 rounded-[2.5rem] bg-secondary/5 opacity-40">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Deck Empty</p>
+                  <div className="py-12 text-center border-2 border-dashed border-border/40 rounded-2xl bg-secondary/5 opacity-40">
+                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">Empty</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Column: Intelligence Validation */}
-            <div className="space-y-6">
-              <div className="flex items-center justify-between px-2 pb-4 border-b border-border/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-blue-500">Validation</span>
+            {/* Column: Validation */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-1 pb-3 border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-500">Validation</span>
                 </div>
-                <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20">{kanbanData.reviewing.length}</Badge>
+                <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20 text-[8px] h-4">{kanbanData.reviewing.length}</Badge>
               </div>
-              <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
                 {kanbanData.reviewing.length > 0 ? (
                   kanbanData.reviewing.map((sub) => (
                     <motion.div 
                       key={sub._id}
-                      whileHover={{ y: -5, scale: 1.02 }}
+                      whileHover={{ y: -3, scale: 1.01 }}
                     >
-                      <Card className="p-7 space-y-8 bg-card/50 hover:bg-card">
+                      <Card className="p-5 space-y-6 bg-card/50 hover:bg-card">
                         <div className="flex justify-between items-center">
-                          <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20">{sub.status.replace('_', ' ')}</Badge>
-                          <Clock size={14} className="text-blue-500/50" />
+                          <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20 text-[8px] px-2 py-0 h-4">{sub.status.replace('_', ' ')}</Badge>
+                          <Clock size={12} className="text-blue-500/50" />
                         </div>
-                        <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Project Solution"}</p>
-                        <div className="pt-2">
+                        <p className="font-black text-xs leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Project Solution"}</p>
+                        <div className="pt-1">
                           {sub.prNumber && (
-                            <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-2 bg-secondary/80 px-4 py-2 rounded-xl border border-border/50 transition-all">
-                              <Github size={12} /> PR #{sub.prNumber}
+                            <a href={sub.prUrl} target="_blank" rel="noreferrer" className="text-[8px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-1.5 bg-secondary/80 px-3 py-1.5 rounded-lg border border-border/50 transition-all">
+                              <Github size={10} /> PR #{sub.prNumber}
                             </a>
                           )}
                         </div>
@@ -520,37 +523,37 @@ const Dashboard = () => {
                     </motion.div>
                   ))
                 ) : (
-                  <div className="py-20 text-center border-2 border-dashed border-border/40 rounded-[2.5rem] bg-secondary/5 opacity-40">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Signals Quiet</p>
+                  <div className="py-12 text-center border-2 border-dashed border-border/40 rounded-2xl bg-secondary/5 opacity-40">
+                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">Quiet</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Column: Necessary Protocol Adjustments */}
-            <div className="space-y-6">
-              <div className="flex items-center justify-between px-2 pb-4 border-b border-border/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse shadow-sm shadow-orange-500/40" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-500">Refactor</span>
+            {/* Column: Refactor */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-1 pb-3 border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 shadow-sm shadow-orange-500/40" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500">Refactor</span>
                 </div>
-                <Badge variant="warning">{kanbanData.changes.length}</Badge>
+                <Badge variant="warning" className="text-[8px] h-4">{kanbanData.changes.length}</Badge>
               </div>
-              <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
                 {kanbanData.changes.length > 0 ? (
                   kanbanData.changes.map((sub) => (
                     <motion.div 
                       key={sub._id}
-                      whileHover={{ y: -5, scale: 1.02 }}
+                      whileHover={{ y: -3, scale: 1.01 }}
                     >
-                      <Card className="p-7 space-y-8 border-orange-500/30 bg-card/50 hover:bg-card">
+                      <Card className="p-5 space-y-6 border-orange-500/30 bg-card/50 hover:bg-card">
                         <div className="flex justify-between items-center">
-                          <Badge variant="warning">Operational Change</Badge>
-                          <AlertCircle size={14} className="text-orange-500" />
+                          <Badge variant="warning" className="text-[8px] h-4">Adjustment</Badge>
+                          <AlertCircle size={12} className="text-orange-500" />
                         </div>
-                        <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Module Patch"}</p>
+                        <p className="font-black text-xs leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Module Patch"}</p>
                         <Link to={`/projects/${sub.project?._id}`} className="block">
-                          <Button variant="destructive" className="w-full bg-orange-500 hover:bg-orange-600 shadow-orange-500/20">
+                          <Button variant="destructive" size="sm" className="w-full bg-orange-500 hover:bg-orange-600 shadow-orange-500/20 text-[8px] font-black h-8 uppercase tracking-widest">
                             Execute Fix
                           </Button>
                         </Link>
@@ -558,48 +561,48 @@ const Dashboard = () => {
                     </motion.div>
                   ))
                 ) : (
-                  <div className="py-20 text-center border-2 border-dashed border-border/40 rounded-[2.5rem] bg-secondary/5 opacity-40">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">No Discrepancies</p>
+                  <div className="py-12 text-center border-2 border-dashed border-border/40 rounded-2xl bg-secondary/5 opacity-40">
+                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">Stable</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Column: Merged / Deployed */}
-            <div className="space-y-6">
-              <div className="flex items-center justify-between px-2 pb-4 border-b border-border/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-500">Merged</span>
+            {/* Column: Merged */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-1 pb-3 border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-500">Merged</span>
                 </div>
-                <Badge variant="success">{kanbanData.completed.length}</Badge>
+                <Badge variant="success" className="text-[8px] h-4">{kanbanData.completed.length}</Badge>
               </div>
-              <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
                 {kanbanData.completed.length > 0 ? (
                   kanbanData.completed.map((sub) => (
                     <motion.div 
                       key={sub._id}
-                      whileHover={{ y: -5, scale: 1.02 }}
+                      whileHover={{ y: -3, scale: 1.01 }}
                     >
-                      <Card className="p-7 space-y-8 border-emerald-500/30 bg-card/50 hover:bg-card">
+                      <Card className="p-5 space-y-6 border-emerald-500/30 bg-card/50 hover:bg-card">
                         <div className="flex justify-between items-center">
-                          <Badge variant="success">Mission Complete</Badge>
-                          <CheckCircle2 size={14} className="text-emerald-500" />
+                          <Badge variant="success" className="text-[8px] h-4">Complete</Badge>
+                          <CheckCircle2 size={12} className="text-emerald-500" />
                         </div>
-                        <p className="font-black text-sm leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Solved Protocol"}</p>
-                        <div className="flex items-center justify-between pt-2">
-                          <div className="flex -space-x-2">
-                             <div className="w-6 h-6 rounded-full bg-primary border-2 border-background shadow-sm"></div>
-                             <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-background shadow-sm"></div>
+                        <p className="font-black text-xs leading-tight tracking-tight text-foreground line-clamp-2">{sub.project?.title || "Solved Protocol"}</p>
+                        <div className="flex items-center justify-between pt-1">
+                          <div className="flex -space-x-1.5">
+                             <div className="w-5 h-5 rounded-full bg-primary border-2 border-background shadow-sm"></div>
+                             <div className="w-5 h-5 rounded-full bg-blue-500 border-2 border-background shadow-sm"></div>
                           </div>
-                          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">+200 XP Credited</span>
+                          <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">+XP Credited</span>
                         </div>
                       </Card>
                     </motion.div>
                   ))
                 ) : (
-                  <div className="py-20 text-center border-2 border-dashed border-border/40 rounded-[2.5rem] bg-secondary/5 opacity-40">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Registry Empty</p>
+                  <div className="py-12 text-center border-2 border-dashed border-border/40 rounded-2xl bg-secondary/5 opacity-40">
+                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">Registry Empty</p>
                   </div>
                 )}
               </div>
@@ -614,61 +617,59 @@ const Dashboard = () => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {kanbanData.owned.length > 0 ? (
               kanbanData.owned.map((project) => (
-                <Card key={project._id} className="p-10 space-y-10 group relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+                <Card key={project._id} className="p-8 space-y-8 group relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
                   
                   <div className="flex justify-between items-start relative z-10">
-                    <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20 text-primary shadow-xl shadow-primary/5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                      <Terminal size={24} />
+                    <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 text-primary shadow-xl shadow-primary/5 group-hover:scale-105 group-hover:rotate-2 transition-all duration-500">
+                      <Terminal size={20} />
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5">
                        <Button 
                          variant="secondary"
                          size="icon"
                          onClick={() => navigate(`/projects/${project._id}`)}
-                         className="w-9 h-9"
+                         className="w-8 h-8"
                        >
-                         <Edit3 size={18} />
+                         <Edit3 size={14} />
                        </Button>
                        <Button 
                          variant="secondary"
                          size="icon"
                          onClick={() => handleDeleteProject(project._id)}
-                         className="w-9 h-9 hover:text-destructive hover:bg-destructive/10"
+                         className="w-8 h-8 hover:text-destructive hover:bg-destructive/10"
                        >
-                         <X size={18} />
+                         <X size={14} />
                        </Button>
                     </div>
                   </div>
                   
-                  <div className="space-y-3 relative z-10">
-                    <h3 className="text-xl font-black tracking-tight text-foreground group-hover:text-primary transition-colors">{project.title}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2 font-medium leading-relaxed opacity-80">{project.description}</p>
+                  <div className="space-y-2 relative z-10">
+                    <h3 className="text-lg font-black tracking-tight text-foreground group-hover:text-primary transition-colors">{project.title}</h3>
+                    <p className="text-[11px] text-muted-foreground line-clamp-2 font-medium leading-relaxed opacity-80">{project.description}</p>
                   </div>
                   
-                  <div className="flex items-center justify-between pt-6 border-t border-border/30 relative z-10">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground bg-background/50 px-3 py-1.5 rounded-xl border border-border/50">
-                        <Activity size={14} className="text-blue-500" />
-                        <span>{project.contributors?.length || 0} Nodes Linked</span>
-                      </div>
+                  <div className="flex items-center justify-between pt-5 border-t border-border/30 relative z-10">
+                    <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground bg-background/50 px-2.5 py-1 rounded-lg border border-border/50">
+                      <Activity size={12} className="text-blue-500" />
+                      <span>{project.contributors?.length || 0} Nodes</span>
                     </div>
-                    <Link to={`/projects/${project._id}`} className="text-[10px] font-black uppercase tracking-widest text-primary hover:brightness-125 transition-all flex items-center gap-2">
-                      Manage Briefing <ChevronRight size={14} />
+                    <Link to={`/projects/${project._id}`} className="text-[9px] font-black uppercase tracking-widest text-primary hover:brightness-125 transition-all flex items-center gap-1.5">
+                      Manage <ChevronRight size={12} />
                     </Link>
                   </div>
                 </Card>
               ))
             ) : (
-              <div className="col-span-full py-32 text-center border-2 border-dashed border-border/30 rounded-[3rem] bg-secondary/5 space-y-6">
-                <ShieldCheck size={56} className="mx-auto text-muted-foreground opacity-10" />
+              <div className="col-span-full py-24 text-center border-2 border-dashed border-border/30 rounded-2xl bg-secondary/5 space-y-5">
+                <ShieldCheck size={48} className="mx-auto text-muted-foreground opacity-10" />
                 <div className="space-y-2">
-                  <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">No Directed Nodes Under Management</p>
-                  <Link to="/projects/new" className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline">Initialize New Protocol</Link>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40">No Nodes Under Management</p>
+                  <Link to="/projects/new" className="text-primary text-[9px] font-black uppercase tracking-widest hover:underline">Deploy New Node</Link>
                 </div>
               </div>
             )}
@@ -682,46 +683,46 @@ const Dashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.4 }}
-            className="max-w-3xl mx-auto w-full space-y-8"
+            className="max-w-2xl mx-auto w-full space-y-6"
           >
             {kanbanData.allSubmissions.length > 0 ? (
               kanbanData.allSubmissions.map((sub, idx) => (
-                <div key={sub._id} className="relative pl-12 pb-12 last:pb-0 group">
+                <div key={sub._id} className="relative pl-10 pb-10 last:pb-0 group">
                   {idx !== kanbanData.allSubmissions.length - 1 && (
-                    <div className="absolute left-[15px] top-12 bottom-0 w-px bg-border/40 group-hover:bg-primary/30 transition-all duration-700" />
+                    <div className="absolute left-[13px] top-10 bottom-0 w-px bg-border/40 group-hover:bg-primary/30 transition-all duration-700" />
                   )}
-                  <div className="absolute left-0 top-1.5 w-8 h-8 rounded-xl bg-background border-2 border-border/50 flex items-center justify-center z-10 shadow-xl group-hover:border-primary/50 transition-all group-hover:scale-110">
-                    <div className={`w-2.5 h-2.5 rounded-full ${sub.status === 'MERGED' ? 'bg-emerald-500' : sub.status === 'CHANGES_REQUESTED' ? 'bg-orange-500' : 'bg-primary'} animate-pulse shadow-sm`} />
+                  <div className="absolute left-0 top-1 w-7 h-7 rounded-lg bg-background border-2 border-border/50 flex items-center justify-center z-10 shadow-xl group-hover:border-primary/50 transition-all group-hover:scale-110">
+                    <div className={`w-2 h-2 rounded-full ${sub.status === 'MERGED' ? 'bg-emerald-500' : sub.status === 'CHANGES_REQUESTED' ? 'bg-orange-500' : 'bg-primary'} animate-pulse shadow-sm`} />
                   </div>
                   
-                  <motion.div whileHover={{ x: 5 }}>
-                    <Card className="rounded-[2.5rem] p-8 hover:border-primary/20 transition-all">
-                      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 pb-6 border-b border-border/20">
-                        <div className="flex items-center gap-3">
-                          <Badge variant={sub.status === 'MERGED' ? 'success' : sub.status === 'CHANGES_REQUESTED' ? 'warning' : 'default'}>
+                  <motion.div whileHover={{ x: 3 }}>
+                    <Card className="rounded-2xl p-6 hover:border-primary/20 transition-all">
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-5 pb-5 border-b border-border/20">
+                        <div className="flex items-center gap-2.5">
+                          <Badge variant={sub.status === 'MERGED' ? 'success' : sub.status === 'CHANGES_REQUESTED' ? 'warning' : 'default'} className="text-[8px] h-4">
                             {sub.status.replace('_', ' ')}
                           </Badge>
-                          <div className="h-4 w-px bg-border/40" />
-                          <span className="text-[9px] font-black text-muted-foreground opacity-50 uppercase tracking-widest">{new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <div className="h-3 w-px bg-border/40" />
+                          <span className="text-[8px] font-black text-muted-foreground opacity-50 uppercase tracking-widest">{new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                         </div>
-                        <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.3em] font-mono">TX_ID: {sub._id.slice(-8)}</span>
+                        <span className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] font-mono">TX: {sub._id.slice(-6)}</span>
                       </div>
                       
-                      <div className="space-y-4">
-                        <h4 className="font-black text-xl tracking-tight text-foreground leading-tight">{sub.project?.title || "Project Solution"}</h4>
-                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] flex items-center gap-2">
-                          <Zap size={14} className="text-primary" /> Signal Synchronized via Global Grid
+                      <div className="space-y-3">
+                        <h4 className="font-black text-lg tracking-tight text-foreground leading-tight">{sub.project?.title || "Project Solution"}</h4>
+                        <p className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+                          <Zap size={12} className="text-primary" /> Synchronized via Grid
                         </p>
                       </div>
                       
-                      <div className="flex items-center gap-4 pt-8">
+                      <div className="flex items-center gap-3 pt-6">
                          <a href={sub.prUrl} target="_blank" rel="noreferrer">
-                           <Button variant="secondary" className="gap-2.5">
-                             <Github size={14} /> Open Source
+                           <Button variant="secondary" size="sm" className="h-8 gap-2 px-3 text-[8px] font-black uppercase tracking-widest">
+                             <Github size={12} /> Open Source
                            </Button>
                          </a>
-                         <Link to={`/projects/${sub.project?._id}`} className="text-[10px] font-black uppercase tracking-widest text-primary hover:brightness-125 transition-all flex items-center gap-2">
-                           View Protocol <ChevronRight size={14} />
+                         <Link to={`/projects/${sub.project?._id}`} className="text-[9px] font-black uppercase tracking-widest text-primary hover:brightness-125 transition-all flex items-center gap-1.5">
+                           View Protocol <ChevronRight size={12} />
                          </Link>
                       </div>
                     </Card>
@@ -729,9 +730,9 @@ const Dashboard = () => {
                 </div>
               ))
             ) : (
-              <div className="py-32 text-center border-2 border-dashed border-border/30 rounded-[3rem] bg-secondary/5 space-y-6">
-                <History size={56} className="mx-auto text-muted-foreground opacity-10" />
-                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Awaiting Signal Data Streams</p>
+              <div className="py-24 text-center border-2 border-dashed border-border/30 rounded-2xl bg-secondary/5 space-y-5">
+                <History size={48} className="mx-auto text-muted-foreground opacity-10" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40">Awaiting Signal Data</p>
               </div>
             )}
           </motion.div>

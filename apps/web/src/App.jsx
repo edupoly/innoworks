@@ -151,7 +151,7 @@ const Home = () => {
               className="w-full py-6 text-sm gap-4 backdrop-blur-3xl"
             >
               <Search size={20} className="group-hover:scale-110 transition-transform duration-500 text-primary" />
-              Explore Missions
+              Explore Projects
             </Button>
           </Link>
         </motion.div>
@@ -175,7 +175,7 @@ const Home = () => {
           <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary mb-12">The_Protocol</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             {[
-              { step: "01", title: "Select Mission", desc: "Choose from production-grade challenges curated by elite engineers." },
+              { step: "01", title: "Select Project", desc: "Choose from production-grade challenges curated by elite engineers." },
               { step: "02", title: "Fork & Execute", desc: "Build your solution in your own environment with full Git integration." },
               { step: "03", title: "Peer Review", desc: "Submit for automated testing and expert peer verification." },
               { step: "04", title: "Earn XP", desc: "Acquire verified reputation and climb the global engineering leaderboard." }
@@ -247,7 +247,7 @@ const Home = () => {
               </div>
               <h3 className="text-2xl font-black mb-2 tracking-tight">Global Leaderboards</h3>
               <p className="text-muted-foreground text-sm font-medium leading-relaxed">
-                Compete with the top 1% of student engineers worldwide. Rise through the ranks and unlock exclusive missions.
+                Compete with the top 1% of student engineers worldwide. Rise through the ranks and unlock exclusive projects.
               </p>
             </motion.div>
           </div>
@@ -260,7 +260,7 @@ const Home = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-16 text-center">
             {[
               { label: "XP Distributed", value: "2.8M+" },
-              { label: "Missions Active", value: "850+" },
+              { label: "Projects Active", value: "850+" },
               { label: "Peer Reviews", value: "15.2K" },
               { label: "Top Percentile", value: "0.01%" }
             ].map((s, i) => (

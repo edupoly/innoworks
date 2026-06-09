@@ -232,30 +232,30 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: "Missions", path: "/projects" },
+    { name: "Projects", path: "/projects" },
     { name: "Ranking", path: "/leaderboard" }
   ];
 
   return (
     <nav className="sticky top-0 z-[60] glass border-b border-border/40 px-6 py-2 transition-all duration-500">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-10">
-          <Link to="/" className="flex items-center gap-3 group focus:outline-none">
-            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-2xl shadow-primary/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 overflow-hidden relative">
+        <div className="flex items-center gap-8">
+          <Link to="/" className="flex items-center gap-2.5 group focus:outline-none">
+            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-xl shadow-primary/20 group-hover:scale-105 group-hover:rotate-3 transition-all duration-500 overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" />
-              <Code2 size={20} strokeWidth={2.5} className="relative z-10" />
+              <Code2 size={16} strokeWidth={2.5} className="relative z-10" />
             </div>
-            <span className="text-lg font-black tracking-tighter text-foreground group-hover:text-primary transition-colors duration-300 uppercase">
+            <span className="text-base font-black tracking-tighter text-foreground group-hover:text-primary transition-colors duration-300 uppercase">
               Innoworks
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-0.5">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative group ${
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative group ${
                   location.pathname === link.path
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
@@ -265,55 +265,54 @@ const Navbar = () => {
                 {location.pathname === link.path && (
                   <motion.div
                     layoutId="nav-active"
-                    className="absolute inset-0 bg-primary/5 rounded-xl -z-10 border border-primary/10"
+                    className="absolute inset-0 bg-primary/5 rounded-lg -z-10 border border-primary/10"
                     transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
                   />
                 )}
-                <div className="absolute bottom-1 left-5 right-5 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-center" />
               </Link>
             ))}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 pr-4 border-r border-border/30">
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 pr-3 border-r border-border/30">
             <ThemeToggle />
             {isAuthenticated && <NotificationDropdown />}
           </div>
           
-          <div className="flex items-center gap-3 pl-2">
+          <div className="flex items-center gap-2.5 pl-1.5">
             {isAuthenticated ? (
               <>
                 <Link
                   to="/dashboard"
-                  className={`hidden lg:flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 border ${
+                  className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 border ${
                     location.pathname === "/dashboard"
-                      ? "bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/20"
+                      ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
                       : "bg-secondary/50 text-foreground border-border/50 hover:border-primary/30"
                   }`}
                 >
-                  <LayoutDashboard size={14} />
-                  <span>Control Center</span>
+                  <LayoutDashboard size={12} />
+                  <span>Operations Hub</span>
                 </Link>
                 
-                <div className="flex items-center gap-2 bg-secondary/30 p-1 rounded-2xl border border-border/50">
+                <div className="flex items-center gap-1.5 bg-secondary/30 p-1 rounded-xl border border-border/50">
                   {user?.username && (
                     <Link 
                       to={`/profile/${user.username}`} 
-                      className="flex items-center gap-3 pr-4 pl-1 hover:bg-background/50 rounded-xl transition-all py-1 group"
+                      className="flex items-center gap-2.5 pr-3 pl-1 hover:bg-background/50 rounded-lg transition-all py-1 group"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-indigo-400 p-[1.5px] shadow-sm">
-                        <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center overflow-hidden">
+                      <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-primary to-indigo-400 p-[1.5px] shadow-sm">
+                        <div className="w-full h-full rounded-[6px] bg-background flex items-center justify-center overflow-hidden">
                            {user?.avatarUrl ? (
                              <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
                             ) : (
-                             <User size={14} className="text-primary" />
+                             <User size={12} className="text-primary" />
                            )}
                         </div>
                       </div>
                       <div className="hidden sm:block">
-                        <p className="text-[10px] font-black tracking-tight text-foreground uppercase truncate max-w-[80px]">{user.username}</p>
-                        <Badge variant="default" className="py-0 px-1.5 h-auto text-[7px] border-none bg-primary/20">LVL {user.level || 1}</Badge>
+                        <p className="text-[9px] font-black tracking-tight text-foreground uppercase truncate max-w-[70px]">{user.username}</p>
+                        <Badge variant="default" className="py-0 px-1 h-auto text-[6px] border-none bg-primary/20">LVL {user.level || 1}</Badge>
                       </div>
                     </Link>
                   )}
@@ -321,10 +320,10 @@ const Navbar = () => {
                     variant="ghost"
                     size="icon"
                     onClick={handleLogout}
-                    className="w-8 h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    className="w-7 h-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     title="Logout"
                   >
-                    <LogOut size={14} />
+                    <LogOut size={12} />
                   </Button>
                 </div>
               </>
@@ -334,9 +333,9 @@ const Navbar = () => {
                   const apiUrl = import.meta.env.VITE_API_URL || "https://innoworks-api.up.railway.app";
                   window.location.href = `${apiUrl}/auth/github`;
                 }}
-                className="gap-2.5 group"
+                className="h-9 px-5 gap-2 group text-[10px] font-black uppercase tracking-widest"
               >
-                <Github size={16} className="group-hover:rotate-12 transition-transform duration-500" />
+                <Github size={14} className="group-hover:rotate-12 transition-transform duration-500" />
                 Auth via GitHub
               </Button>
             )}

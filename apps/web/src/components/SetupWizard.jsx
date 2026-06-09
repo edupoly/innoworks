@@ -86,28 +86,28 @@ const SetupWizard = ({ onClose }) => {
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative w-full max-w-4xl bg-card border border-border/50 rounded-[3rem] shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-10"
+        className="relative w-full max-w-4xl bg-card border border-border/50 rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-10"
       >
         {/* Sidebar Status */}
-        <div className="md:col-span-3 bg-muted/30 border-r border-border/30 p-10 hidden md:block">
-           <div className="flex items-center gap-3 mb-12">
-             <Rocket className="text-primary" size={24} />
-             <span className="text-[10px] font-black uppercase tracking-[0.3em]">Ignition_Sequence</span>
+        <div className="md:col-span-3 bg-muted/30 border-r border-border/30 p-8 hidden md:block">
+           <div className="flex items-center gap-3 mb-10">
+             <Rocket className="text-primary" size={20} />
+             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Onboarding_Sequence</span>
            </div>
            
-           <div className="space-y-4">
+           <div className="space-y-3">
              {steps.map((s, i) => (
-               <div key={i} className="flex items-center gap-4">
-                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${
+               <div key={i} className="flex items-center gap-3">
+                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center border transition-all ${
                    i === currentStep 
                     ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
                     : i < currentStep 
                       ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                       : "bg-muted text-muted-foreground border-border/50"
                  }`}>
-                   {i < currentStep ? <CheckCircle2 size={16} /> : <span className="text-[10px] font-black">{i + 1}</span>}
+                   {i < currentStep ? <CheckCircle2 size={14} /> : <span className="text-[9px] font-black">{i + 1}</span>}
                  </div>
-                 <span className={`text-[10px] font-black uppercase tracking-widest ${i === currentStep ? "text-foreground" : "text-muted-foreground opacity-50"}`}>
+                 <span className={`text-[9px] font-black uppercase tracking-widest ${i === currentStep ? "text-foreground" : "text-muted-foreground opacity-50"}`}>
                    {s.title}
                  </span>
                </div>
@@ -116,7 +116,7 @@ const SetupWizard = ({ onClose }) => {
         </div>
 
         {/* Content Area */}
-        <div className="md:col-span-7 p-12 md:p-20 flex flex-col justify-between min-h-[500px]">
+        <div className="md:col-span-7 p-8 md:p-12 flex flex-col justify-between min-h-[450px]">
            <div>
              <AnimatePresence mode="wait">
                <motion.div
@@ -124,43 +124,45 @@ const SetupWizard = ({ onClose }) => {
                  initial={{ opacity: 0, x: 20 }}
                  animate={{ opacity: 1, x: 0 }}
                  exit={{ opacity: 0, x: -20 }}
-                 className="space-y-8"
+                 className="space-y-6"
                >
-                 <div className="w-16 h-16 rounded-[1.5rem] bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
-                    <activeStep.icon size={32} />
+                 <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                    <activeStep.icon size={24} />
                  </div>
                  
-                 <div className="space-y-4">
-                    <h2 className="text-3xl md:text-4xl font-black tracking-tight">{activeStep.title}</h2>
-                    <p className="text-xl text-muted-foreground font-medium leading-relaxed">{activeStep.description}</p>
+                 <div className="space-y-3">
+                    <h2 className="text-2xl md:text-3xl font-black tracking-tight">{activeStep.title}</h2>
+                    <p className="text-lg text-muted-foreground font-medium leading-relaxed">{activeStep.description}</p>
                  </div>
 
-                 <div className="p-8 bg-muted/20 border border-border/50 rounded-[2rem] space-y-4">
-                    <p className="text-xs font-bold text-foreground/70 uppercase tracking-widest flex items-center gap-2">
-                       <Terminal size={14} className="text-primary" /> Technical Intelligence
+                 <div className="p-6 bg-muted/20 border border-border/50 rounded-xl space-y-3">
+                    <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest flex items-center gap-2">
+                       <Terminal size={12} className="text-primary" /> Technical Intelligence
                     </p>
-                    <p className="text-sm font-medium leading-relaxed opacity-80">{activeStep.detail}</p>
+                    <p className="text-xs font-medium leading-relaxed opacity-80">{activeStep.detail}</p>
                  </div>
                </motion.div>
              </AnimatePresence>
            </div>
 
-           <div className="flex items-center justify-between mt-12 pt-12 border-t border-border/30">
+           <div className="flex items-center justify-between mt-10 pt-8 border-t border-border/30">
               <Button 
                 variant="ghost"
+                size="sm"
                 onClick={prev}
                 disabled={currentStep === 0}
-                className="gap-2 disabled:opacity-0"
+                className="gap-2 disabled:opacity-0 text-[10px] uppercase tracking-widest"
               >
-                <ChevronLeft size={16} /> Previous Phase
+                <ChevronLeft size={14} /> Previous
               </Button>
               
               <Button 
+                size="sm"
                 onClick={next}
-                className="px-10 py-4 flex items-center gap-3"
+                className="px-8 py-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
               >
-                {currentStep === steps.length - 1 ? "Begin Transmission" : "Next Protocol"} 
-                {currentStep < steps.length - 1 && <ChevronRight size={16} />}
+                {currentStep === steps.length - 1 ? "Begin Transmission" : "Next Step"} 
+                {currentStep < steps.length - 1 && <ChevronRight size={14} />}
               </Button>
            </div>
         </div>
