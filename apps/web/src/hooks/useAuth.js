@@ -36,13 +36,18 @@ export const useMe = () => {
           initiateSocket(data._id);
         }
       } else if (isError) {
-        console.error("useMe: session restoration error:", error);
-        if (error.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
-          dispatch(logout());
+        if (error.status === 'FETCH_ERROR') {
+           console.warn("useMe: Network error during session restoration. Retrying may be required.");
+           dispatch(setLoading(false));
         } else {
-          dispatch(setLoading(false));
+           console.error("useMe: session restoration error:", error);
+           if (error.status === 401) {
+             localStorage.removeItem("token");
+             localStorage.removeItem("refreshToken");
+             dispatch(logout());
+           } else {
+             dispatch(setLoading(false));
+           }
         }
       } else if (!isLoading && !isFetching) {
         dispatch(setLoading(false));

@@ -49,7 +49,7 @@ const item = {
 };
 
 const Dashboard = () => {
-  const { user: authUser, isLoading, error } = useMe();
+  const { user: authUser, isLoading, isFetching, error, refetch } = useMe();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -149,14 +149,21 @@ const Dashboard = () => {
     </div>
   );
 
-  if (error) return (
+  if (error && !authUser) return (
     <div className="py-32 text-center max-w-md mx-auto">
       <div className="w-20 h-20 bg-destructive/10 text-destructive rounded-3xl flex items-center justify-center mx-auto mb-8 border border-destructive/20">
         <AlertTriangle size={40} />
       </div>
-      <h2 className="text-3xl font-black mb-4 tracking-tight">System desynchronization.</h2>
-      <p className="text-muted-foreground mb-6 font-medium leading-relaxed px-6">We encountered a critical failure while attempting to synchronize with your command node.</p>
-      <button onClick={() => window.location.reload()} className="btn-primary w-full">Reinitialize System</button>
+      <h2 className="text-3xl font-black mb-4 tracking-tight">Network Connection Lost.</h2>
+      <p className="text-muted-foreground mb-6 font-medium leading-relaxed px-6">We encountered a network failure while attempting to synchronize with your command node.</p>
+      <button 
+        onClick={() => refetch()} 
+        disabled={isFetching}
+        className="btn-primary w-full flex items-center justify-center gap-2 py-4 disabled:opacity-50 transition-opacity"
+      >
+        {isFetching ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Terminal size={18} />}
+        {isFetching ? "Reconnecting..." : "Retry Connection"}
+      </button>
     </div>
   );
 
