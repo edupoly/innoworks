@@ -6,14 +6,19 @@
     "packages/*"
   ],
   "scripts": {
+    "setup": "node setup-env.js",
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "npm run setup && turbo run dev",
+    "start": "npm run setup && turbo run start",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{js,jsx,md}\""
   },
   "devDependencies": {
-    "turbo": "latest",
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "turbo": "latest"
   },
-  "packageManager": "npm@10.2.4"
-}
+  "packageManager": "npm@10.2.4",
+  "dependencies": {
+    "package": "^1.0.1"
+  }
+} 
