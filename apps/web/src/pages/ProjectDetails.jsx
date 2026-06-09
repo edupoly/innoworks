@@ -49,7 +49,6 @@ import {
   RefreshCcw,
   Zap,
   Check,
-  AlertTriangle,
   Lock,
   Globe,
   Monitor,
@@ -111,6 +110,12 @@ const ProjectDetails = () => {
   const [testSuccess, setTestSuccess] = useState(false);
   const [testError, setTestError] = useState("");
   const [submittingTest, setSubmittingTest] = useState(false);
+
+  const lastActive = useMemo(() => {
+    if (!intelligence?.commitAnalytics?.recentCommits?.length) return "Inactive";
+    const date = new Date(intelligence.commitAnalytics.recentCommits[0].date);
+    return date.toLocaleDateString();
+  }, [intelligence]);
 
   // Edit Project states
   const [isEditing, setIsEditing] = useState(false);

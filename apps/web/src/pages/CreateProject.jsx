@@ -121,6 +121,7 @@ const CreateProject = () => {
 
         <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+            <div className="space-y-12">
               <div className="space-y-3">
                 <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-2 flex items-center gap-2">
                   <Target size={12} className="text-primary" /> Project Title
@@ -177,22 +178,22 @@ const CreateProject = () => {
                     type="text"
                     placeholder="React, Node.js, etc."
                     className="w-full h-11 px-5 bg-background/50 border border-border/50 rounded-xl font-bold text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/40 outline-none transition-all shadow-inner group-hover:border-primary/30"
-                    value={formData.requiredSkills}
-                    onChange={(e) => setFormData({ ...formData, requiredSkills: e.target.value })}
+                    value={formData.techStack}
+                    onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
                   />
                   <Zap size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
               </div>
 
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-2">Dependencies (CSV)</label>
+                <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-2">Required Skills (CSV)</label>
                 <div className="relative group">
                   <input
                     type="text"
                     placeholder="Docker, Redis..."
                     className="w-full h-11 px-5 bg-background/50 border border-border/50 rounded-xl font-bold text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/40 outline-none transition-all shadow-inner group-hover:border-primary/30"
-                    value={formData.techStack}
-                    onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
+                    value={formData.requiredSkills}
+                    onChange={(e) => setFormData({ ...formData, requiredSkills: e.target.value })}
                   />
                   <Cpu size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground group-hover:text-indigo-400 transition-colors" />
                 </div>

@@ -1,5 +1,5 @@
 import { useState, useMemo, memo } from "react";
-import { Trophy, Crown, User, Calendar, Award, Zap, Activity, ChevronRight, Search, Fingerprint } from "lucide-react";
+import { Trophy, Crown, User, Calendar, Award, Zap, Activity, ChevronRight, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useGetLeaderboardQuery } from "../store/api/usersApiSlice";
