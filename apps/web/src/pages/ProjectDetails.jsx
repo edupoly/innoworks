@@ -84,6 +84,7 @@ const ProjectDetails = () => {
   
   // Navigation tabs
   const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'stats', 'dev_flow', 'test_flow'
+  const [isTitleExpanded, setIsTitleExpanded] = useState(false);
   
   // Start Developing states
   const [selectedBranch, setSelectedBranch] = useState("");
@@ -298,15 +299,15 @@ const ProjectDetails = () => {
   ];
 
   return (
-    <div className="py-8 max-w-7xl mx-auto px-6 lg:px-8 selection:bg-primary/20">
+    <div className="py-4 max-w-7xl mx-auto px-6 lg:px-8 selection:bg-primary/20">
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="mb-8"
+        className="mb-4"
       >
-        <Link to="/projects" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-all font-black text-[9px] uppercase tracking-widest group">
-          <div className="p-1.5 rounded-lg bg-secondary/50 group-hover:bg-primary/10 transition-colors">
-            <ChevronLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
+        <Link to="/projects" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-all font-black text-[8px] uppercase tracking-widest group">
+          <div className="p-1 rounded-lg bg-secondary/50 group-hover:bg-primary/10 transition-colors">
+            <ChevronLeft size={10} className="group-hover:-translate-x-0.5 transition-transform" />
           </div>
           Registry Index
         </Link>
@@ -317,95 +318,109 @@ const ProjectDetails = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative mb-10 glass-card rounded-2xl p-8 overflow-hidden border border-border/50"
+        className="relative mb-6 glass-card rounded-xl p-6 overflow-hidden border border-border/50"
       >
         <div className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-l from-primary/10 to-transparent blur-[100px] pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-          <div className="flex flex-col md:flex-row items-start gap-8">
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row items-start gap-6">
             <motion.div 
               whileHover={{ rotate: -3, scale: 1.02 }}
-              className="w-20 h-20 rounded-xl bg-foreground text-background flex items-center justify-center shrink-0 shadow-xl shadow-black/20 border-2 border-background/10 relative overflow-hidden group"
+              className="w-16 h-16 rounded-xl bg-foreground text-background flex items-center justify-center shrink-0 shadow-xl shadow-black/20 border-2 border-background/10 relative overflow-hidden group"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <Github size={36} strokeWidth={1.5} className="relative z-10" />
+              <Github size={30} strokeWidth={1.5} className="relative z-10" />
             </motion.div>
-            
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-black tracking-tighter text-gradient leading-none">{project?.title}</h1>
-                <div className="flex items-center gap-1.5">
-                  <Badge variant={project?.difficulty === 'Hard' ? 'destructive' : project?.difficulty === 'Medium' ? 'default' : 'success'} className="px-2.5 py-0.5 border-none text-[8px] h-5">
+
+            <div className="space-y-1.5 flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <h1 
+                    className={`text-lg font-black tracking-tighter text-gradient leading-none truncate ${isTitleExpanded ? 'whitespace-normal overflow-visible' : 'truncate'}`}
+                  >
+                    {project?.title}
+                  </h1>
+                  {project?.title?.length > 40 && (
+                    <button 
+                      onClick={() => setIsTitleExpanded(!isTitleExpanded)}
+                      className="inline-flex items-center gap-1 text-[7px] font-black uppercase tracking-widest text-primary/70 hover:text-primary mt-1 transition-colors"
+                    >
+                      {isTitleExpanded ? <><ChevronDown size={8} className="rotate-180" /> Show Less</> : <><ChevronDown size={8} /> Expand Title</>}
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Badge variant={project?.difficulty === 'Hard' ? 'destructive' : project?.difficulty === 'Medium' ? 'default' : 'success'} className="px-1.5 py-0 border-none text-[7px] h-4">
                     {project?.difficulty === 'Hard' ? 'Elite' : project?.difficulty}
                   </Badge>
-                  <Badge variant="default" className="bg-amber-500/10 text-amber-500 border-amber-500/20 px-2.5 py-0.5 gap-1 border-none text-[8px] h-5">
+                  <Badge variant="default" className="bg-amber-500/10 text-amber-500 border-amber-500/20 px-1.5 py-0 gap-1 border-none text-[7px] h-4">
                     <Trophy size={8} className="fill-amber-500/20" /> {project?.bounty} XP
                   </Badge>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                <div className="flex items-center gap-1.5">
-                  <Lock size={10} className="text-primary/60" />
+              <div className="flex flex-wrap items-center gap-3 text-[7px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                <div className="flex items-center gap-1">
+                  <Lock size={9} className="text-primary/60" />
                   <span>{intelligence?.overview?.license || 'MIT'}</span>
                 </div>
-                <div className="w-1 h-1 rounded-full bg-border" />
-                <div className="flex items-center gap-1.5">
-                  <GitBranch size={10} className="text-primary/60" />
+                <div className="w-0.5 h-0.5 rounded-full bg-border" />
+                <div className="flex items-center gap-1">
+                  <GitBranch size={9} className="text-primary/60" />
                   <span>{intelligence?.overview?.defaultBranch || 'main'}</span>
                 </div>
-                <div className="w-1 h-1 rounded-full bg-border" />
-                <div className="flex items-center gap-1.5">
-                  <Globe size={10} className="text-emerald-500/60" />
+                <div className="w-0.5 h-0.5 rounded-full bg-border" />
+                <div className="flex items-center gap-1">
+                  <Globe size={9} className="text-emerald-500/60" />
                   <span className="text-emerald-500/80">LIVE_LINK</span>
                 </div>
               </div>
             </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
             {(project?.owner?._id === authUser?._id || project?.owner === authUser?._id) ? (
               <div className="flex items-center gap-1.5">
                 <Link to={`/projects/${id}/wiki`}>
-                  <Button variant="secondary" size="icon" className="w-9 h-9" title="Documentation">
-                    <Book size={16} />
+                  <Button variant="secondary" size="icon" className="w-8 h-8" title="Documentation">
+                    <Book size={14} />
                   </Button>
                 </Link>
-                <Button variant="destructive" size="icon" onClick={handleDelete} className="w-9 h-9">
-                  <Trash2 size={16} />
+                <Button variant="destructive" size="icon" onClick={handleDelete} className="w-8 h-8">
+                  <Trash2 size={14} />
                 </Button>
                 <Button
                   variant={activeTab === "management" ? "primary" : "secondary"}
                   size="sm"
                   onClick={() => setActiveTab("management")}
-                  className="h-9 px-4 text-[9px] uppercase tracking-widest gap-2"
+                  className="h-8 px-3 text-[8px] uppercase tracking-widest gap-2"
                 >
-                  <Layers size={14} /> Hub
+                  <Layers size={12} /> Hub
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <Link to={`/projects/${id}/wiki`}>
-                  <Button variant="secondary" size="icon" className="w-9 h-9">
-                    <BookOpen size={16} />
+                  <Button variant="secondary" size="icon" className="w-8 h-8">
+                    <BookOpen size={14} />
                   </Button>
                 </Link>
                 <Button
                   variant={activeTab === "engineering" ? "primary" : "secondary"}
                   size="sm"
                   onClick={() => { if (!isAccepted) acceptProjectHandler(); setActiveTab("engineering"); }}
-                  className="h-9 px-4 text-[9px] uppercase tracking-widest gap-2"
+                  className="h-8 px-3 text-[8px] uppercase tracking-widest gap-2"
                 >
-                  <Terminal size={14} /> Deploy
+                  <Terminal size={12} /> Deploy
                 </Button>
                 <Button 
                   variant={activeTab === "engineering" ? "primary" : "secondary"}
                   size="sm"
                   onClick={() => setActiveTab("engineering")}
-                  className={`h-9 px-4 text-[9px] uppercase tracking-widest gap-2 ${activeTab === "engineering" ? "bg-emerald-600 border-emerald-600 hover:bg-emerald-700" : "text-emerald-600 bg-emerald-600/10 border-emerald-600/20 hover:bg-emerald-600/20"}`}
+                  className={`h-8 px-3 text-[8px] uppercase tracking-widest gap-2 ${activeTab === "engineering" ? "bg-emerald-600 border-emerald-600 hover:bg-emerald-700" : "text-emerald-600 bg-emerald-600/10 border-emerald-600/20 hover:bg-emerald-600/20"}`}
                 >
-                  <ShieldCheck size={14} /> QA Mode
+                  <ShieldCheck size={12} /> QA Mode
                 </Button>
               </div>
             )}
@@ -414,7 +429,7 @@ const ProjectDetails = () => {
             </motion.div>
 
             {/* Premium Tab Navigation */}
-            <div className="flex border-b border-border/30 mb-8 text-[10px] font-black uppercase tracking-[0.3em] overflow-x-auto no-scrollbar relative">
+            <div className="flex border-b border-border/30 mb-6 text-[9px] font-black uppercase tracking-[0.2em] overflow-x-auto no-scrollbar relative">
             {[
             { id: "overview", label: "Project", icon: Target },
             { id: "intelligence", label: "Stats", icon: Activity },
@@ -428,9 +443,9 @@ const ProjectDetails = () => {
             <button 
             key={tab.id}
             onClick={() => setActiveTab(tab.id)} 
-            className={`pb-4 border-b-2 flex items-center gap-4 mr-8 transition-all relative shrink-0 ${activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground opacity-60"}`}
+            className={`pb-2 border-b-2 flex items-center gap-2 mr-4 transition-all relative shrink-0 ${activeTab === tab.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground opacity-60"}`}
             >
-            <tab.icon size={14} />
+            <tab.icon size={12} />
             {tab.label}
             {activeTab === tab.id && (
               <motion.div layoutId="active-project-tab" className="absolute bottom-[-2px] inset-x-0 h-0.5 bg-primary" />
@@ -446,86 +461,86 @@ const ProjectDetails = () => {
             initial={{ opacity: 0, x: -10 }} 
             animate={{ opacity: 1, x: 0 }} 
             exit={{ opacity: 0, x: 10 }} 
-            className="grid grid-cols-1 lg:grid-cols-3 gap-12"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           >
-            <div className="lg:col-span-2 space-y-10">
-              <div className="card-premium p-10 lg:p-12 space-y-8 bg-gradient-to-br from-card to-secondary/30 relative overflow-hidden">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="card-premium p-6 lg:p-8 space-y-4 bg-gradient-to-br from-card to-secondary/30 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
-                    <BookOpen size={20} />
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
+                    <BookOpen size={16} />
                   </div>
-                  <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Technical Protocol</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gradient">Technical Protocol</h3>
                 </div>
-                <p className="text-xl text-foreground/80 leading-relaxed font-medium tracking-tight">{project?.description}</p>
+                <p className="text-base text-foreground/80 leading-relaxed font-medium tracking-tight">{project?.description}</p>
               </div>
               
-              <div className="card-premium p-10 lg:p-12 space-y-10">
+              <div className="card-premium p-6 lg:p-8 space-y-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
-                      <FileCode2 size={20} />
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
+                      <FileCode2 size={16} />
                     </div>
-                    <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Documentation_Stream</h3>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gradient">Documentation_Stream</h3>
                   </div>
                   <motion.button 
                     whileHover={{ scale: 1.05, rotate: 180 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.5 }}
                     onClick={() => queryClient.invalidateQueries({ queryKey: ["projectIntelligence", id] })}
-                    className="p-2.5 rounded-xl bg-secondary/80 text-muted-foreground hover:text-primary transition-all border border-border/50 shadow-sm"
+                    className="p-2 rounded-lg bg-secondary/80 text-muted-foreground hover:text-primary transition-all border border-border/50 shadow-sm"
                   >
-                    <RefreshCcw size={16} />
+                    <RefreshCcw size={14} />
                   </motion.button>
                 </div>
-                <div className="p-8 lg:p-10 bg-slate-950 rounded-[2.5rem] max-h-[600px] overflow-y-auto font-mono text-[11px] lg:text-[13px] leading-relaxed text-slate-400 border border-white/10 selection:bg-primary/30 shadow-2xl relative custom-scrollbar">
-                  <div className="absolute top-6 left-8 flex gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/40" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20 border border-amber-500/40" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/40" />
+                <div className="p-4 bg-slate-950 rounded-xl max-h-[500px] overflow-y-auto font-mono text-[11px] lg:text-[12px] leading-relaxed text-slate-400 border border-white/10 selection:bg-primary/30 shadow-2xl relative custom-scrollbar">
+                  <div className="absolute top-4 left-6 flex gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-red-500/20 border border-red-500/40" />
+                    <div className="w-2 h-2 rounded-full bg-amber-500/20 border border-amber-500/40" />
+                    <div className="w-2 h-2 rounded-full bg-emerald-500/20 border border-emerald-500/40" />
                   </div>
-                  <pre className="whitespace-pre-wrap mt-10 pt-4 border-t border-white/5">{intelligence?.overview?.readmePreview || "// Awaiting data transmission..."}</pre>
+                  <pre className="whitespace-pre-wrap mt-6 pt-3 border-t border-white/5">{intelligence?.overview?.readmePreview || "// Awaiting data transmission..."}</pre>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-10">
-              <div className="card-premium p-10 space-y-10">
-                <div className="space-y-8">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground flex items-center gap-3">
-                    <GitBranch size={16} className="text-primary" /> Global Upstream
+            <div className="space-y-6">
+              <div className="card-premium p-6 space-y-6">
+                <div className="space-y-4">
+                  <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
+                    <GitBranch size={14} className="text-primary" /> Global Upstream
                   </h4>
                   <motion.a 
-                    whileHover={{ y: -5 }}
+                    whileHover={{ y: -3 }}
                     href={intelligence?.overview?.repositoryUrl} 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="p-6 bg-secondary/40 border border-border/50 rounded-[2rem] flex items-center justify-between hover:border-primary/50 transition-all group shadow-sm"
+                    className="p-4 bg-secondary/40 border border-border/50 rounded-xl flex items-center justify-between hover:border-primary/50 transition-all group shadow-sm"
                   >
-                    <div className="flex items-center gap-5">
-                      <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center border border-border/50 group-hover:scale-110 group-hover:rotate-3 transition-all shadow-xl shadow-black/5">
-                        <Github size={24} />
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center border border-border/50 group-hover:scale-110 group-hover:rotate-3 transition-all shadow-xl shadow-black/5">
+                        <Github size={20} />
                       </div>
                       <div className="space-y-0.5">
-                        <p className="text-sm font-black text-foreground">@{intelligence?.overview?.owner}</p>
-                        <p className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em]">Source Core</p>
+                        <p className="text-xs font-black text-foreground">@{intelligence?.overview?.owner}</p>
+                        <p className="text-[8px] text-muted-foreground font-black uppercase tracking-[0.1em]">Source Core</p>
                       </div>
                     </div>
-                    <ExternalLink size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                    <ExternalLink size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
                   </motion.a>
                 </div>
 
-                <div className="pt-4 space-y-4">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Project Parameters</h4>
-                  <div className="space-y-4">
+                <div className="pt-2 space-y-3">
+                  <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground">Project Parameters</h4>
+                  <div className="space-y-3">
                     {[
                       { label: "State", value: project?.status, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
                       { label: "Matrix", value: project?.techStack?.join(", ") || "Unknown", color: "text-primary", bg: "bg-primary/10 border-primary/20" },
                       { label: "Award", value: `${project?.bounty} Verified XP`, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" }
                     ].map((l, i) => (
-                      <div key={i} className="space-y-1.5">
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] ml-1 opacity-60">{l.label}</span>
-                        <div className={`px-4 py-2.5 rounded-xl border font-black text-[10px] uppercase tracking-widest ${l.bg} ${l.color}`}>
+                      <div key={i} className="space-y-1">
+                        <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.1em] ml-1 opacity-60">{l.label}</span>
+                        <div className={`px-3 py-2 rounded-lg border font-black text-[9px] uppercase tracking-widest ${l.bg} ${l.color}`}>
                           {l.value}
                         </div>
                       </div>
@@ -538,21 +553,21 @@ const ProjectDetails = () => {
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }} 
                   animate={{ opacity: 1, scale: 1 }} 
-                  className="bg-primary p-10 rounded-[3rem] text-primary-foreground shadow-2xl shadow-primary/30 space-y-8 relative overflow-hidden"
+                  className="bg-primary p-6 rounded-2xl text-primary-foreground shadow-2xl shadow-primary/30 space-y-6 relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full" />
-                  <div className="space-y-3 relative z-10">
-                    <h4 className="text-2xl font-black tracking-tight leading-none uppercase tracking-tighter">Engage Protocol</h4>
-                    <p className="text-primary-foreground/70 text-sm font-medium leading-relaxed tracking-tight">Initializing will fork the repository and establish a high-bandwidth link to your profile.</p>
+                  <div className="space-y-2 relative z-10">
+                    <h4 className="text-xl font-black tracking-tight leading-none uppercase tracking-tighter">Engage Protocol</h4>
+                    <p className="text-primary-foreground/70 text-xs font-medium leading-relaxed tracking-tight">Initializing will fork the repository and establish a high-bandwidth link to your profile.</p>
                   </div>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => acceptProjectHandler()}
                     disabled={isAccepting}
-                    className="w-full py-5 bg-white text-primary rounded-[1.5rem] font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-black/20 flex items-center justify-center gap-3 transition-all"
+                    className="w-full py-4 bg-white text-primary rounded-xl font-black uppercase tracking-[0.2em] text-[9px] shadow-2xl shadow-black/20 flex items-center justify-center gap-2 transition-all"
                   >
-                    {isAccepting ? <RefreshCcw size={18} className="animate-spin" /> : <><Rocket size={18} /> Initialize Sync</>}
+                    {isAccepting ? <RefreshCcw size={16} className="animate-spin" /> : <><Rocket size={16} /> Initialize Sync</>}
                   </motion.button>
                 </motion.div>
               )}
@@ -561,13 +576,13 @@ const ProjectDetails = () => {
         )}
 
         {activeTab === "intelligence" && (
-          <motion.div key="intelligence" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12">
+          <motion.div key="intelligence" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
               {stats.map((m, idx) => (
                 <motion.div 
                   key={idx}
                   whileHover={{ y: -8 }}
-                  className="card-premium p-10 flex flex-col items-center text-center gap-6 group"
+                  className="card-premium p-5 flex flex-col items-center text-center gap-6 group"
                 >
                   <div className={`w-16 h-16 rounded-[1.5rem] ${m.bg} flex items-center justify-center shrink-0 ${m.color} group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl shadow-black/5`}>
                     <m.icon size={32} strokeWidth={2.5} />
@@ -591,10 +606,10 @@ const ProjectDetails = () => {
         )}
 
         {activeTab === "management" && (
-          <motion.div key="management" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-10">
-            <div className="card-premium p-10 lg:p-12 relative overflow-hidden">
+          <motion.div key="management" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-5">
+            <div className="card-premium p-5 lg:p-6 relative overflow-hidden">
                <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[120px] -mr-48 -mt-48" />
-               <div className="flex items-center gap-4 mb-12">
+               <div className="flex items-center gap-4 mb-6">
                  <div className="w-12 h-12 rounded-[1.25rem] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
                    <Layers size={24} />
                  </div>
@@ -607,9 +622,9 @@ const ProjectDetails = () => {
                      <motion.div 
                        key={sub._id}
                        whileHover={{ x: 5 }}
-                       className="p-10 bg-secondary/20 border border-border/50 rounded-[3rem] space-y-10 transition-all shadow-xl shadow-black/5"
+                       className="p-5 bg-secondary/20 border border-border/50 rounded-2xl space-y-5 transition-all shadow-xl shadow-black/5"
                      >
-                       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-10 pb-10 border-b border-border/30">
+                       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5 pb-5 border-b border-border/30">
                          <div className="flex items-center gap-6">
                            <div className="relative">
                              <img src={sub.user?.avatarUrl} alt={sub.user?.username} className="w-16 h-16 rounded-[1.5rem] border-2 border-background shadow-2xl" />
@@ -676,7 +691,7 @@ const ProjectDetails = () => {
                                <motion.div 
                                  key={rIdx} 
                                  whileHover={{ scale: 1.02 }}
-                                 className="p-8 bg-background/60 border border-border/50 rounded-[2.5rem] space-y-6 shadow-2xl shadow-black/5"
+                                 className="p-8 bg-background/60 border border-border/50 rounded-xl space-y-6 shadow-2xl shadow-black/5"
                                >
                                  <div className="flex items-center justify-between">
                                    <div className="flex items-center gap-3">
@@ -698,9 +713,9 @@ const ProjectDetails = () => {
                        )}
 
                        {/* Activity Log Grid */}
-                       <div className="p-8 lg:p-10 bg-background/40 border border-border/40 rounded-[2.5rem] shadow-inner">
+                       <div className="p-8 lg:p-5 bg-background/40 border border-border/40 rounded-xl shadow-inner">
                           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mb-10">Historical Transmission Log</p>
-                          <div className="space-y-10">
+                          <div className="space-y-5">
                              {sub.timeline?.slice().reverse().map((event, tIdx) => (
                                <div key={tIdx} className="flex gap-6 relative group">
                                  {tIdx < sub.timeline.length - 1 && <div className="absolute left-[19px] top-12 bottom-[-40px] w-px bg-border/40 group-hover:bg-primary/20 transition-all duration-700" />}
@@ -721,7 +736,7 @@ const ProjectDetails = () => {
                      </motion.div>
                    ))
                  ) : (
-                   <div className="py-32 text-center border-2 border-dashed border-border/30 rounded-[3rem] bg-secondary/5 space-y-6">
+                   <div className="py-32 text-center border-2 border-dashed border-border/30 rounded-2xl bg-secondary/5 space-y-6">
                      <ShieldCheck size={56} className="mx-auto text-muted-foreground opacity-10" />
                      <p className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40">Grid_Idle: No Incoming Signals Detected</p>
                    </div>
@@ -735,10 +750,10 @@ const ProjectDetails = () => {
           <div className="space-y-16">
             {/* Dev Flow Section */}
             <motion.div key="engineering_dev" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-               <div className="lg:col-span-2 space-y-10">
-                  <div className="card-premium p-10 lg:p-12 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+               <div className="lg:col-span-2 space-y-5">
+                  <div className="card-premium p-5 lg:p-6 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[120px] -mr-40 -mt-40 pointer-events-none" />
-                    <div className="flex items-center gap-4 mb-12">
+                    <div className="flex items-center gap-4 mb-6">
                       <div className="w-12 h-12 rounded-[1.25rem] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
                         <GitFork size={24} />
                       </div>
@@ -746,7 +761,7 @@ const ProjectDetails = () => {
                     </div>
                     
                     {!isAccepted ? (
-                      <div className="space-y-10 max-w-2xl">
+                      <div className="space-y-5 max-w-2xl">
                         <p className="text-xl font-medium text-foreground/70 leading-relaxed tracking-tight">
                           Initializing this protocol will generate a high-bandwidth fork of the upstream repository, establishing a secure telemetry link to your workspace.
                         </p>
@@ -755,7 +770,7 @@ const ProjectDetails = () => {
                           whileTap={{ scale: 0.98 }}
                           onClick={() => acceptProjectHandler()}
                           disabled={isAccepting}
-                          className="btn-primary py-6 px-16 rounded-[2rem] text-[11px] uppercase tracking-[0.3em] gap-4 shadow-[0_30px_60px_-12px_rgba(99,102,241,0.5)]"
+                          className="btn-primary py-6 px-16 rounded-lg text-[11px] uppercase tracking-[0.3em] gap-4 shadow-[0_30px_60px_-12px_rgba(99,102,241,0.5)]"
                         >
                           {isAccepting ? (
                             <RefreshCcw size={20} className="animate-spin" />
@@ -765,11 +780,11 @@ const ProjectDetails = () => {
                         </motion.button>
                       </div>
                     ) : (
-                      <div className="space-y-12">
+                      <div className="space-y-6">
                         <motion.div 
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center gap-8 p-8 bg-emerald-500/5 border border-emerald-500/20 rounded-[2.5rem] shadow-sm"
+                          className="flex items-center gap-8 p-8 bg-emerald-500/5 border border-emerald-500/20 rounded-xl shadow-sm"
                         >
                           <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 shadow-lg shadow-emerald-500/5">
                             <CheckCircle2 size={36} />
@@ -783,7 +798,7 @@ const ProjectDetails = () => {
                         {forkStatus?.forkExists ? (
                           <div className="space-y-8">
                             {mySubmissions.length > 0 && (
-                              <div className="p-8 bg-primary/5 border border-primary/20 rounded-[2.5rem] space-y-6 shadow-sm relative overflow-hidden">
+                              <div className="p-8 bg-primary/5 border border-primary/20 rounded-xl space-y-6 shadow-sm relative overflow-hidden">
                                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
                                  <div className="flex items-center justify-between relative z-10">
                                     <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Live Mission Intelligence</h4>
@@ -809,7 +824,7 @@ const ProjectDetails = () => {
                               </div>
                             )}
 
-                            <div className="p-10 bg-secondary/30 border border-border/50 rounded-[2.5rem] space-y-8 shadow-sm">
+                            <div className="p-5 bg-secondary/30 border border-border/50 rounded-xl space-y-8 shadow-sm">
                               <div className="flex items-center justify-between">
                                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">Registry_Personal_Pointer</span>
                                 <span className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-xl text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 shadow-sm">
@@ -844,9 +859,9 @@ const ProjectDetails = () => {
                             </div>
                           </div>
                         ) : (
-                          <div className="p-16 bg-amber-500/5 border border-amber-500/20 rounded-[3rem] flex flex-col items-center text-center gap-8 shadow-inner">
+                          <div className="p-16 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex flex-col items-center text-center gap-8 shadow-inner">
                              <div className="relative">
-                               <div className="w-24 h-24 rounded-[2rem] bg-amber-500/10 flex items-center justify-center text-amber-500">
+                               <div className="w-24 h-24 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
                                  <RefreshCcw size={48} className="animate-spin" style={{ animationDuration: '4s' }} />
                                </div>
                                <div className="absolute inset-0 flex items-center justify-center">
@@ -871,14 +886,14 @@ const ProjectDetails = () => {
                     )}
                   </div>
 
-                  <div className="card-premium p-10 space-y-10 lg:p-12">
+                  <div className="card-premium p-5 space-y-5 lg:p-6">
                      <div className="flex items-center gap-4">
                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg shadow-indigo-500/5">
                          <ShieldCheck size={20} />
                        </div>
                        <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gradient">Engineering Standards Matrix</h3>
                      </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {[
                           { title: "Branching_Logic", desc: "Pushing to 'main' is forbidden. Initialize a unique feature branch for every protocol solution." },
                           { title: "Validation_Suites", desc: "Local test matrices must return 100% compliance before initializing deployment sequence." },
@@ -897,10 +912,10 @@ const ProjectDetails = () => {
                   </div>
                </div>
 
-               <div className="space-y-10">
-                  <div className="card-premium p-10 relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5">
+               <div className="space-y-5">
+                  <div className="card-premium p-5 relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none" />
-                    <div className="flex items-center gap-4 mb-12">
+                    <div className="flex items-center gap-4 mb-6">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
                         <Send size={20} />
                       </div>
@@ -913,7 +928,7 @@ const ProjectDetails = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         className="flex flex-col items-center justify-center py-16 text-center space-y-8"
                       >
-                        <div className="w-24 h-24 rounded-[2.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 border border-emerald-500/20 shadow-[0_20px_50px_rgba(16,185,129,0.2)]">
+                        <div className="w-24 h-24 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 border border-emerald-500/20 shadow-[0_20px_50px_rgba(16,185,129,0.2)]">
                           <CheckCircle2 size={56} />
                         </div>
                         <div className="space-y-3">
@@ -932,7 +947,7 @@ const ProjectDetails = () => {
                         </motion.button>
                       </motion.div>
                     ) : (
-                      <form onSubmit={handleDevSubmit} className="space-y-10">
+                      <form onSubmit={handleDevSubmit} className="space-y-5">
                         {devError && (
                           <motion.div 
                             initial={{ opacity: 0, x: -10 }}
@@ -944,7 +959,7 @@ const ProjectDetails = () => {
                           </motion.div>
                         )}
                         
-                        <div className="space-y-10">
+                        <div className="space-y-5">
                           {selectedIssue && (
                             <motion.div 
                               initial={{ opacity: 0, y: 10 }}
@@ -1004,7 +1019,7 @@ const ProjectDetails = () => {
                             whileTap={{ scale: 0.98 }}
                             type="submit" 
                             disabled={!selectedRepo || !selectedBranch || submittingDev || !isAccepted} 
-                            className="w-full btn-primary py-6 text-[11px] uppercase tracking-[0.4em] rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(99,102,241,0.5)] flex items-center justify-center gap-4 disabled:opacity-40 disabled:scale-100 disabled:shadow-none transition-all"
+                            className="w-full btn-primary py-6 text-[11px] uppercase tracking-[0.4em] rounded-lg shadow-[0_25px_50px_-12px_rgba(99,102,241,0.5)] flex items-center justify-center gap-4 disabled:opacity-40 disabled:scale-100 disabled:shadow-none transition-all"
                           >
                             {submittingDev ? (
                               <RefreshCcw size={20} className="animate-spin" />
@@ -1029,7 +1044,7 @@ const ProjectDetails = () => {
             {/* QA Flow / Audit Queue Section */}
             <motion.div key="engineering_test" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                <div className="lg:col-span-1 space-y-8">
-                 <div className="card-premium p-8 lg:p-10 space-y-10 h-fit">
+                 <div className="card-premium p-8 lg:p-5 space-y-5 h-fit">
                    <div className="flex items-center gap-4">
                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
                        <ClipboardList size={20} />
@@ -1044,7 +1059,7 @@ const ProjectDetails = () => {
                            key={sub._id} 
                            whileHover={{ scale: 1.02 }}
                            onClick={() => { setSelectedPR(sub); setTestSuccess(false); setTestError(""); }}
-                           className={`p-6 border rounded-[2.5rem] cursor-pointer transition-all flex flex-col gap-6 relative overflow-hidden group shadow-sm ${selectedPR?._id === sub._id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border/50 bg-secondary/30 hover:border-primary/30 hover:bg-secondary/50'}`}
+                           className={`p-6 border rounded-xl cursor-pointer transition-all flex flex-col gap-6 relative overflow-hidden group shadow-sm ${selectedPR?._id === sub._id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border/50 bg-secondary/30 hover:border-primary/30 hover:bg-secondary/50'}`}
                          >
                            {selectedPR?._id === sub._id && <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-[40px] pointer-events-none" />}
                            <div className="flex items-center gap-4 relative z-10">
@@ -1072,7 +1087,7 @@ const ProjectDetails = () => {
                        ))}
                      </div>
                    ) : (
-                     <div className="text-center py-24 bg-secondary/10 border-2 border-dashed border-border/40 rounded-[3rem] space-y-6">
+                     <div className="text-center py-24 bg-secondary/10 border-2 border-dashed border-border/40 rounded-2xl space-y-6">
                        <ShieldCheck size={56} className="mx-auto text-muted-foreground opacity-10" />
                        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 max-w-[180px] mx-auto leading-relaxed">No pending audit signals found in local grid sector.</p>
                      </div>
@@ -1081,20 +1096,20 @@ const ProjectDetails = () => {
                </div>
 
                <div className="lg:col-span-2">
-                 <div className="card-premium p-10 lg:p-12 h-full relative overflow-hidden bg-gradient-to-br from-card via-card to-emerald-500/5">
+                 <div className="card-premium p-5 lg:p-6 h-full relative overflow-hidden bg-gradient-to-br from-card via-card to-emerald-500/5">
                    {selectedPR ? (
                      <AnimatePresence mode="wait">
                        <motion.div 
                          key={selectedPR._id}
                          initial={{ opacity: 0, y: 10 }}
                          animate={{ opacity: 1, y: 0 }}
-                         className="space-y-12"
+                         className="space-y-6"
                        >
                          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-[120px] -mr-40 -mt-40 pointer-events-none" />
-                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-border/30 relative z-10">
+                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-5 border-b border-border/30 relative z-10">
                            <div className="flex items-center gap-6">
                              <div className="relative">
-                               <img src={selectedPR.user?.avatarUrl} alt={selectedPR.user?.username} className="w-20 h-20 rounded-[2rem] border-2 border-background shadow-2xl" />
+                               <img src={selectedPR.user?.avatarUrl} alt={selectedPR.user?.username} className="w-20 h-20 rounded-lg border-2 border-background shadow-2xl" />
                                <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-emerald-500 text-white rounded-xl flex items-center justify-center shadow-lg border-2 border-background">
                                  <Check size={14} strokeWidth={3} />
                                </div>
@@ -1129,7 +1144,7 @@ const ProjectDetails = () => {
                            animate={{ opacity: 1, scale: 1 }}
                            className="flex flex-col items-center justify-center py-12 text-center space-y-8"
                          >
-                            <div className="w-24 h-24 rounded-[2.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 border border-emerald-500/20 shadow-[0_20px_50px_rgba(16,185,129,0.2)]">
+                            <div className="w-24 h-24 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 border border-emerald-500/20 shadow-[0_20px_50px_rgba(16,185,129,0.2)]">
                               <CheckCircle2 size={56} />
                             </div>
                             <div className="space-y-3">
@@ -1140,9 +1155,9 @@ const ProjectDetails = () => {
                             </div>
                          </motion.div>
                        ) : (
-                         <form onSubmit={handleTestSubmit} className="space-y-12 relative z-10">
+                         <form onSubmit={handleTestSubmit} className="space-y-6 relative z-10">
                            {testError && (
-                             <div className="p-6 bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-black uppercase tracking-widest rounded-[2rem] flex items-center gap-4">
+                             <div className="p-6 bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-black uppercase tracking-widest rounded-lg flex items-center gap-4">
                                <AlertCircle size={22} />
                                {testError}
                              </div>
@@ -1155,7 +1170,7 @@ const ProjectDetails = () => {
                                  <motion.label 
                                    key={idx} 
                                    whileHover={{ scale: 1.02 }}
-                                   className={`flex items-center gap-5 p-6 rounded-[2.5rem] border transition-all cursor-pointer shadow-sm group ${item.checked ? 'bg-primary/5 border-primary/40' : 'bg-secondary/40 border-border/50 hover:border-primary/20'}`}
+                                   className={`flex items-center gap-5 p-6 rounded-xl border transition-all cursor-pointer shadow-sm group ${item.checked ? 'bg-primary/5 border-primary/40' : 'bg-secondary/40 border-border/50 hover:border-primary/20'}`}
                                  >
                                    <div className="relative">
                                      <input 
@@ -1172,7 +1187,7 @@ const ProjectDetails = () => {
                              </div>
                            </div>
 
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-10 border-t border-border/30">
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-10 border-t border-border/30">
                              <div className="space-y-4">
                                <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Audit Outcome</label>
                                <div className="relative group">
@@ -1217,11 +1232,11 @@ const ProjectDetails = () => {
                                placeholder="Analyze technical matrix, architectural logic, and deployment readiness..."
                                value={testFeedback}
                                onChange={(e) => setTestFeedback(e.target.value)}
-                               className="w-full px-8 py-6 bg-background/50 border border-border/50 rounded-[2.5rem] font-medium text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 resize-none shadow-inner placeholder:text-muted-foreground/30 custom-scrollbar"
+                               className="w-full px-8 py-6 bg-background/50 border border-border/50 rounded-xl font-medium text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 resize-none shadow-inner placeholder:text-muted-foreground/30 custom-scrollbar"
                              />
                            </div>
 
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-10 border-t border-border/30">
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-10 border-t border-border/30">
                              <div className="space-y-4">
                                <label className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Logic Discrepancies</label>
                                <textarea 
@@ -1249,7 +1264,7 @@ const ProjectDetails = () => {
                              whileTap={{ scale: 0.99 }}
                              type="submit" 
                              disabled={submittingTest || !testFeedback}
-                             className="w-full btn-primary py-7 font-black uppercase tracking-[0.5em] text-[11px] rounded-[2.5rem] shadow-[0_35px_70px_-15px_rgba(99,102,241,0.5)] flex items-center justify-center gap-4 transition-all"
+                             className="w-full btn-primary py-7 font-black uppercase tracking-[0.5em] text-[11px] rounded-xl shadow-[0_35px_70px_-15px_rgba(99,102,241,0.5)] flex items-center justify-center gap-4 transition-all"
                            >
                              {submittingTest ? <RefreshCcw size={22} className="animate-spin" /> : <><Send size={20} /> Commit Audit Protocol</>}
                            </motion.button>
@@ -1259,7 +1274,7 @@ const ProjectDetails = () => {
                    </AnimatePresence>
                  ) : (
                    <div className="flex flex-col items-center justify-center h-full py-32 text-center space-y-8 opacity-40">
-                      <div className="w-24 h-24 rounded-[3rem] bg-secondary flex items-center justify-center border-2 border-dashed border-border">
+                      <div className="w-24 h-24 rounded-2xl bg-secondary flex items-center justify-center border-2 border-dashed border-border">
                         <Cpu size={48} className="text-muted-foreground" />
                       </div>
                       <div className="space-y-3">
@@ -1277,13 +1292,13 @@ const ProjectDetails = () => {
         )}
 
         {activeTab === "activity" && (
-          <motion.div key="activity" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+          <motion.div key="activity" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                <div className="lg:col-span-2 space-y-12">
+                <div className="lg:col-span-2 space-y-6">
                   {/* Unified Live Signal Feed */}
-                  <div className="card-premium p-10 lg:p-12 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+                  <div className="card-premium p-5 lg:p-6 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
                     <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] -mr-48 -mt-48" />
-                    <div className="flex items-center justify-between mb-12 relative z-10">
+                    <div className="flex items-center justify-between mb-6 relative z-10">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
                           <Terminal size={20} />
@@ -1295,7 +1310,7 @@ const ProjectDetails = () => {
                       </span>
                     </div>
                     
-                    <div className="space-y-12 relative z-10">
+                    <div className="space-y-6 relative z-10">
                       {intelligence?.overview?.recentActivityFeed?.length > 0 ? (
                         intelligence.overview.recentActivityFeed.map((event, idx) => (
                           <div key={idx} className="flex gap-8 relative group">
@@ -1333,9 +1348,9 @@ const ProjectDetails = () => {
                   </div>
 
                   {/* Historical Registry */}
-                  <div className="card-premium p-10 lg:p-12 relative overflow-hidden bg-gradient-to-br from-card via-card to-indigo-500/5">
+                  <div className="card-premium p-5 lg:p-6 relative overflow-hidden bg-gradient-to-br from-card via-card to-indigo-500/5">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
-                    <div className="flex items-center gap-4 mb-12 relative z-10">
+                    <div className="flex items-center gap-4 mb-6 relative z-10">
                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/5">
                          <History size={20} />
                        </div>
@@ -1363,9 +1378,9 @@ const ProjectDetails = () => {
                   </div>
                 </div>
 
-                <div className="space-y-12">
+                <div className="space-y-6">
                   {/* Elite Contributors Node */}
-                  <div className="card-premium p-10 space-y-12 relative overflow-hidden bg-gradient-to-br from-card to-amber-500/5">
+                  <div className="card-premium p-5 space-y-6 relative overflow-hidden bg-gradient-to-br from-card to-amber-500/5">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 blur-[60px] rounded-full" />
                     <div className="flex items-center gap-4 relative z-10">
                       <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/5">
@@ -1397,7 +1412,7 @@ const ProjectDetails = () => {
                   <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="p-10 bg-primary/5 border border-primary/20 rounded-[3rem] space-y-8 shadow-inner relative overflow-hidden"
+                    className="p-5 bg-primary/5 border border-primary/20 rounded-2xl space-y-8 shadow-inner relative overflow-hidden"
                   >
                      <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
                      <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/80">Intelligence_Directive</h4>
@@ -1420,7 +1435,7 @@ const ProjectDetails = () => {
               className="relative w-full max-w-2xl glass-card rounded-[3.5rem] p-12 lg:p-16 shadow-[0_60px_120px_-30px_rgba(0,0,0,0.5)] overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 blur-[100px] -mr-40 -mt-40 pointer-events-none" />
-              <div className="flex items-center justify-between mb-12 relative z-10">
+              <div className="flex items-center justify-between mb-6 relative z-10">
                 <h2 className="text-3xl font-black tracking-tighter uppercase tracking-widest text-gradient">Modify Protocol</h2>
                 <motion.button 
                   whileHover={{ scale: 1.1, rotate: 90 }}
@@ -1431,7 +1446,7 @@ const ProjectDetails = () => {
                   <X size={24} />
                 </motion.button>
               </div>
-              <form onSubmit={handleUpdateProject} className="space-y-10 relative z-10">
+              <form onSubmit={handleUpdateProject} className="space-y-5 relative z-10">
                 <div className="space-y-4">
                   <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Mission Designation</label>
                   <input type="text" value={editTitle} onChange={(e)=>setEditTitle(e.target.value)} className="w-full px-8 py-5 bg-background/50 border border-border/50 rounded-[1.5rem] font-bold text-sm focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner" placeholder="Protocol Title" />
@@ -1445,14 +1460,14 @@ const ProjectDetails = () => {
                 </div>
                 <div className="space-y-4">
                   <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Operational Directive</label>
-                  <textarea rows={6} value={editDescription} onChange={(e)=>setEditDescription(e.target.value)} className="w-full px-8 py-6 bg-background/50 border border-border/50 rounded-[2.5rem] font-medium text-sm focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-inner custom-scrollbar" placeholder="Define the mission objective..." />
+                  <textarea rows={6} value={editDescription} onChange={(e)=>setEditDescription(e.target.value)} className="w-full px-8 py-6 bg-background/50 border border-border/50 rounded-xl font-medium text-sm focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none shadow-inner custom-scrollbar" placeholder="Define the mission objective..." />
                 </div>
                 <motion.button 
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit" 
                   disabled={isUpdatingProject}
-                  className="w-full btn-primary py-6 rounded-[2rem] text-[11px] uppercase tracking-[0.4em] shadow-[0_25px_50px_-12px_rgba(99,102,241,0.5)] gap-3"
+                  className="w-full btn-primary py-6 rounded-lg text-[11px] uppercase tracking-[0.4em] shadow-[0_25px_50px_-12px_rgba(99,102,241,0.5)] gap-3"
                 >
                   {isUpdatingProject ? <RefreshCcw size={20} className="animate-spin" /> : <><Check size={20} strokeWidth={3} /> Synchronize Matrix</>}
                 </motion.button>

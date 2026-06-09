@@ -69,7 +69,7 @@ const Projects = () => {
   const skillsList = useMemo(() => ["React", "Node.js", "Python", "JavaScript", "TypeScript", "Express", "Docker", "GraphQL", "CSS", "HTML"], []);
 
   return (
-    <div className="py-8 max-w-7xl mx-auto px-6 lg:px-8 relative selection:bg-primary/20">
+    <div className="py-4 max-w-7xl mx-auto px-6 lg:px-8 relative selection:bg-primary/20">
       
       {/* Dynamic Ambient Background Elements */}
       <div className="absolute top-0 right-0 w-[50%] h-[500px] bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.05),transparent_70%)] -z-10 pointer-events-none" />
@@ -79,25 +79,32 @@ const Projects = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-8"
+          className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4"
         >
-          <div className="space-y-4">
-            <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-gradient leading-none">
-              Engineering Grid
+          <div className="flex items-center gap-6">
+            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-gradient leading-none">
+              Active Projects
             </h1>
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-primary rounded flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 relative overflow-hidden">
-                <Target size={10} className="relative z-10" />
+            <div className="flex items-center gap-2 pt-1">
+              <div className="w-4 h-4 bg-primary rounded flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 relative overflow-hidden">
+                <Target size={8} className="relative z-10" />
               </div>
               <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/70">Project Marketplace</span>
             </div>
-            <p className="text-muted-foreground text-base max-w-2xl font-medium leading-relaxed tracking-tight">Sync with high-impact open source challenges and upgrade your engineering reputation.</p>
           </div>
 
           <div className="flex items-center gap-3">
-             <div className="px-4 py-2 glass-card rounded-lg flex items-center gap-2 shadow-lg shadow-black/5 border border-border/50">
-               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
-               <span className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">{projects?.length || 0} ACTIVE_NODES</span>
+             <div className="px-3 py-1.5 glass-card rounded-lg flex items-center gap-3 shadow-lg shadow-black/5 border border-border/50">
+               <div className="flex items-center gap-2 pr-3 border-r border-border/50">
+                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
+                 <span className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">{projects?.length || 0} ACTIVE PROJECTS</span>
+               </div>
+               <div className="flex items-center gap-2">
+                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-sm shadow-blue-500/50" />
+                 <span className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">
+                   {projects?.reduce((acc, p) => acc + (p.openIssuesCount || 0), 0) || 0} GLOBAL SIGNALS
+                 </span>
+               </div>
              </div>
           </div>
         </motion.div>
@@ -256,7 +263,8 @@ const ProjectCard = ({ project, isSolved }) => {
 
   React.useEffect(() => {
     if (titleRef.current) {
-      setIsLongTitle(titleRef.current.scrollHeight > titleRef.current.clientHeight);
+      // Check if title is actually truncated or long enough to need expansion
+      setIsLongTitle(titleRef.current.scrollHeight > 40 || project.title.length > 40);
     }
   }, [project.title]);
 
@@ -265,12 +273,12 @@ const ProjectCard = ({ project, isSolved }) => {
 
   return (
     <motion.div variants={item}>
-      <Card className="p-5 flex flex-col h-full group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5 border border-border/40 shadow-sm hover:shadow-md">
+      <Card className="p-4 flex flex-col h-full group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5 border border-border/40 shadow-sm hover:shadow-md transition-all">
         {/* Hover visual accent glow */}
         <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
         
-        <div className="flex items-center justify-between mb-3 relative z-10">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between mb-2 relative z-10">
+          <div className="flex items-center gap-1">
             <Badge
               variant={
                 project.difficulty === "Easy"
@@ -279,88 +287,85 @@ const ProjectCard = ({ project, isSolved }) => {
                     ? "default"
                     : "destructive"
               }
-              className="px-2 py-0.5 text-[9px] h-5"
+              className="px-2 py-0 h-4 text-[8px]"
             >
               {project.difficulty === "Hard" ? "Elite" : project.difficulty}
             </Badge>
             {isSolved && (
-              <div className="w-4 h-4 rounded-md bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-background" title="Project Solved">
-                <CheckCircle2 size={8} />
+              <div className="w-3.5 h-3.5 rounded bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-background" title="Project Solved">
+                <CheckCircle2 size={7} />
               </div>
             )}
-            {isTrending && (
-              <Badge variant="outline" className="px-2 py-0.5 text-[8px] h-5 border-primary/30 text-primary bg-primary/5 font-black uppercase tracking-widest">
-                Trending
-              </Badge>
-            )}
           </div>
-          <div className="flex items-center gap-1 text-amber-500 font-black text-[9px] bg-amber-500/5 px-2 py-0.5 rounded-md border border-amber-500/10">
-            <Trophy size={10} className="fill-amber-500/20" />
+          <div className="flex items-center gap-1 text-amber-500 font-black text-[8px] bg-amber-500/5 px-1.5 py-0.5 rounded border border-amber-500/10">
+            <Trophy size={8} className="fill-amber-500/20" />
             <span>{project.bounty || 100} XP</span>
           </div>
         </div>
         
-        <div className="space-y-1.5 mb-3 flex-grow relative z-10">
+        <div className="space-y-1 mb-3 flex-grow relative z-10">
           <div className="flex flex-col">
-            <span className="text-[8px] font-black text-primary uppercase tracking-widest opacity-60">@{project.owner?.username || 'unknown'}</span>
-            <div className="relative group/title">
+            <span className="text-[7px] font-black text-primary uppercase tracking-[0.2em] opacity-60">@{project.owner?.username || 'unknown'}</span>
+            <div className="relative">
               <h3 
                 ref={titleRef}
-                className={`text-base font-black tracking-tighter group-hover:text-primary transition-colors leading-tight ${!isExpanded ? 'line-clamp-2' : ''}`}
+                className={`text-sm font-black tracking-tighter group-hover:text-primary transition-colors leading-tight ${!isExpanded ? 'line-clamp-2' : ''}`}
+                style={{ maxHeight: isExpanded ? 'none' : '2.5rem' }}
               >
                 {project.title}
               </h3>
               {isLongTitle && (
                 <button 
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="text-[8px] font-black uppercase tracking-widest text-primary/70 hover:text-primary mt-0.5 flex items-center gap-1 transition-colors"
+                  className="absolute -right-1 -bottom-1 p-1 text-primary/70 hover:text-primary transition-all bg-card/80 rounded-md backdrop-blur-sm shadow-sm"
+                  title={isExpanded ? "Collapse Title" : "Expand Title"}
                 >
-                  {isExpanded ? 'Show Less' : 'Expand Title'}
+                  {isExpanded ? <ChevronDown size={10} className="rotate-180" /> : <ChevronDown size={10} />}
                 </button>
               )}
             </div>
           </div>
-          <p className="text-[11px] text-muted-foreground line-clamp-2 leading-snug font-medium opacity-80 group-hover:opacity-100 transition-opacity">
+          <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight font-medium opacity-80 group-hover:opacity-100 transition-opacity">
             {project.description}
           </p>
         </div>
 
         {/* Meta Signals Registry */}
-        <div className="grid grid-cols-2 gap-y-1.5 gap-x-3 mb-4 text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 border-y border-border/20 py-2.5 relative z-10 group-hover:border-primary/10 transition-colors">
-          <div className="flex items-center gap-1.5">
-            <Activity size={12} className="text-amber-500" />
-            <span>Active: {lastActive}</span>
+        <div className="grid grid-cols-2 gap-y-1 gap-x-2 mb-3 text-[7px] font-black uppercase tracking-[0.15em] text-muted-foreground/60 border-y border-border/20 py-2 relative z-10 group-hover:border-primary/10 transition-colors">
+          <div className="flex items-center gap-1">
+            <Activity size={10} className="text-amber-500" />
+            <span>{lastActive}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <GitFork size={12} className="text-primary opacity-60" />
-            <span>{project.forks || 0} Forks</span>
+          <div className="flex items-center gap-1">
+            <GitFork size={10} className="text-primary opacity-60" />
+            <span>{project.forks || 0}F</span>
           </div>
-          <div className="flex items-center gap-1.5 text-emerald-500/80">
-            <CheckCircle2 size={12} />
-            <span>{project.openIssuesCount || 0} Issues</span>
+          <div className="flex items-center gap-1 text-emerald-500/80">
+            <CheckCircle2 size={10} />
+            <span>{project.openIssuesCount || 0}I</span>
           </div>
-          <div className="flex items-center gap-1.5 text-blue-500/80">
-            <Users size={12} />
-            <span>{project.contributorsCount || 0} Members</span>
+          <div className="flex items-center gap-1 text-blue-500/80">
+            <Users size={10} />
+            <span>{project.contributorsCount || 0}M</span>
           </div>
         </div>
 
         <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-1.5">
-             <div className="flex -space-x-1.5">
+          <div className="flex items-center gap-1">
+             <div className="flex -space-x-1">
                 {[...Array(Math.min(3, project.contributorsCount || 1))].map((_, i) => (
-                  <div key={i} className="w-5 h-5 rounded-md bg-secondary border border-background flex items-center justify-center shadow-sm overflow-hidden">
-                    <Users size={8} className="text-muted-foreground" />
+                  <div key={i} className="w-4 h-4 rounded-md bg-secondary border border-background flex items-center justify-center shadow-sm overflow-hidden">
+                    <Users size={6} className="text-muted-foreground" />
                   </div>
                 ))}
              </div>
-             <span className="text-[7px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Grid Linked</span>
+             <span className="text-[6px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Linked</span>
           </div>
           
           <Link to={`/projects/${project._id || project.id}`}>
-            <Button className="h-8 px-4 gap-1.5 group/btn overflow-hidden relative text-[9px] font-black uppercase tracking-widest">
+            <Button className="h-7 px-3 gap-1 group/btn overflow-hidden relative text-[8px] font-black uppercase tracking-widest">
               <span>Engage</span>
-              <ArrowRight size={10} className="group-hover/btn:translate-x-1 transition-transform" />
+              <ArrowRight size={8} className="group-hover/btn:translate-x-1 transition-transform" />
             </Button>
           </Link>
         </div>

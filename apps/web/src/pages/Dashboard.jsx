@@ -155,73 +155,73 @@ const Dashboard = () => {
         <AlertTriangle size={40} />
       </div>
       <h2 className="text-3xl font-black mb-4 tracking-tight">System desynchronization.</h2>
-      <p className="text-muted-foreground mb-10 font-medium leading-relaxed px-6">We encountered a critical failure while attempting to synchronize with your command node.</p>
+      <p className="text-muted-foreground mb-6 font-medium leading-relaxed px-6">We encountered a critical failure while attempting to synchronize with your command node.</p>
       <button onClick={() => window.location.reload()} className="btn-primary w-full">Reinitialize System</button>
     </div>
   );
 
   return (
-    <div className="py-8 max-w-7xl mx-auto px-6 lg:px-8 relative selection:bg-primary/20">
+    <div className="py-4 max-w-7xl mx-auto px-6 lg:px-8 relative selection:bg-primary/20">
       
       {/* Dynamic Header Section */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-10"
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6"
       >
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <div className="relative group">
             <motion.div 
               whileHover={{ rotate: 3, scale: 1.02 }}
-              className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-primary via-indigo-500 to-blue-400 p-[2px] shadow-xl shadow-primary/20 relative z-10"
+              className="w-16 h-16 rounded-xl bg-gradient-to-tr from-primary via-indigo-500 to-blue-400 p-[2px] shadow-xl shadow-primary/20 relative z-10"
             >
-              <div className="w-full h-full rounded-[14px] bg-background flex items-center justify-center overflow-hidden border-[4px] border-background">
+              <div className="w-full h-full rounded-lg bg-background flex items-center justify-center overflow-hidden border-[3px] border-background">
                  {profile?.avatarUrl ? (
                    <img src={profile.avatarUrl} alt={profile.username} className="w-full h-full object-cover" />
                  ) : (
                    <div className="w-full h-full bg-secondary flex items-center justify-center text-primary">
-                     <Fingerprint size={32} />
+                     <Fingerprint size={24} />
                    </div>
                  )}
               </div>
             </motion.div>
-            <div className="absolute -bottom-1.5 -right-1.5 bg-primary text-primary-foreground text-[9px] font-black px-2.5 py-1 rounded-lg shadow-lg border-2 border-background z-20">
+            <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[8px] font-black px-1.5 py-0.5 rounded shadow-lg border-2 border-background z-20">
               LVL {profile?.level || 1}
             </div>
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-2xl font-black tracking-tight text-gradient">Operations Hub</h1>
-            <div className="flex items-center gap-2.5">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/70 bg-primary/5 px-2.5 py-0.5 rounded-md border border-primary/10">@{profile?.username}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">System Online</span>
+            <h1 className="text-xl font-black tracking-tight text-gradient">Operations Hub</h1>
+            <div className="flex items-center gap-2">
+              <span className="text-[8px] font-black uppercase tracking-[0.1em] text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10">@{profile?.username}</span>
+              <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[8px] font-black uppercase tracking-[0.1em] opacity-40">Online</span>
             </div>
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           <Button 
             variant="secondary"
             size="sm"
             onClick={() => setShowWizard(true)}
-            className="h-9 px-4 text-[9px] font-black uppercase tracking-widest gap-2 shadow-sm"
+            className="h-8 px-3 text-[8px] font-black uppercase tracking-widest gap-1.5 shadow-sm"
           >
-            <Rocket size={12} className="text-primary" /> Onboarding
+            <Rocket size={10} className="text-primary" /> Onboarding
           </Button>
           
           <Button 
             variant={isEditing ? "destructive" : "secondary"}
             size="sm"
             onClick={() => setIsEditing(!isEditing)}
-            className="h-9 px-4 text-[9px] font-black uppercase tracking-widest gap-2"
+            className="h-8 px-3 text-[8px] font-black uppercase tracking-widest gap-1.5"
           >
-            {isEditing ? <><X size={12} /> Abort</> : <><Edit3 size={12} /> Edit Profile</>}
+            {isEditing ? <><X size={10} /> Abort</> : <><Edit3 size={10} /> Edit Profile</>}
           </Button>
           
           <Link to="/projects/new">
-            <Button size="sm" className="group h-9 px-5 text-[9px] font-black uppercase tracking-widest gap-2">
-              <Plus size={14} className="group-hover:rotate-90 transition-transform duration-500" />
+            <Button size="sm" className="group h-8 px-4 text-[8px] font-black uppercase tracking-widest gap-1.5">
+              <Plus size={12} className="group-hover:rotate-90 transition-transform duration-500" />
               New Project
             </Button>
           </Link>
@@ -240,7 +240,7 @@ const Dashboard = () => {
             animate={{ opacity: 1, y: 0, height: "auto" }}
             exit={{ opacity: 0, y: -20, height: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden mb-10"
+            className="overflow-hidden mb-6"
           >
             <div className="glass-card rounded-2xl p-8 relative overflow-hidden border border-border/50">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
@@ -322,7 +322,7 @@ const Dashboard = () => {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-10 p-8 bg-secondary/20 backdrop-blur-2xl rounded-2xl border border-border/50 relative group overflow-hidden"
+          className="mb-6 p-8 bg-secondary/20 backdrop-blur-2xl rounded-2xl border border-border/50 relative group overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl" />
           <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 rounded-full group-hover:bg-primary transition-all duration-700" />
@@ -345,7 +345,7 @@ const Dashboard = () => {
       )}
 
       {/* Ranks & Engineering Metrics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2 space-y-6">
           <motion.div 
             variants={container}
