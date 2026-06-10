@@ -5,22 +5,29 @@ import {
   ArrowRight, 
   CheckCircle2, 
   Search, 
-  Zap,
-  Target,
-  Activity,
-  ChevronDown,
-  ChevronUp,
-  GitPullRequest,
-  Terminal,
-  Atom,
-  Hexagon,
-  Play,
-  FileJson,
-  Shield,
-  Box,
-  Share2,
-  Palette,
-  Code
+  Zap, 
+  Target, 
+  Activity, 
+  ChevronDown, 
+  ChevronUp, 
+  GitPullRequest, 
+  Terminal, 
+  Atom, 
+  Hexagon, 
+  Play, 
+  FileJson, 
+  Shield, 
+  Box, 
+  Share2, 
+  Palette, 
+  Code,
+  Database,
+  Server,
+  Globe,
+  Layers,
+  Cpu,
+  Cloud,
+  Lock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
@@ -62,21 +69,28 @@ const MissionCard = ({ project, submittedProjectIds }) => {
   const getTechIcon = (tech) => {
     const t = tech.toLowerCase();
     if (t.includes('react')) return <Atom size={12} />;
-    if (t.includes('node')) return <Hexagon size={12} />;
-    if (t.includes('python')) return <Play size={12} />;
+    if (t.includes('node') || t.includes('express')) return <Hexagon size={12} />;
+    if (t.includes('python') || t.includes('django') || t.includes('flask')) return <Play size={12} />;
     if (t.includes('js') || t.includes('javascript')) return <FileJson size={12} />;
     if (t.includes('ts') || t.includes('typescript')) return <Shield size={12} />;
-    if (t.includes('docker')) return <Box size={12} />;
+    if (t.includes('docker') || t.includes('kubernetes')) return <Box size={12} />;
     if (t.includes('graphql')) return <Share2 size={12} />;
-    if (t.includes('css')) return <Palette size={12} />;
+    if (t.includes('css') || t.includes('tailwind') || t.includes('sass')) return <Palette size={12} />;
     if (t.includes('html')) return <Code size={12} />;
+    if (t.includes('mongo') || t.includes('db') || t.includes('sql') || t.includes('postgres') || t.includes('database')) return <Database size={12} />;
+    if (t.includes('api') || t.includes('rest') || t.includes('server')) return <Server size={12} />;
+    if (t.includes('web') || t.includes('site') || t.includes('network')) return <Globe size={12} />;
+    if (t.includes('fullstack') || t.includes('stack')) return <Layers size={12} />;
+    if (t.includes('hardware') || t.includes('iot') || t.includes('ai') || t.includes('ml')) return <Cpu size={12} />;
+    if (t.includes('aws') || t.includes('cloud') || t.includes('azure') || t.includes('gcp') || t.includes('vercel')) return <Cloud size={12} />;
+    if (t.includes('auth') || t.includes('security') || t.includes('jwt')) return <Lock size={12} />;
     return <Terminal size={12} />;
   };
 
   return (
-    <Card className="p-6 flex flex-col h-full group relative overflow-hidden bg-card border-border/40 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-premium-hover">
+    <Card className="p-6 flex flex-col h-full group relative overflow-hidden bg-[#FFFFFF] border-border/40 hover:border-primary/40 transition-all duration-500 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.03]">
       {/* Visual background accent */}
-      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 blur-[80px] rounded-full group-hover:bg-primary/10 transition-colors duration-500" />
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 blur-[80px] rounded-full group-hover:bg-primary/10 transition-colors duration-700" />
       
       {/* Header: Difficulty & Users */}
       <div className="flex items-center justify-between mb-5 relative z-10">
@@ -94,21 +108,21 @@ const MissionCard = ({ project, submittedProjectIds }) => {
             {project.difficulty}
           </Badge>
           {submittedProjectIds.has((project._id || project.id).toString()) && (
-            <div className="w-4 h-4 rounded bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20" title="Mission Solved">
+            <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20" title="Mission Solved">
               <CheckCircle2 size={10} />
             </div>
           )}
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-secondary/30 rounded-lg border border-border/30">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-full border border-slate-100">
           <Users size={10} className="text-primary/70" />
-          <span className="text-[10px] font-black text-foreground/60 tabular-nums">{usersCount} Active</span>
+          <span className="text-[10px] font-black text-slate-500 tabular-nums">{usersCount} Active</span>
         </div>
       </div>
 
       {/* Title Section */}
       <div className="mb-4 relative z-10">
         <div className="flex items-start justify-between gap-2 group/title">
-          <h3 className={`text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors leading-snug ${!isTitleExpanded ? 'line-clamp-2' : ''}`}>
+          <h3 className={`text-lg font-bold tracking-tight text-slate-900 group-hover:text-primary transition-colors leading-snug ${!isTitleExpanded ? 'line-clamp-2' : ''}`}>
             {project.title}
           </h3>
           {(project.title?.length > 35) && (
@@ -124,7 +138,7 @@ const MissionCard = ({ project, submittedProjectIds }) => {
 
       {/* Description Section */}
       <div className="mb-6 flex-grow relative z-10">
-        <p className={`text-xs text-muted-foreground leading-relaxed font-medium opacity-80 ${!isDescExpanded ? 'line-clamp-3' : ''}`}>
+        <p className={`text-xs text-slate-500 leading-relaxed font-medium ${!isDescExpanded ? 'line-clamp-3' : ''}`}>
           {project.description}
         </p>
         {project.description?.length > 100 && (
@@ -139,29 +153,29 @@ const MissionCard = ({ project, submittedProjectIds }) => {
       </div>
 
       {/* Stats Section */}
-      <div className="flex items-center justify-between gap-2 py-4 border-y border-border/20 mb-6 relative z-10">
+      <div className="flex items-center justify-between gap-2 py-4 border-y border-slate-50 mb-6 relative z-10">
         <div className="flex flex-col items-center gap-1 flex-1">
           <div className="flex items-center gap-1.5">
             <Activity size={12} className="text-amber-500" />
-            <span className="text-xs font-bold tabular-nums">{project.openIssuesCount || 0}</span>
+            <span className="text-xs font-bold text-slate-700 tabular-nums">{project.openIssuesCount || 0}</span>
           </div>
-          <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-widest">Open</span>
+          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Open</span>
         </div>
-        <div className="w-px h-6 bg-border/20" />
+        <div className="w-px h-6 bg-slate-100" />
         <div className="flex flex-col items-center gap-1 flex-1">
           <div className="flex items-center gap-1.5">
             <CheckCircle2 size={12} className="text-emerald-500" />
-            <span className="text-xs font-bold tabular-nums">{closedIssues}</span>
+            <span className="text-xs font-bold text-slate-700 tabular-nums">{closedIssues}</span>
           </div>
-          <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-widest">Closed</span>
+          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Closed</span>
         </div>
-        <div className="w-px h-6 bg-border/20" />
+        <div className="w-px h-6 bg-slate-100" />
         <div className="flex flex-col items-center gap-1 flex-1">
           <div className="flex items-center gap-1.5">
             <GitPullRequest size={12} className="text-primary" />
-            <span className="text-xs font-bold tabular-nums">{prsRaised}</span>
+            <span className="text-xs font-bold text-slate-700 tabular-nums">{prsRaised}</span>
           </div>
-          <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-widest">PRs</span>
+          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">PRs</span>
         </div>
       </div>
 
@@ -169,17 +183,17 @@ const MissionCard = ({ project, submittedProjectIds }) => {
       <div className="mb-6 relative z-10">
         <div className="flex flex-wrap gap-2">
           {visibleTech.map((tech, i) => (
-            <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-secondary/20 rounded-md border border-border/30 hover:border-primary/20 transition-all duration-300 group/tech">
+            <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-lg border border-slate-100 hover:border-primary/20 hover:bg-white transition-all duration-300 group/tech">
               <span className="text-primary/60 group-hover/tech:text-primary transition-colors">
                 {getTechIcon(tech)}
               </span>
-              <span className="text-[9px] font-bold text-foreground/80">{tech}</span>
+              <span className="text-[9px] font-bold text-slate-600">{tech}</span>
             </div>
           ))}
           {hasMoreTech && (
             <button 
               onClick={(e) => { e.preventDefault(); setIsTechExpanded(!isTechExpanded); }}
-              className="px-2 py-1 bg-primary/5 hover:bg-primary/10 rounded-md border border-primary/20 transition-colors text-[9px] font-bold text-primary"
+              className="px-2 py-1 bg-primary/5 hover:bg-primary/10 rounded-lg border border-primary/10 transition-colors text-[9px] font-bold text-primary"
             >
               {isTechExpanded ? 'Less' : `+${techStack.length - 3}`}
             </button>
@@ -188,20 +202,23 @@ const MissionCard = ({ project, submittedProjectIds }) => {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between relative z-10 mt-auto pt-2">
-        <div className="flex -space-x-2">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="w-7 h-7 rounded-full bg-secondary border-2 border-background flex items-center justify-center shadow-sm">
-              <Users size={10} className="text-muted-foreground/60" />
-            </div>
-          ))}
-          <div className="w-7 h-7 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-[8px] font-bold text-primary">
-            +{Math.max(0, (project.contributorsCount || 0) - 3)}
+      <div className="flex items-center justify-between relative z-10 mt-auto pt-4 border-t border-slate-50">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full border border-slate-100 p-0.5 shadow-sm group-hover:border-primary/30 transition-colors duration-500 overflow-hidden bg-white">
+            <img 
+              src={project.owner?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${project.owner?.username || 'owner'}`} 
+              alt={project.owner?.username} 
+              className="w-full h-full rounded-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Owner</span>
+            <span className="text-[11px] font-bold text-slate-900 leading-none group-hover:text-primary transition-colors">@{project.owner?.username || 'unknown'}</span>
           </div>
         </div>
         
         <Link to={`/projects/${project._id || project.id}`}>
-          <Button size="sm" className="h-9 px-5 gap-2 rounded-lg font-bold text-xs uppercase tracking-wider group/btn">
+          <Button size="sm" className="h-9 px-5 gap-2 rounded-xl font-bold text-xs uppercase tracking-wider group/btn shadow-lg shadow-primary/10 hover:shadow-primary/20 transition-all">
             Engage
             <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
           </Button>
