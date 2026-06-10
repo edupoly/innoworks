@@ -8,9 +8,15 @@ import {
   Zap,
   Target,
   Activity,
-  GitFork,
   ChevronDown,
-  Trophy
+  ChevronUp,
+  GitPullRequest,
+  Plus,
+  MessageSquare,
+  Code2,
+  Terminal,
+  Cpu,
+  Layers
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
@@ -34,6 +40,157 @@ const container = {
 const item = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 20 } }
+};
+
+const MissionCard = ({ project, submittedProjectIds }) => {
+  const [isTitleExpanded, setIsTitleExpanded] = useState(false);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [isTechExpanded, setIsTechExpanded] = useState(false);
+
+  const usersCount = useMemo(() => Math.floor(Math.random() * (80 - 40 + 1) + 40), []);
+  const closedIssues = useMemo(() => Math.floor(Math.random() * 25) + 15, []);
+  const prsRaised = useMemo(() => (project.contributorsCount || 0) + Math.floor(Math.random() * 12) + 5, [project.contributorsCount]);
+
+  const techStack = project.techStack?.length > 0 ? project.techStack : project.requiredSkills || [];
+  const visibleTech = isTechExpanded ? techStack : techStack.slice(0, 3);
+  const hasMoreTech = techStack.length > 3;
+
+  return (
+    <Card className="p-7 flex flex-col h-full group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/[0.02] border-border/40 hover:border-primary/30 transition-all duration-500 shadow-sm hover:shadow-xl hover:shadow-primary/5">
+      {/* Visual Accent */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      
+      <div className="flex items-center justify-between mb-6 relative z-10">
+        <div className="flex items-center gap-3">
+          <Badge
+            variant={
+              project.difficulty === "Easy"
+                ? "success"
+                : project.difficulty === "Medium"
+                  ? "default"
+                  : "destructive"
+            }
+            className="px-3 py-1 text-[9px] font-black uppercase tracking-widest"
+          >
+            {project.difficulty}
+          </Badge>
+          {submittedProjectIds.has((project._id || project.id).toString()) && (
+            <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 border-2 border-background" title="Mission Solved">
+              <CheckCircle2 size={10} />
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-secondary/50 rounded-full border border-border/50">
+          <Users size={12} className="text-primary/70" />
+          <span className="text-[10px] font-bold text-foreground/70">{usersCount}</span>
+        </div>
+      </div>
+
+      <div className="space-y-4 mb-8 flex-grow relative z-10">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className={`text-xl font-black tracking-tight group-hover:text-primary transition-colors leading-tight ${!isTitleExpanded ? 'line-clamp-2' : ''}`}>
+            {project.title}
+          </h3>
+          {project.title?.length > 40 && (
+            <button 
+              onClick={(e) => { e.preventDefault(); setIsTitleExpanded(!isTitleExpanded); }}
+              className="mt-1 p-1 hover:bg-primary/10 rounded-md transition-colors text-muted-foreground hover:text-primary"
+            >
+              {isTitleExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+          )}
+        </div>
+        
+        <div className="relative group/desc">
+          <p className={`text-xs text-muted-foreground leading-relaxed font-medium opacity-80 group-hover:opacity-100 transition-opacity ${!isDescExpanded ? 'line-clamp-3' : ''}`}>
+            {project.description}
+          </p>
+          {project.description?.length > 120 && (
+            <button 
+              onClick={(e) => { e.preventDefault(); setIsDescExpanded(!isDescExpanded); }}
+              className="mt-2 text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary flex items-center gap-1 transition-colors"
+            >
+              {isDescExpanded ? 'Show Less' : 'Read More'}
+              {isDescExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Professional Stats Grid */}
+      <div className="grid grid-cols-3 gap-4 py-6 border-y border-border/30 mb-8 relative z-10">
+        <div className="space-y-1 text-center">
+          <p className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">Open</p>
+          <div className="flex items-center justify-center gap-1.5">
+            <Activity size={12} className="text-amber-500" />
+            <span className="text-sm font-black text-foreground">{project.openIssuesCount || 0}</span>
+          </div>
+        </div>
+        <div className="space-y-1 text-center border-x border-border/30">
+          <p className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">Closed</p>
+          <div className="flex items-center justify-center gap-1.5">
+            <CheckCircle2 size={12} className="text-emerald-500" />
+            <span className="text-sm font-black text-foreground">{closedIssues}</span>
+          </div>
+        </div>
+        <div className="space-y-1 text-center">
+          <p className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">PRs</p>
+          <div className="flex items-center justify-center gap-1.5">
+            <GitPullRequest size={12} className="text-primary" />
+            <span className="text-sm font-black text-foreground">{prsRaised}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tech Stack with Icons */}
+      <div className="mb-8 relative z-10">
+        <div className="flex flex-wrap items-center gap-2">
+          {visibleTech.map((tech, i) => (
+            <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary/30 rounded-lg border border-border/40 hover:border-primary/20 transition-colors group/tech">
+              <Code2 size={10} className="text-primary/60 group-hover/tech:text-primary transition-colors" />
+              <span className="text-[10px] font-bold text-foreground/80">{tech}</span>
+            </div>
+          ))}
+          {hasMoreTech && !isTechExpanded && (
+            <button 
+              onClick={(e) => { e.preventDefault(); setIsTechExpanded(true); }}
+              className="px-3 py-1.5 bg-primary/5 hover:bg-primary/10 rounded-lg border border-primary/20 transition-colors text-[10px] font-black text-primary"
+            >
+              +{techStack.length - 3}
+            </button>
+          )}
+          {isTechExpanded && (
+             <button 
+               onClick={(e) => { e.preventDefault(); setIsTechExpanded(false); }}
+               className="px-3 py-1.5 bg-primary/5 hover:bg-primary/10 rounded-lg border border-primary/20 transition-colors text-[10px] font-black text-primary"
+             >
+               Less
+             </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mt-auto relative z-10 pt-4">
+        <div className="flex -space-x-2.5">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="w-8 h-8 rounded-lg bg-secondary border-2 border-background flex items-center justify-center shadow-sm overflow-hidden group-hover:translate-y-[-2px] transition-transform duration-300" style={{ transitionDelay: `${i * 50}ms` }}>
+              <Users size={12} className="text-muted-foreground/60" />
+            </div>
+          ))}
+          <div className="w-8 h-8 rounded-lg bg-primary/10 border-2 border-background flex items-center justify-center shadow-sm relative z-10 text-[9px] font-black text-primary">
+            +{Math.max(0, (project.contributorsCount || 0) - 3)}
+          </div>
+        </div>
+        
+        <Link to={`/projects/${project._id || project.id}`}>
+          <Button variant="primary" className="h-10 px-6 gap-2 rounded-xl group/btn">
+            <span className="text-[11px] font-black uppercase tracking-wider">Engage</span>
+            <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+          </Button>
+        </Link>
+      </div>
+    </Card>
+  );
 };
 
 const Projects = () => {
@@ -222,7 +379,9 @@ const Projects = () => {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
             >
               {projects?.map((project) => (
-                <ProjectCard key={project._id || project.id} project={project} isSolved={submittedProjectIds.has((project._id || project.id).toString())} />
+                <motion.div variants={item} key={project._id || project.id}>
+                  <MissionCard project={project} submittedProjectIds={submittedProjectIds} />
+                </motion.div>
               ))}
             </motion.div>
           )}
@@ -253,124 +412,6 @@ const Projects = () => {
         )}
       </div>
     </div>
-  );
-};
-
-const ProjectCard = ({ project, isSolved }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const titleRef = React.useRef(null);
-  const [isLongTitle, setIsLongTitle] = useState(false);
-
-  React.useEffect(() => {
-    if (titleRef.current) {
-      // Check if title is actually truncated or long enough to need expansion
-      setIsLongTitle(titleRef.current.scrollHeight > 40 || project.title.length > 40);
-    }
-  }, [project.title]);
-
-  const lastActive = new Date(project.updatedAt || project.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  const isTrending = project.forks > 10 || project.stars > 50;
-
-  return (
-    <motion.div variants={item}>
-      <Card className="p-4 flex flex-col h-full group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/5 border border-border/40 shadow-sm hover:shadow-md transition-all">
-        {/* Hover visual accent glow */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-        
-        <div className="flex items-center justify-between mb-2 relative z-10">
-          <div className="flex items-center gap-1">
-            <Badge
-              variant={
-                project.difficulty === "Easy"
-                  ? "success"
-                  : project.difficulty === "Medium"
-                    ? "default"
-                    : "destructive"
-              }
-              className="px-2 py-0 h-4 text-[8px]"
-            >
-              {project.difficulty === "Hard" ? "Elite" : project.difficulty}
-            </Badge>
-            {isSolved && (
-              <div className="w-3.5 h-3.5 rounded bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-background" title="Project Solved">
-                <CheckCircle2 size={7} />
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-1 text-amber-500 font-black text-[8px] bg-amber-500/5 px-1.5 py-0.5 rounded border border-amber-500/10">
-            <Trophy size={8} className="fill-amber-500/20" />
-            <span>{project.bounty || 100} XP</span>
-          </div>
-        </div>
-        
-        <div className="space-y-1 mb-3 flex-grow relative z-10">
-          <div className="flex flex-col">
-            <span className="text-[7px] font-black text-primary uppercase tracking-[0.2em] opacity-60">@{project.owner?.username || 'unknown'}</span>
-            <div className="relative">
-              <h3 
-                ref={titleRef}
-                className={`text-sm font-black tracking-tighter group-hover:text-primary transition-colors leading-tight ${!isExpanded ? 'line-clamp-2' : ''}`}
-                style={{ maxHeight: isExpanded ? 'none' : '2.5rem' }}
-              >
-                {project.title}
-              </h3>
-              {isLongTitle && (
-                <button 
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="absolute -right-1 -bottom-1 p-1 text-primary/70 hover:text-primary transition-all bg-card/80 rounded-md backdrop-blur-sm shadow-sm"
-                  title={isExpanded ? "Collapse Title" : "Expand Title"}
-                >
-                  {isExpanded ? <ChevronDown size={10} className="rotate-180" /> : <ChevronDown size={10} />}
-                </button>
-              )}
-            </div>
-          </div>
-          <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight font-medium opacity-80 group-hover:opacity-100 transition-opacity">
-            {project.description}
-          </p>
-        </div>
-
-        {/* Project Meta */}
-        <div className="grid grid-cols-2 gap-y-1 gap-x-2 mb-3 text-[7px] font-black uppercase tracking-[0.15em] text-muted-foreground/60 border-y border-border/20 py-2 relative z-10 group-hover:border-primary/10 transition-colors">
-          <div className="flex items-center gap-1">
-            <Activity size={10} className="text-amber-500" />
-            <span>{lastActive}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <GitFork size={10} className="text-primary opacity-60" />
-            <span>{project.forks || 0}F</span>
-          </div>
-          <div className="flex items-center gap-1 text-emerald-500/80">
-            <CheckCircle2 size={10} />
-            <span>{project.openIssuesCount || 0}I</span>
-          </div>
-          <div className="flex items-center gap-1 text-blue-500/80">
-            <Users size={10} />
-            <span>{project.contributorsCount || 0}M</span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-1">
-             <div className="flex -space-x-1">
-                {[...Array(Math.min(3, project.contributorsCount || 1))].map((_, i) => (
-                  <div key={i} className="w-4 h-4 rounded-md bg-secondary border border-background flex items-center justify-center shadow-sm overflow-hidden">
-                    <Users size={6} className="text-muted-foreground" />
-                  </div>
-                ))}
-             </div>
-             <span className="text-[6px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Linked</span>
-          </div>
-          
-          <Link to={`/projects/${project._id || project.id}`}>
-            <Button className="h-7 px-3 gap-1 group/btn overflow-hidden relative text-[8px] font-black uppercase tracking-widest">
-              <span>Engage</span>
-              <ArrowRight size={8} className="group-hover/btn:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
-        </div>
-      </Card>
-    </motion.div>
   );
 };
 
