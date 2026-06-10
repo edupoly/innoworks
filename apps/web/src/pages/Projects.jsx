@@ -16,7 +16,16 @@ import {
   Code2,
   Terminal,
   Cpu,
-  Layers
+  Layers,
+  Atom,
+  Hexagon,
+  Play,
+  FileJson,
+  Shield,
+  Box,
+  Share2,
+  Palette,
+  Code
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMe } from "../hooks/useAuth";
@@ -55,13 +64,29 @@ const MissionCard = ({ project, submittedProjectIds }) => {
   const visibleTech = isTechExpanded ? techStack : techStack.slice(0, 3);
   const hasMoreTech = techStack.length > 3;
 
+  // Icon mapping for tech stack
+  const getTechIcon = (tech) => {
+    const t = tech.toLowerCase();
+    if (t.includes('react')) return <Atom size={12} />;
+    if (t.includes('node')) return <Hexagon size={12} />;
+    if (t.includes('python')) return <Play size={12} />;
+    if (t.includes('js') || t.includes('javascript')) return <FileJson size={12} />;
+    if (t.includes('ts') || t.includes('typescript')) return <Shield size={12} />;
+    if (t.includes('docker')) return <Box size={12} />;
+    if (t.includes('graphql')) return <Share2 size={12} />;
+    if (t.includes('css')) return <Palette size={12} />;
+    if (t.includes('html')) return <Code size={12} />;
+    return <Terminal size={12} />;
+  };
+
   return (
-    <Card className="p-7 flex flex-col h-full group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/[0.02] border-border/40 hover:border-primary/30 transition-all duration-500 shadow-sm hover:shadow-xl hover:shadow-primary/5">
-      {/* Visual Accent */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+    <Card className="p-6 flex flex-col h-full group relative overflow-hidden bg-card border-border/40 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-premium-hover">
+      {/* Visual background accent */}
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 blur-[80px] rounded-full group-hover:bg-primary/10 transition-colors duration-500" />
       
-      <div className="flex items-center justify-between mb-6 relative z-10">
-        <div className="flex items-center gap-3">
+      {/* Header: Difficulty & Users */}
+      <div className="flex items-center justify-between mb-5 relative z-10">
+        <div className="flex items-center gap-2">
           <Badge
             variant={
               project.difficulty === "Easy"
@@ -70,121 +95,120 @@ const MissionCard = ({ project, submittedProjectIds }) => {
                   ? "default"
                   : "destructive"
             }
-            className="px-3 py-1 text-[9px] font-black uppercase tracking-widest"
+            className="px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded-md"
           >
             {project.difficulty}
           </Badge>
           {submittedProjectIds.has((project._id || project.id).toString()) && (
-            <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 border-2 border-background" title="Mission Solved">
+            <div className="w-4 h-4 rounded bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20" title="Mission Solved">
               <CheckCircle2 size={10} />
             </div>
           )}
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-secondary/50 rounded-full border border-border/50">
-          <Users size={12} className="text-primary/70" />
-          <span className="text-[10px] font-bold text-foreground/70">{usersCount}</span>
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-secondary/30 rounded-lg border border-border/30">
+          <Users size={10} className="text-primary/70" />
+          <span className="text-[10px] font-black text-foreground/60 tabular-nums">{usersCount} Active</span>
         </div>
       </div>
 
-      <div className="space-y-4 mb-8 flex-grow relative z-10">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className={`text-xl font-black tracking-tight group-hover:text-primary transition-colors leading-tight ${!isTitleExpanded ? 'line-clamp-2' : ''}`}>
+      {/* Title Section */}
+      <div className="mb-4 relative z-10">
+        <div className="flex items-start justify-between gap-2 group/title">
+          <h3 className={`text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors leading-snug ${!isTitleExpanded ? 'line-clamp-2' : ''}`}>
             {project.title}
           </h3>
-          {project.title?.length > 40 && (
+          {(project.title?.length > 35) && (
             <button 
               onClick={(e) => { e.preventDefault(); setIsTitleExpanded(!isTitleExpanded); }}
-              className="mt-1 p-1 hover:bg-primary/10 rounded-md transition-colors text-muted-foreground hover:text-primary"
+              className="mt-1 opacity-0 group-hover/title:opacity-100 transition-opacity p-1 hover:bg-primary/10 rounded-md text-muted-foreground hover:text-primary"
             >
               {isTitleExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
           )}
         </div>
-        
-        <div className="relative group/desc">
-          <p className={`text-xs text-muted-foreground leading-relaxed font-medium opacity-80 group-hover:opacity-100 transition-opacity ${!isDescExpanded ? 'line-clamp-3' : ''}`}>
-            {project.description}
-          </p>
-          {project.description?.length > 120 && (
-            <button 
-              onClick={(e) => { e.preventDefault(); setIsDescExpanded(!isDescExpanded); }}
-              className="mt-2 text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary flex items-center gap-1 transition-colors"
-            >
-              {isDescExpanded ? 'Show Less' : 'Read More'}
-              {isDescExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-            </button>
-          )}
-        </div>
       </div>
 
-      {/* Professional Stats Grid */}
-      <div className="grid grid-cols-3 gap-4 py-6 border-y border-border/30 mb-8 relative z-10">
-        <div className="space-y-1 text-center">
-          <p className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">Open</p>
-          <div className="flex items-center justify-center gap-1.5">
+      {/* Description Section */}
+      <div className="mb-6 flex-grow relative z-10">
+        <p className={`text-xs text-muted-foreground leading-relaxed font-medium opacity-80 ${!isDescExpanded ? 'line-clamp-3' : ''}`}>
+          {project.description}
+        </p>
+        {project.description?.length > 100 && (
+          <button 
+            onClick={(e) => { e.preventDefault(); setIsDescExpanded(!isDescExpanded); }}
+            className="mt-2 text-[9px] font-bold uppercase tracking-widest text-primary/60 hover:text-primary transition-colors inline-flex items-center gap-1"
+          >
+            {isDescExpanded ? 'Show Less' : 'Read More'}
+            {isDescExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+          </button>
+        )}
+      </div>
+
+      {/* Stats Section */}
+      <div className="flex items-center justify-between gap-2 py-4 border-y border-border/20 mb-6 relative z-10">
+        <div className="flex flex-col items-center gap-1 flex-1">
+          <div className="flex items-center gap-1.5">
             <Activity size={12} className="text-amber-500" />
-            <span className="text-sm font-black text-foreground">{project.openIssuesCount || 0}</span>
+            <span className="text-xs font-bold tabular-nums">{project.openIssuesCount || 0}</span>
           </div>
+          <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-widest">Open</span>
         </div>
-        <div className="space-y-1 text-center border-x border-border/30">
-          <p className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">Closed</p>
-          <div className="flex items-center justify-center gap-1.5">
+        <div className="w-px h-6 bg-border/20" />
+        <div className="flex flex-col items-center gap-1 flex-1">
+          <div className="flex items-center gap-1.5">
             <CheckCircle2 size={12} className="text-emerald-500" />
-            <span className="text-sm font-black text-foreground">{closedIssues}</span>
+            <span className="text-xs font-bold tabular-nums">{closedIssues}</span>
           </div>
+          <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-widest">Closed</span>
         </div>
-        <div className="space-y-1 text-center">
-          <p className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">PRs</p>
-          <div className="flex items-center justify-center gap-1.5">
+        <div className="w-px h-6 bg-border/20" />
+        <div className="flex flex-col items-center gap-1 flex-1">
+          <div className="flex items-center gap-1.5">
             <GitPullRequest size={12} className="text-primary" />
-            <span className="text-sm font-black text-foreground">{prsRaised}</span>
+            <span className="text-xs font-bold tabular-nums">{prsRaised}</span>
           </div>
+          <span className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-widest">PRs</span>
         </div>
       </div>
 
-      {/* Tech Stack with Icons */}
-      <div className="mb-8 relative z-10">
-        <div className="flex flex-wrap items-center gap-2">
+      {/* Tech Stack */}
+      <div className="mb-6 relative z-10">
+        <div className="flex flex-wrap gap-2">
           {visibleTech.map((tech, i) => (
-            <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary/30 rounded-lg border border-border/40 hover:border-primary/20 transition-colors group/tech">
-              <Code2 size={10} className="text-primary/60 group-hover/tech:text-primary transition-colors" />
-              <span className="text-[10px] font-bold text-foreground/80">{tech}</span>
+            <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-secondary/20 rounded-md border border-border/30 hover:border-primary/20 transition-all duration-300 group/tech">
+              <span className="text-primary/60 group-hover/tech:text-primary transition-colors">
+                {getTechIcon(tech)}
+              </span>
+              <span className="text-[9px] font-bold text-foreground/80">{tech}</span>
             </div>
           ))}
-          {hasMoreTech && !isTechExpanded && (
+          {hasMoreTech && (
             <button 
-              onClick={(e) => { e.preventDefault(); setIsTechExpanded(true); }}
-              className="px-3 py-1.5 bg-primary/5 hover:bg-primary/10 rounded-lg border border-primary/20 transition-colors text-[10px] font-black text-primary"
+              onClick={(e) => { e.preventDefault(); setIsTechExpanded(!isTechExpanded); }}
+              className="px-2 py-1 bg-primary/5 hover:bg-primary/10 rounded-md border border-primary/20 transition-colors text-[9px] font-bold text-primary"
             >
-              +{techStack.length - 3}
+              {isTechExpanded ? 'Less' : `+${techStack.length - 3}`}
             </button>
           )}
-          {isTechExpanded && (
-             <button 
-               onClick={(e) => { e.preventDefault(); setIsTechExpanded(false); }}
-               className="px-3 py-1.5 bg-primary/5 hover:bg-primary/10 rounded-lg border border-primary/20 transition-colors text-[10px] font-black text-primary"
-             >
-               Less
-             </button>
-          )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-auto relative z-10 pt-4">
-        <div className="flex -space-x-2.5">
+      {/* Footer */}
+      <div className="flex items-center justify-between relative z-10 mt-auto pt-2">
+        <div className="flex -space-x-2">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="w-8 h-8 rounded-lg bg-secondary border-2 border-background flex items-center justify-center shadow-sm overflow-hidden group-hover:translate-y-[-2px] transition-transform duration-300" style={{ transitionDelay: `${i * 50}ms` }}>
-              <Users size={12} className="text-muted-foreground/60" />
+            <div key={i} className="w-7 h-7 rounded-full bg-secondary border-2 border-background flex items-center justify-center shadow-sm">
+              <Users size={10} className="text-muted-foreground/60" />
             </div>
           ))}
-          <div className="w-8 h-8 rounded-lg bg-primary/10 border-2 border-background flex items-center justify-center shadow-sm relative z-10 text-[9px] font-black text-primary">
+          <div className="w-7 h-7 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center text-[8px] font-bold text-primary">
             +{Math.max(0, (project.contributorsCount || 0) - 3)}
           </div>
         </div>
         
         <Link to={`/projects/${project._id || project.id}`}>
-          <Button variant="primary" className="h-10 px-6 gap-2 rounded-xl group/btn">
-            <span className="text-[11px] font-black uppercase tracking-wider">Engage</span>
+          <Button size="sm" className="h-9 px-5 gap-2 rounded-lg font-bold text-xs uppercase tracking-wider group/btn">
+            Engage
             <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
           </Button>
         </Link>
@@ -226,7 +250,7 @@ const Projects = () => {
   const skillsList = useMemo(() => ["React", "Node.js", "Python", "JavaScript", "TypeScript", "Express", "Docker", "GraphQL", "CSS", "HTML"], []);
 
   return (
-    <div className="py-4 max-w-7xl mx-auto px-6 lg:px-8 relative selection:bg-primary/20">
+    <div className="py-12 max-w-7xl mx-auto px-6 lg:px-8 relative selection:bg-primary/20">
       
       {/* Dynamic Ambient Background Elements */}
       <div className="absolute top-0 right-0 w-[50%] h-[500px] bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.05),transparent_70%)] -z-10 pointer-events-none" />
@@ -236,112 +260,110 @@ const Projects = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4"
+          className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-10"
         >
-          <div className="flex items-center gap-6">
-            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-gradient leading-none">
-              Active Projects
-            </h1>
-            <div className="flex items-center gap-2 pt-1">
-              <div className="w-4 h-4 bg-primary rounded flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 relative overflow-hidden">
-                <Target size={8} className="relative z-10" />
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-2xl shadow-primary/20 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" />
+                <Target size={20} className="relative z-10" />
               </div>
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary/70">Project Marketplace</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/70">Registry Hub</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-gradient leading-none">
+              Active Missions
+            </h1>
+            <p className="text-muted-foreground text-xl max-w-2xl font-medium leading-relaxed tracking-tight">Explore the global engineering grid and synchronize with high-impact open source challenges.</p>
+          </div>
+
+          <div className="flex items-center gap-4">
+             <div className="px-6 py-3.5 glass-card rounded-2xl flex items-center gap-3 shadow-xl shadow-black/5 border border-border/50">
+               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">{projects?.length || 0} SECTORS_OPEN</span>
+             </div>
+             <div className="px-6 py-3.5 glass-card rounded-2xl flex items-center gap-3 shadow-xl shadow-black/5 border border-border/50">
+               <Activity size={16} className="text-primary" />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">GRID_ONLINE</span>
+             </div>
+          </div>
+        </motion.div>
+
+        {/* Intelligence Filters Dashboard */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="glass-card rounded-[2.5rem] p-10 lg:p-12 mb-16 space-y-10 shadow-2xl shadow-black/5 border border-border/50 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Mission Designation Search */}
+            <div className="space-y-3">
+              <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-2">Designation Alpha</label>
+              <div className="relative group">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors z-10" size={20} />
+                <Input
+                  type="text"
+                  placeholder="Scan by mission title..."
+                  value={search}
+                  onChange={handleSetSearch}
+                  className="pl-14"
+                />
+              </div>
+            </div>
+
+            {/* Complexity Node Selector */}
+            <div className="space-y-3">
+              <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-2">Complexity Matrix</label>
+              <div className="relative group">
+                <select
+                  value={difficulty}
+                  onChange={handleSetDifficulty}
+                  className="w-full h-12 px-6 bg-background/50 border border-border/50 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
+                >
+                  <option value="">All Protocol Levels</option>
+                  <option value="Easy">Easy Phase</option>
+                  <option value="Medium">Standard Node</option>
+                  <option value="Hard">Elite Challenge</option>
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
+                  <ChevronDown size={18} />
+                </div>
+              </div>
+            </div>
+
+            {/* Registry Priority Sort */}
+            <div className="space-y-3">
+              <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-2">Signal Priority</label>
+              <div className="relative group">
+                <select
+                  value={sort}
+                  onChange={handleSetSort}
+                  className="w-full h-12 px-6 bg-background/50 border border-border/50 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
+                >
+                  <option value="recent">Sequence: Recent</option>
+                  <option value="trending">Sequence: Trending</option>
+                  <option value="most_active">Sequence: Active</option>
+                  <option value="most_contributors">Sequence: Linked</option>
+                  <option value="bounty">Sequence: Rewards</option>
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
+                  <ChevronDown size={18} />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-             <div className="px-3 py-1.5 glass-card rounded-lg flex items-center gap-3 shadow-lg shadow-black/5 border border-border/50">
-               <div className="flex items-center gap-2 pr-3 border-r border-border/50">
-                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500/50" />
-                 <span className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">{projects?.length || 0} ACTIVE PROJECTS</span>
-               </div>
-               <div className="flex items-center gap-2">
-                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-sm shadow-blue-500/50" />
-                 <span className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">
-                   {projects?.reduce((acc, p) => acc + (p.openIssuesCount || 0), 0) || 0} GLOBAL ISSUES
-                   </span>
-                   </div>
-                   </div>
-                   </div>
-                   </motion.div>
-
-                   {/* Intelligence Filters Dashboard */}
-                   <motion.div 
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   transition={{ duration: 0.6, delay: 0.1 }}
-                   className="glass-card rounded-2xl p-6 mb-6 space-y-5 shadow-xl shadow-black/5 border border-border/50 relative overflow-hidden"
-                   >
-                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
-
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                   {/* Project Search */}
-                   <div className="space-y-1.5">
-                   <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Search Projects</label>
-                   <div className="relative group">
-                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors z-10" size={16} />
-                   <Input
-                   type="text"
-                   placeholder="Filter by title..."
-                   value={search}
-                   onChange={handleSetSearch}
-                   className="pl-10 h-10 text-xs"
-                   />
-                   </div>
-                   </div>
-
-                   {/* Difficulty Selector */}
-                   <div className="space-y-1.5">
-                   <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Complexity</label>
-                   <div className="relative group">
-                   <select
-                   value={difficulty}
-                   onChange={handleSetDifficulty}
-                   className="w-full h-10 px-4 bg-background/50 border border-border/50 rounded-lg font-black text-[9px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
-                   >
-                   <option value="">All Levels</option>
-                   <option value="Easy">Standard</option>
-                   <option value="Medium">Advanced</option>
-                   <option value="Hard">Elite</option>
-                   </select>
-                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
-                   <ChevronDown size={14} />
-                   </div>
-                   </div>
-                   </div>
-
-                   {/* Sort Priority */}
-                   <div className="space-y-1.5">
-                   <label className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-1">Sort By</label>
-                   <div className="relative group">
-                   <select
-                   value={sort}
-                   onChange={handleSetSort}
-                   className="w-full h-10 px-4 bg-background/50 border border-border/50 rounded-lg font-black text-[9px] uppercase tracking-[0.2em] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 appearance-none shadow-inner cursor-pointer transition-all"
-                   >
-                   <option value="recent">Timestamp</option>
-                   <option value="trending">Popularity</option>
-                   <option value="most_active">Active Issues</option>
-                   <option value="most_contributors">Collaboration</option>
-                   <option value="bounty">XP Yield</option>
-                   </select>
-                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
-                   <ChevronDown size={14} />
-                   </div>
-                   </div>
-                   </div>
-                   </div>
-
           {/* Tech Matrix Filters */}
-          <div className="pt-5 border-t border-border/30 flex flex-wrap items-center gap-1.5">
+          <div className="pt-8 border-t border-border/30 flex flex-wrap items-center gap-3">
             <Button
               variant={!skill ? "primary" : "secondary"}
               size="sm"
               onClick={() => handleSetSkill("")}
-              className={`h-8 text-[9px] px-3 ${!skill ? "scale-105" : ""}`}
+              className={!skill ? "scale-105" : ""}
             >
-              All Stack
+              Full Stack
             </Button>
             
             {skillsList.map((s) => {
@@ -352,7 +374,7 @@ const Projects = () => {
                   variant={isSel ? "primary" : "secondary"}
                   size="sm"
                   onClick={() => handleSetSkill(s)}
-                  className={`h-8 text-[9px] px-3 ${isSel ? "scale-105" : ""}`}
+                  className={isSel ? "scale-105" : ""}
                 >
                   {s}
                 </Button>
@@ -364,19 +386,19 @@ const Projects = () => {
         {/* Grid Mission Listing */}
         <AnimatePresence mode="wait">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-32 space-y-6">
+            <div className="flex flex-col items-center justify-center py-48 space-y-8">
               <div className="relative">
-                <div className="w-12 h-12 border-2 border-primary/20 rounded-full" />
-                <div className="absolute inset-0 w-12 h-12 border-t-2 border-primary rounded-full animate-spin" />
+                <div className="w-16 h-16 border-2 border-primary/20 rounded-full" />
+                <div className="absolute inset-0 w-16 h-16 border-t-2 border-primary rounded-full animate-spin" />
               </div>
-              <p className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[9px] animate-pulse">Scanning Grid...</p>
+              <p className="text-muted-foreground font-black uppercase tracking-[0.4em] text-[10px] animate-pulse">Aggregating Global Signals...</p>
             </div>
           ) : (
             <motion.div 
               variants={container}
               initial="hidden"
               animate="show"
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
             >
               {projects?.map((project) => (
                 <motion.div variants={item} key={project._id || project.id}>
@@ -391,22 +413,21 @@ const Projects = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.98 }} 
             animate={{ opacity: 1, scale: 1 }} 
-            className="text-center py-32 glass-card rounded-2xl border-2 border-dashed border-border/50 max-w-xl mx-auto backdrop-blur-sm space-y-6"
+            className="text-center py-48 glass-card rounded-[3rem] border-2 border-dashed border-border/50 max-w-2xl mx-auto backdrop-blur-sm space-y-8"
           >
-            <div className="w-16 h-16 bg-primary/5 rounded-2xl flex items-center justify-center mx-auto relative">
-              <Search size={32} className="text-primary opacity-20" />
+            <div className="w-24 h-24 bg-primary/5 rounded-[2.5rem] flex items-center justify-center mx-auto relative">
+              <Search size={48} className="text-primary opacity-20" />
             </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-black tracking-tighter uppercase tracking-[0.1em]">No Projects Found</h2>
-              <p className="text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed opacity-60 px-8 uppercase text-[9px] tracking-[0.2em]">Your intelligence matrix returned zero matches. Adjust filters to reconnect.</p>
+            <div className="space-y-3">
+              <h2 className="text-3xl font-black tracking-tighter uppercase tracking-[0.1em]">Signal Lost</h2>
+              <p className="text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed opacity-60 px-10 uppercase text-[10px] tracking-[0.3em]">No protocols match your current intelligence matrix. Refine search parameters.</p>
             </div>
             <Button 
-              variant="secondary"
-              size="sm"
+              variant="ghost"
               onClick={() => { setSearch(""); setDifficulty(""); setSkill(""); setSort("recent"); }}
-              className="gap-2 mx-auto text-[9px] font-black uppercase tracking-widest h-9"
+              className="gap-3 mx-auto"
             >
-              <Zap size={12} fill="currentColor" /> Reset Grid
+              <Zap size={14} fill="currentColor" /> Reset All Terminals
             </Button>
           </motion.div>
         )}
