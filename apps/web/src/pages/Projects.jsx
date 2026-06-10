@@ -11,12 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
   GitPullRequest,
-  Plus,
-  MessageSquare,
-  Code2,
   Terminal,
-  Cpu,
-  Layers,
   Atom,
   Hexagon,
   Play,
@@ -36,7 +31,6 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
-import React from "react";
 
 const container = {
   hidden: { opacity: 0 },
