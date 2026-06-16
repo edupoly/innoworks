@@ -2,6 +2,7 @@ import { Router } from "express";
 import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { Submission } from '../models/Submission.js';
+import { AuditLog } from '../models/AuditLog.js';
 import { authenticate, verifyProjectOwnership } from '../middleware/auth.js';
 import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue, parseRepoUrl, createGithubBranch } from '../lib/github.js';
 import { detectTechStack } from '../lib/techDetection.js';
@@ -79,10 +80,55 @@ router.get("/:id/intelligence", authenticate, validateObjectId, async (req, res)
     }
 
     const { owner, repo } = parseRepoUrl(project.repoUrl);
-    const [intelligence, detectedTech] = await Promise.all([
+    
+    // Fetch GitHub wiki/docs folders in parallel
+    const [intelligence, detectedTech, localActivity, wikiFiles, docsFiles] = await Promise.all([
       fetchGraphQLRepositoryIntelligence(user.githubAccessToken, owner, repo),
-      detectTechStack(user.githubAccessToken, owner, repo)
+      detectTechStack(user.githubAccessToken, owner, repo),
+      AuditLog.find({ 
+        action: { $in: ['CREATE_WIKI_PAGE', 'UPDATE_WIKI_PAGE', 'APPROVE_WIKI_PAGE'] },
+        $or: [
+          { 'metadata.projectId': req.params.id },
+          { 'metadata.project': req.params.id },
+          { resourceId: req.params.id }
+        ]
+      })
+      .populate('actor', 'username')
+      .sort({ timestamp: -1 })
+      .limit(20),
+      getGithubFile(user.githubAccessToken, owner, repo, 'wiki').catch(() => []),
+      getGithubFile(user.githubAccessToken, owner, repo, 'docs').catch(() => [])
     ]);
+
+    // Aggregate wiki files from both folders
+    const allGhFiles = [
+      ...(Array.isArray(wikiFiles) ? wikiFiles : []),
+      ...(Array.isArray(docsFiles) ? docsFiles : [])
+    ].filter(f => f.name.endsWith('.md'));
+
+    intelligence.documentation = allGhFiles.map(f => ({
+      name: f.name,
+      path: f.path,
+      sha: f.sha,
+      url: f.html_url,
+      type: 'github'
+    }));
+
+    // Map local activity to feed format
+    const localFeed = localActivity.map(log => ({
+      type: 'wiki',
+      title: `${log.action.replace(/_/g, ' ')}: ${log.metadata?.title || 'Documentation Page'}`,
+      actor: log.actor?.username || 'System',
+      date: log.timestamp
+    }));
+
+    // Merge and sort
+    const combinedFeed = [
+      ...(intelligence.recentActivityFeed || []),
+      ...localFeed
+    ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
+
+    intelligence.recentActivityFeed = combinedFeed;
 
     // Sync stats back to Project document for freshness in the marketplace
     if (intelligence && intelligence.statistics) {
