@@ -30,8 +30,11 @@ router.get("/:projectId", authenticate, async (req, res) => {
       if (project && user && user.githubAccessToken && project.repoUrl) {
         const { owner, repo } = parseRepoUrl(project.repoUrl);
         
-        // Fetch contents of the 'wiki' folder
-        const wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'wiki').catch(() => null);
+        // Try 'wiki' folder then 'docs' folder
+        let wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'wiki').catch(() => null);
+        if (!Array.isArray(wikiFolder)) {
+          wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'docs').catch(() => null);
+        }
         
         if (Array.isArray(wikiFolder)) {
           for (const file of wikiFolder) {

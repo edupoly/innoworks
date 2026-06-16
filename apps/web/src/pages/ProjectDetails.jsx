@@ -535,7 +535,7 @@ const ProjectDetails = () => {
                   <div className="space-y-3">
                     {[
                       { label: "State", value: project?.status, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
-                      { label: "Matrix", value: project?.techStack?.join(", ") || "Unknown", color: "text-primary", bg: "bg-primary/10 border-primary/20" },
+                      { label: "Matrix", value: (project?.techStack?.length > 0 ? project.techStack.join(", ") : (project?.requiredSkills?.length > 0 ? project.requiredSkills.join(", ") : "Analyzing Technical Core...")), color: "text-primary", bg: "bg-primary/10 border-primary/20" },
                       { label: "Award", value: `${project?.bounty} Verified XP`, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" }
                     ].map((l, i) => (
                       <div key={i} className="space-y-1">

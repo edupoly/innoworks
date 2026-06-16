@@ -61,7 +61,9 @@ const MissionCard = ({ project, submittedProjectIds }) => {
   const closedIssues = useMemo(() => Math.floor(Math.random() * 25) + 15, []);
   const prsRaised = useMemo(() => (project.contributorsCount || 0) + Math.floor(Math.random() * 12) + 5, [project.contributorsCount]);
 
-  const techStack = project.techStack?.length > 0 ? project.techStack : project.requiredSkills || [];
+  const techStack = project.techStack?.length > 0 
+    ? project.techStack 
+    : (project.requiredSkills?.length > 0 ? project.requiredSkills : ["Analyzing Technical Core..."]);
   const visibleTech = isTechExpanded ? techStack : techStack.slice(0, 3);
   const hasMoreTech = techStack.length > 3;
 
