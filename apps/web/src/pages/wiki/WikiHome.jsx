@@ -76,7 +76,7 @@ const WikiHome = () => {
             <Link to="#" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary border border-primary/10 font-black text-xs uppercase tracking-widest">
               <FileText size={16} /> All Pages
             </Link>
-            <Link to="#" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/50 text-muted-foreground hover:text-foreground font-black text-xs uppercase tracking-widest transition-all">
+            <Link to={`/projects/${projectId}?tab=stats`} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/50 text-muted-foreground hover:text-foreground font-black text-xs uppercase tracking-widest transition-all">
               <Clock size={16} /> Recent Activity
             </Link>
           </nav>

@@ -15,6 +15,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import { useGetDockerAssetsQuery, useUploadDockerAssetMutation } from "../../store/api/dockerApiSlice";
 import { useGetProjectIntelligenceQuery } from "../../store/api/projectsApiSlice";
 import { useSelector } from "react-redux";
