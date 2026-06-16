@@ -31,57 +31,73 @@ router.get("/:projectId", optionalAuthenticate, async (req, res) => {
         if (project && user && user.githubAccessToken && project.repoUrl) {
           const { owner, repo } = parseRepoUrl(project.repoUrl);
           
-          // Try 'wiki' folder then 'docs' folder
-          let wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'wiki').catch(() => null);
-          if (!Array.isArray(wikiFolder)) {
-            wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'docs').catch(() => null);
+          const possibleFolders = ['wiki', 'Wiki', 'WIKI', 'docs', 'Docs', 'DOCS'];
+          let allGhFiles = [];
+
+          // Recursive function to scan for markdown files
+          const scanDir = async (path, depth = 0) => {
+            if (depth > 3) return; // Prevent too deep recursion
+            const items = await getGithubFile(user.githubAccessToken, owner, repo, path).catch(() => null);
+            if (!Array.isArray(items)) return;
+
+            for (const item of items) {
+              if (item.type === 'dir') {
+                await scanDir(item.path, depth + 1);
+              } else if (item.type === 'file' && (item.name.toLowerCase().endsWith('.md') || item.name.toLowerCase().endsWith('.markdown'))) {
+                allGhFiles.push(item);
+              }
+            }
+          };
+
+          for (const folderName of possibleFolders) {
+            await scanDir(folderName);
           }
           
-          if (Array.isArray(wikiFolder)) {
-            for (const file of wikiFolder) {
-              if (file.name.endsWith('.md')) {
-                const slug = file.name.replace('.md', '');
-                
-                // Fetch file content
-                const fileData = await getGithubFile(user.githubAccessToken, owner, repo, file.path);
-                if (!fileData || !fileData.content) continue;
-                
-                const decodedContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
-                const existingPage = await WikiPage.findOne({ project: projectId, slug });
-                
-                if (!existingPage) {
-                  // Create local page
-                  const title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                  const newPage = await WikiPage.create({
-                    title,
-                    slug,
-                    content: decodedContent,
-                    project: projectId,
-                    author: user._id,
-                    status: 'Published'
-                  });
+          if (allGhFiles.length > 0) {
+            for (const file of allGhFiles) {
+              const slug = file.name.replace(/\.(md|markdown)$/i, '');
+              
+              // Fetch file content
+              const fileData = await getGithubFile(user.githubAccessToken, owner, repo, file.path);
+              if (!fileData || !fileData.content) continue;
+              
+              const decodedContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
+              const existingPage = await WikiPage.findOne({ project: projectId, slug });
+              
+              if (!existingPage) {
+                // Create local page
+                const title = slug.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                const newPage = await WikiPage.create({
+                  title,
+                  slug,
+                  content: decodedContent,
+                  project: projectId,
+                  author: user._id,
+                  status: 'Published'
+                });
 
-                  // Add to project
-                  project.wikiPages.push(newPage._id);
-                  await project.save();
-                } else if (existingPage.content !== decodedContent && existingPage.status === 'Published') {
-                  // Update local page if content changed and it's already published
-                  existingPage.content = decodedContent;
-                  existingPage.updatedAt = Date.now();
-                  await existingPage.save();
-                  
-                  // Also create a version for history
-                  await WikiVersion.create({
-                    pageId: existingPage._id,
-                    content: decodedContent,
-                    updatedBy: user._id,
-                    versionNumber: (existingPage.currentVersion || 1) + 1,
-                    changeSummary: 'Synced from GitHub'
-                  });
-                  
-                  existingPage.currentVersion = (existingPage.currentVersion || 1) + 1;
-                  await existingPage.save();
-                }
+                // Add to project
+                project.wikiPages.push(newPage._id);
+                await project.save();
+              } else if (existingPage.content !== decodedContent) {
+                // Update local page if content changed
+                existingPage.content = decodedContent;
+                existingPage.updatedAt = Date.now();
+                
+                // If it was draft/pending, syncing from GH makes it the source of truth (Published)
+                existingPage.status = 'Published';
+                
+                // Also create a version for history
+                await WikiVersion.create({
+                  pageId: existingPage._id,
+                  content: decodedContent,
+                  updatedBy: user._id,
+                  versionNumber: (existingPage.currentVersion || 1) + 1,
+                  changeSummary: 'Synced from GitHub'
+                });
+                
+                existingPage.currentVersion = (existingPage.currentVersion || 1) + 1;
+                await existingPage.save();
               }
             }
           }
