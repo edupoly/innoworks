@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["-apple-system", "BlinkMacSystemFont", "Inter", "system-ui", "sans-serif"],
-        display: ["-apple-system", "BlinkMacSystemFont", "Cal Sans", "Inter", "system-ui", "sans-serif"],
+        sans: ["Roboto", "Inter", "system-ui", "sans-serif"],
+        display: ["Roboto", "Cal Sans", "Inter", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
