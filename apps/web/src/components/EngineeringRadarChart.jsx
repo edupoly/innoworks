@@ -4,21 +4,18 @@ import { memo } from "react";
 // Custom SVG Radar Chart component for professional grade engineering metrics
 export const EngineeringRadarChart = memo(({ stats, size = 320 }) => {
   const {
-    collaborationScore = 0,
-    innovationScore = 0,
-    consistencyScore = 0,
     communicationScore = 0,
-    perfectionScore = 0,
-    adaptabilityScore = 0
+    adaptabilityScore = 0,
+    categoryRatings = {}
   } = stats || {};
 
   const metrics = [
-    { label: "Collaboration", value: collaborationScore, color: "text-blue-500" },
-    { label: "Innovation", value: innovationScore, color: "text-purple-500" },
-    { label: "Consistency", value: consistencyScore, color: "text-emerald-500" },
-    { label: "Communication", value: communicationScore, color: "text-orange-500" },
-    { label: "Perfection", value: perfectionScore, color: "text-red-500" },
-    { label: "Adaptability", value: adaptabilityScore, color: "text-cyan-500" },
+    { label: "Code Quality", value: (categoryRatings.codeQuality || 5) * 10, color: "text-blue-500" },
+    { label: "Refactoring", value: (categoryRatings.refactoring || 5) * 10, color: "text-purple-500" },
+    { label: "Performance", value: (categoryRatings.performance || 5) * 10, color: "text-emerald-500" },
+    { label: "Innovation", value: (categoryRatings.innovation || 5) * 10, color: "text-orange-500" },
+    { label: "Communication", value: communicationScore || 50, color: "text-red-500" },
+    { label: "Adaptability", value: adaptabilityScore || 50, color: "text-cyan-500" },
   ];
 
   const center = size / 2;

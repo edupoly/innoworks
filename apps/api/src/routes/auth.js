@@ -8,6 +8,7 @@ import { authenticate } from '../middleware/auth.js';
 import { evaluateBadges } from '../lib/gamification.js';
 import { getRedisConnection } from '../lib/redis.js';
 import { recordLogin } from '../lib/consistency.js';
+import { getUserRank } from '../lib/leaderboard.js';
 
 const router = Router();
 
@@ -44,13 +45,14 @@ router.get("/me", authenticate, async (req, res) => {
     await evaluateBadges(user);
 
     // Fetch related data in parallel
-    const [submissions, ownedProjects, populatedAccepted] = await Promise.all([
+    const [submissions, ownedProjects, populatedAccepted, globalRank] = await Promise.all([
       Submission.find({ user: user._id }).populate('project').sort({ createdAt: -1 }),
       Project.find({ owner: user._id }).sort({ createdAt: -1 }),
       Project.find({ 
         _id: { $in: Array.from(new Set((user.acceptedProjects || []).map(id => id.toString()))) },
         status: 'OPEN'
-      }).select('title difficulty bounty repoUrl branchName')
+      }).select('title difficulty bounty repoUrl branchName'),
+      getUserRank(user._id)
     ]);
 
     const userData = user.toObject();
@@ -67,7 +69,8 @@ router.get("/me", authenticate, async (req, res) => {
       ...userData,
       submissions,
       ownedProjects,
-      acceptedProjects: populatedAccepted
+      acceptedProjects: populatedAccepted,
+      globalRank
     });
   } catch (error) {
     console.error("❌ Auth Me Error:", error.message);

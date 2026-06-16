@@ -115,8 +115,8 @@ const Dashboard = () => {
     const approvedCount = submissions.filter(s => ['APPROVED', 'MERGED'].includes(s.status)).length;
 
     return [
-      { label: "Aggregate XP", value: profile.xp || 0, icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
-      { label: "Engineering Rep", value: profile.reputationScore || 0, icon: Sparkles, color: "text-primary", bg: "bg-primary/10 border-primary/20" },
+      { label: "Global Rank", value: profile.globalRank ? `#${profile.globalRank}` : 'N/A', icon: Trophy, color: "text-yellow-500", bg: "bg-yellow-500/10 border-yellow-500/20" },
+      { label: "Aggregate XP", value: profile.xp || 0, icon: Zap, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
       { label: "Active Review", value: pendingCount, icon: Clock, color: "text-orange-500", bg: "bg-orange-500/10 border-orange-500/20" },
       { label: "Nodes Merged", value: approvedCount, icon: Award, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
     ];

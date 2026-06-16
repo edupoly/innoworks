@@ -100,7 +100,7 @@ router.put("/notifications/:id/read", authenticate, validateObjectId, async (req
     const notification = await Notification.findOneAndUpdate(
       { _id: req.params.id, user: req.user.userId },
       { $set: { read: true } },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!notification) return res.status(404).json({ message: "Notification not found" });
@@ -132,7 +132,7 @@ router.put("/profile", authenticate, async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user.userId,
       { $set: updateData },
-      { new: true }
+      { returnDocument: 'after' }
     ).select("-githubAccessToken");
     
     // Clear user profile cache

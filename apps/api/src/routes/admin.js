@@ -88,12 +88,18 @@ router.get("/moderation/list/:type", async (req, res) => {
       query.isVerified = verified === 'true';
     }
 
-    const items = await model.find(query)
+    let queryExec = model.find(query)
       .populate(populateField, 'username avatarUrl')
-      .populate('project', 'title')
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .sort({ isVerified: 1, createdAt: -1 }); 
+      .sort({ isVerified: 1, createdAt: -1 });
+
+    // Only populate 'project' if it's not the project model itself
+    if (type !== 'projects') {
+      queryExec = queryExec.populate('project', 'title');
+    }
+
+    const items = await queryExec;
 
     const count = await model.countDocuments(query);
 

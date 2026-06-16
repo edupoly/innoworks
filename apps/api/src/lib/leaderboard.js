@@ -32,6 +32,17 @@ export const getTopUsers = async (limit = 25) => {
 };
 
 /**
+ * Get a specific user's rank from Redis
+ */
+export const getUserRank = async (userId) => {
+  const redis = getRedisConnection();
+  if (!redis) return null;
+
+  const rank = await redis.zrevrank(LEADERBOARD_KEY, userId.toString());
+  return rank !== null ? rank + 1 : null;
+};
+
+/**
  * Rebuild the entire leaderboard from MongoDB
  */
 export const rebuildLeaderboard = async () => {

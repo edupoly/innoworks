@@ -14,7 +14,10 @@ const evaluationSchema = new mongoose.Schema({
     codeQuality: { type: Number, min: 1, max: 10, required: true },
     refactoring: { type: Number, min: 1, max: 10, required: true },
     performance: { type: Number, min: 1, max: 10, required: true },
-    collaboration: { type: Number, min: 1, max: 10, required: true }
+    collaboration: { type: Number, min: 1, max: 10, required: true },
+    innovation: { type: Number, min: 1, max: 10, default: 5 },
+    consistency: { type: Number, min: 1, max: 10, default: 5 },
+    perfection: { type: Number, min: 1, max: 10, default: 5 }
   },
   overallScore: { type: Number, required: true },
   feedback: { type: String },

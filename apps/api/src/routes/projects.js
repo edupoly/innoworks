@@ -434,7 +434,7 @@ router.put("/:id", authenticate, validateObjectId, verifyOwnership, validateProj
     const updated = await Project.findByIdAndUpdate(
       req.params.id,
       { $set: updateFields },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     // Clear project and marketplace cache

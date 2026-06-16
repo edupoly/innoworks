@@ -7,7 +7,10 @@ const EvaluationForm = ({ contributor, project, submissionId, onSuccess }) => {
     codeQuality: 5,
     refactoring: 5,
     performance: 5,
-    collaboration: 5
+    collaboration: 5,
+    innovation: 5,
+    consistency: 5,
+    perfection: 5
   });
   const [feedback, setFeedback] = useState('');
   const [submitEvaluation, { isLoading }] = useSubmitEvaluationMutation();
@@ -36,7 +39,10 @@ const EvaluationForm = ({ contributor, project, submissionId, onSuccess }) => {
     codeQuality: 'Code Quality',
     refactoring: 'Refactoring',
     performance: 'Performance',
-    collaboration: 'Collaboration'
+    collaboration: 'Collaboration',
+    innovation: 'Innovation',
+    consistency: 'Consistency',
+    perfection: 'Perfection'
   };
 
   return (

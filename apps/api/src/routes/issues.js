@@ -174,7 +174,7 @@ router.put("/:id", authenticate, async (req, res) => {
       return res.status(403).json({ message: "Access denied." });
     }
 
-    const updatedIssue = await Issue.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+    const updatedIssue = await Issue.findByIdAndUpdate(id, { $set: req.body }, { returnDocument: 'after' });
     
     // Add to timeline
     updatedIssue.timeline.push({

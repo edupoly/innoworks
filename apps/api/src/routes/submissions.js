@@ -64,7 +64,7 @@ router.post("/", authenticate, validateObjectId, validateSubmission, async (req,
           }]
         }
       },
-      { upsert: true, new: true, runValidators: true }
+      { upsert: true, returnDocument: 'after', runValidators: true }
     );
 
     // If it wasn't a new insert, we need to handle updates carefully

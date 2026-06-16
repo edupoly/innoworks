@@ -27,7 +27,7 @@ export const recordLogin = async (userId) => {
         $inc: { score: ACTIVITY_WEIGHTS.LOGIN },
         $push: { activities: { type: 'LOGIN', weight: ACTIVITY_WEIGHTS.LOGIN } }
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     // Update streak based on login (daily frequency)
@@ -56,7 +56,7 @@ export const recordActivity = async (userId, activityType) => {
         $inc: { score: weight },
         $push: { activities: { type: activityType, weight } }
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     // Update consistency score on every activity

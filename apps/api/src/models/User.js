@@ -61,7 +61,10 @@ const userSchema = new mongoose.Schema({
     codeQuality: { type: Number, default: 0 },
     refactoring: { type: Number, default: 0 },
     performance: { type: Number, default: 0 },
-    collaboration: { type: Number, default: 0 }
+    collaboration: { type: Number, default: 0 },
+    innovation: { type: Number, default: 0 },
+    consistency: { type: Number, default: 0 },
+    perfection: { type: Number, default: 0 }
   },
   verifiedContributionsCount: { type: Number, default: 0 },
   skills: { type: [String], default: [] },
