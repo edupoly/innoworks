@@ -45,16 +45,16 @@ router.get("/", cacheMiddleware(30), async (req, res) => {
       queryConditions.techStack = { $in: [tech] };
     }
     
-    let sortCondition = { createdAt: -1 }; // Default: Newest
+    let sortCondition = { isVerified: -1, createdAt: -1 }; // Default: Verified first, then Newest
     
     if (sort === 'trending') {
-      sortCondition = { stars: -1, forks: -1 };
+      sortCondition = { isVerified: -1, stars: -1, forks: -1 };
     } else if (sort === 'most_active') {
-      sortCondition = { openIssuesCount: -1 };
+      sortCondition = { isVerified: -1, openIssuesCount: -1 };
     } else if (sort === 'most_contributors') {
-      sortCondition = { contributorsCount: -1 };
+      sortCondition = { isVerified: -1, contributorsCount: -1 };
     } else if (sort === 'bounty') {
-      sortCondition = { bounty: -1 };
+      sortCondition = { isVerified: -1, bounty: -1 };
     }
 
     const projects = await Project.find(queryConditions)

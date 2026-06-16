@@ -52,9 +52,14 @@ const issueSchema = new mongoose.Schema({
   reactions: [{
     emoji: String,
     users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
-  }]
+  }],
+  isVerified: { type: Boolean, default: false },
+  verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  verifiedAt: { type: Date },
+  verificationReason: { type: String },
 }, { timestamps: true });
 
+issueSchema.index({ isVerified: -1 });
 issueSchema.index({ project: 1, status: 1 });
 issueSchema.index({ project: 1, githubIssueNumber: 1 });
 issueSchema.index({ author: 1 });

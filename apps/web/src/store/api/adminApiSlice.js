@@ -46,7 +46,24 @@ export const adminApiSlice = apiSlice.injectEndpoints({
     }),
     getAdminRequests: builder.query({
       query: ({ page = 1 }) => `/admin/requests?page=${page}`,
-      providesTags: ['ApprovalRequest'], // Need to add to tagTypes if not present, but can use 'Wiki' or custom
+      providesTags: ['ApprovalRequest'],
+    }),
+    getModerationStats: builder.query({
+      query: () => '/admin/moderation/stats',
+      providesTags: ['Moderation'],
+    }),
+    getModerationList: builder.query({
+      query: ({ type, page = 1, search = '', verified }) => 
+        `/admin/moderation/list/${type}?page=${page}&search=${search}${verified !== undefined ? `&verified=${verified}` : ''}`,
+      providesTags: (result, error, { type }) => [{ type: 'Moderation', id: type }],
+    }),
+    verifyItem: builder.mutation({
+      query: ({ type, id, verify, reason }) => ({
+        url: `/admin/moderation/verify/${type}/${id}`,
+        method: 'PUT',
+        body: { verify, reason },
+      }),
+      invalidatesTags: (result, error, { type }) => ['Moderation', 'Project', 'Issue', 'Submission', 'Wiki', { type: 'Moderation', id: type }],
     }),
   }),
 });
@@ -60,4 +77,7 @@ export const {
   useGetAdminProjectsQuery,
   useDeleteAdminProjectMutation,
   useGetAdminRequestsQuery,
+  useGetModerationStatsQuery,
+  useGetModerationListQuery,
+  useVerifyItemMutation,
 } = adminApiSlice;

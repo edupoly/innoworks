@@ -108,8 +108,9 @@ router.get("/:projectId", optionalAuthenticate, async (req, res) => {
     }
 
     const pages = await WikiPage.find({ project: projectId, status: 'Published' })
-      .select('title slug status author updatedAt')
-      .populate('author', 'username avatarUrl');
+      .select('title slug status author updatedAt isVerified')
+      .populate('author', 'username avatarUrl')
+      .sort({ isVerified: -1, updatedAt: -1 });
     res.json(pages);
   } catch (error) {
     console.error("❌ Wiki Fetch Error:", error.message);

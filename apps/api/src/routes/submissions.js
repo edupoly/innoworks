@@ -23,7 +23,7 @@ router.get("/testing/open", authenticate, async (req, res) => {
     })
     .populate('project', 'title description repoUrl branchName difficulty bounty')
     .populate('user', 'username avatarUrl')
-    .sort({ createdAt: -1 });
+    .sort({ isVerified: -1, createdAt: -1 });
 
     res.json(submissions);
   } catch (error) {
@@ -220,7 +220,7 @@ router.get("/project/:projectId", validateObjectId, async (req, res) => {
           select: 'username avatarUrl'
         }
       })
-      .sort({ createdAt: -1 });
+      .sort({ isVerified: -1, createdAt: -1 });
     res.json(submissions);
   } catch (error) {
     res.status(500).json({ message: "Error fetching submissions" });

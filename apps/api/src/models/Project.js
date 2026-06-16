@@ -40,8 +40,13 @@ const projectSchema = new mongoose.Schema({
     }],
     default: []
   },
+  isVerified: { type: Boolean, default: false },
+  verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  verifiedAt: { type: Date },
+  verificationReason: { type: String },
 }, { timestamps: true });
 
+projectSchema.index({ isVerified: -1 });
 projectSchema.index({ status: 1 });
 projectSchema.index({ owner: 1 });
 projectSchema.index({ repoUrl: 1 });

@@ -10,11 +10,16 @@ import {
   Fingerprint,
   Cpu,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Flame,
+  Star,
+  Verified
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EngineeringRadarChart } from "../components/EngineeringRadarChart";
 import { useGetUserProfileQuery } from "../store/api/usersApiSlice";
+import ActivityHeatmap from "../components/ui/ActivityHeatmap";
+import { useGetUserEvaluationsQuery } from "../store/api/evaluationsApiSlice";
 
 const Profile = () => {
   const { username } = useParams();
@@ -55,10 +60,10 @@ const Profile = () => {
   );
 
   const stats = [
-    { label: "Reputation", value: profile.reputationScore, color: "text-indigo-500", bg: "bg-indigo-500/10", icon: Sparkles },
-    { label: "Aggregate XP", value: profile.xp, color: "text-amber-500", bg: "bg-amber-500/10", icon: Trophy },
-    { label: "Projects", value: profile.acceptedProjects?.length || 0, color: "text-emerald-500", bg: "bg-emerald-500/10", icon: Target },
-    { label: "Nodes Merged", value: profile.submissions?.filter(s => s.status === 'MERGED').length || 0, color: "text-primary", bg: "bg-primary/10", icon: Cpu }
+    { label: "Rating", value: profile.overallRating ? `${profile.overallRating}/10` : 'N/A', color: "text-amber-500", bg: "bg-amber-500/10", icon: Star },
+    { label: "Current Streak", value: `${profile.currentStreak || 0} Days`, color: "text-orange-500", bg: "bg-orange-500/10", icon: Flame },
+    { label: "Verified", value: profile.verifiedContributionsCount || 0, color: "text-green-500", bg: "bg-green-500/10", icon: Verified },
+    { label: "Aggregate XP", value: profile.xp, color: "text-indigo-500", bg: "bg-indigo-500/10", icon: Trophy }
   ];
 
   return (
@@ -164,6 +169,86 @@ const Profile = () => {
           {/* Main Contribution Node */}
           <div className="lg:col-span-2 space-y-8">
             
+            {/* Consistency Heatmap */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-3 ml-2">
+                <div className="w-1 h-1 rounded-full bg-orange-500 shadow-sm shadow-orange-500/50" />
+                <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">
+                  Consistency_Heatmap
+                </h3>
+              </div>
+              <div className="bg-card rounded-2xl p-6 border border-border/40 shadow-sm">
+                <ActivityHeatmap activities={profile.dailyActivities || []} />
+                <div className="mt-4 flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                      <div>
+                        <p className="text-[8px] font-black text-muted-foreground uppercase">Longest Streak</p>
+                        <p className="text-xs font-black text-foreground">{profile.longestStreak || 0} Days</p>
+                      </div>
+                      <div>
+                        <p className="text-[8px] font-black text-muted-foreground uppercase">Monthly Consistency</p>
+                        <p className="text-xs font-black text-foreground">{profile.monthlyConsistency || 0}%</p>
+                      </div>
+                   </div>
+                   <div className="text-right">
+                      <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <Flame size={12} /> {profile.currentStreak || 0} Day Fire
+                      </p>
+                   </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Evaluation Registry */}
+            <section className="space-y-6">
+              <div className="flex items-center justify-between ml-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-1 h-1 rounded-full bg-indigo-500 shadow-sm shadow-indigo-500/50" />
+                  <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">
+                    Evaluation_Reports
+                  </h3>
+                </div>
+                <span className="text-[8px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-500/10 px-2.5 py-0.5 rounded-lg border border-indigo-500/20">{evaluations?.length || 0} LOGGED</span>
+              </div>
+              
+              <div className="space-y-4">
+                {evaluations?.length > 0 ? (
+                  evaluations.map((ev) => (
+                    <div key={ev._id} className="bg-card rounded-2xl p-6 border border-border/40 space-y-4 shadow-sm hover:border-primary/30 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <img src={ev.evaluator?.avatarUrl} alt="" className="w-8 h-8 rounded-lg border shadow-sm" />
+                          <div>
+                            <p className="text-xs font-black">Evaluated by @{ev.evaluator?.username}</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">For {ev.project?.title}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                           <div className="text-xl font-black text-primary tracking-tighter">{ev.overallScore}/10</div>
+                           <p className="text-[8px] text-muted-foreground uppercase font-black tracking-tighter opacity-40">{new Date(ev.createdAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-foreground/70 leading-relaxed font-medium italic border-l-2 border-primary/20 pl-4">"{ev.feedback}"</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                        {Object.entries(ev.categories).map(([key, val]) => (
+                          <div key={key} className="space-y-1">
+                            <p className="text-[7px] font-black text-muted-foreground uppercase tracking-wider">{key.replace(/([A-Z])/g, ' $1')}</p>
+                            <div className="h-1 bg-muted/50 rounded-full overflow-hidden">
+                              <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${val * 10}%` }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-12 text-center bg-card rounded-2xl border-2 border-dashed border-border/50">
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">No official evaluations synchronized.</p>
+                  </div>
+                )}
+              </div>
+            </section>
+
             {/* Visual Performance Matrix */}
             <section className="space-y-4">
               <div className="flex items-center gap-3 ml-2">

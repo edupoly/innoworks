@@ -12,7 +12,11 @@ import {
   ShieldAlert,
   Trash2,
   CheckCircle2,
-  Clock
+  Clock,
+  ShieldCheck,
+  Zap,
+  CheckSquare,
+  GitPullRequest
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -23,12 +27,14 @@ import {
   useGetAuditLogsQuery,
   useGetAdminProjectsQuery,
   useDeleteAdminProjectMutation,
-  useGetAdminRequestsQuery
+  useGetAdminRequestsQuery,
+  useGetModerationStatsQuery
 } from "../../store/api/adminApiSlice";
 import { DASHBOARD_ROLES } from "../../lib/constants";
+import ModerationDashboard from "./ModerationDashboard";
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("users"); // 'users', 'projects', 'requests', 'logs', 'system'
+  const [activeTab, setActiveTab] = useState("moderation"); // 'users', 'projects', 'requests', 'logs', 'system', 'moderation'
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
@@ -36,6 +42,7 @@ const AdminDashboard = () => {
   const { data: logData, isLoading: loadingLogs } = useGetAuditLogsQuery({ page: 1 });
   const { data: projectData, isLoading: loadingProjects } = useGetAdminProjectsQuery({ page, search }, { skip: activeTab !== 'projects' });
   const { data: requestData, isLoading: loadingRequests } = useGetAdminRequestsQuery({ page }, { skip: activeTab !== 'requests' });
+  const { data: modStats, isLoading: loadingStats } = useGetModerationStatsQuery();
 
   const [updateRole, { isLoading: isUpdating }] = useUpdateUserRoleMutation();
   const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateUserStatusMutation();
@@ -93,7 +100,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 selection:bg-primary/30">
-      <header className="mb-16">
+      <header className="mb-12">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-primary/10 text-primary rounded-xl">
             <ShieldAlert size={24} />
@@ -105,31 +112,86 @@ const AdminDashboard = () => {
         </p>
       </header>
 
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="bg-card border border-border/50 rounded-[2rem] p-8 shadow-sm">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-yellow-500/10 text-yellow-600 rounded-2xl">
+              <Zap size={24} />
+            </div>
+            <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Platform Issues</h3>
+          </div>
+          <p className="text-4xl font-black">{loadingStats ? '...' : modStats?.totalOpenIssues || 0}</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase mt-2">Active anomalies across grid</p>
+        </div>
+        <div className="bg-card border border-border/50 rounded-[2rem] p-8 shadow-sm">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl">
+              <CheckSquare size={24} />
+            </div>
+            <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Verified Issues</h3>
+          </div>
+          <p className="text-4xl font-black">{loadingStats ? '...' : modStats?.approvedIssues || 0}</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase mt-2">Validated issue nodes</p>
+        </div>
+        <div className="bg-card border border-border/50 rounded-[2rem] p-8 shadow-sm">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-2xl">
+              <GitPullRequest size={24} />
+            </div>
+            <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Merged PRs</h3>
+          </div>
+          <p className="text-4xl font-black">{loadingStats ? '...' : modStats?.approvedPRs || 0}</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase mt-2">High-fidelity contributions</p>
+        </div>
+        <div className="bg-card border border-border/50 rounded-[2rem] p-8 shadow-sm">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+              <ShieldCheck size={24} />
+            </div>
+            <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Verified Projects</h3>
+          </div>
+          <p className="text-4xl font-black">{loadingStats ? '...' : modStats?.verifiedProjects || 0}</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase mt-2">Elite mission clusters</p>
+        </div>
+      </div>
+
       {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-1.5 p-1.5 bg-muted/30 rounded-[2rem] border border-border/50 w-fit mb-12">
         {[
-          { id: "users", label: "User Management", icon: Users },
-          { id: "projects", label: "Global Projects", icon: Briefcase },
-          { id: "requests", label: "Approval Requests", icon: ShieldAlert },
-          { id: "logs", label: "Audit Logs", icon: History },
-          { id: "system", label: "Global Settings", icon: Settings },
+          { id: "moderation", label: "Moderation", icon: ShieldCheck },
+          { id: "users", label: "Users", icon: Users },
+          { id: "projects", label: "Projects", icon: Briefcase },
+          { id: "requests", label: "Approvals", icon: ShieldAlert },
+          { id: "logs", label: "Audit", icon: History },
+          { id: "system", label: "Settings", icon: Settings },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2.5 px-8 py-3.5 rounded-[1.8rem] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
+            className={`flex items-center gap-2.5 px-6 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
               activeTab === tab.id 
                 ? "bg-primary text-primary-foreground shadow-xl shadow-primary/20" 
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }`}
           >
-            <tab.icon size={16} />
+            <tab.icon size={14} />
             {tab.label}
           </button>
         ))}
       </div>
 
       <AnimatePresence mode="wait">
+        {activeTab === "moderation" && (
+          <motion.div
+            key="moderation"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <ModerationDashboard />
+          </motion.div>
+        )}
         {activeTab === "users" && (
           <motion.div
             key="users"

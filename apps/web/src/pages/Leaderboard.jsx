@@ -1,5 +1,20 @@
 import { useState, useMemo, memo } from "react";
-import { Trophy, Crown, User, Calendar, Award, Zap, Activity, ChevronRight, Search } from "lucide-react";
+import { 
+  Trophy, 
+  Crown, 
+  User, 
+  Calendar, 
+  Award, 
+  Zap, 
+  Activity, 
+  ChevronRight, 
+  Search,
+  Verified,
+  Star,
+  Flame,
+  GitPullRequest,
+  CheckCircle2
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useGetLeaderboardQuery } from "../store/api/usersApiSlice";
@@ -9,22 +24,15 @@ import { Input } from "../components/ui/Input";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 
-const Metric = memo(({ label, value }) => {
-  return (
-    <div className="text-center w-14">
-      <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-2">{label}</p>
-      <div className="relative w-full h-1.5 bg-secondary rounded-full overflow-hidden shadow-inner">
-        <motion.div 
-          initial={{ width: 0 }}
-          animate={{ width: `${value || 0}%` }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="absolute top-0 left-0 h-full bg-primary shadow-[0_0_10px_rgba(99,102,241,0.5)]"
-        />
-      </div>
-      <p className="text-[9px] font-black mt-2 tabular-nums">{value || 0}%</p>
+const Metric = memo(({ label, value, color, icon: Icon }) => (
+  <div className="text-center min-w-[70px] group-hover:scale-105 transition-transform flex flex-col items-center gap-1">
+    <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1 opacity-50">{label}</p>
+    <div className="flex items-center gap-1.5">
+       {Icon && <Icon size={12} className={`${color} opacity-70`} fill="currentColor" className={`${color} fill-current opacity-20`} />}
+       <p className={`text-xs font-black tracking-tighter ${color || 'text-foreground'}`}>{value}</p>
     </div>
-  );
-});
+  </div>
+));
 Metric.displayName = "Metric";
 
 const LeaderboardRow = memo(({ user, rank, period }) => {
@@ -34,59 +42,63 @@ const LeaderboardRow = memo(({ user, rank, period }) => {
     <motion.div 
       whileHover={{ x: 3 }}
     >
-      <Card className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/[0.01] border border-border/40 shadow-sm">
+      <Card className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 group relative overflow-hidden bg-gradient-to-br from-card via-card to-primary/[0.01] border border-border/40 shadow-sm hover:border-primary/40 transition-all duration-300">
         <div className="flex items-center gap-6">
-          <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center font-black text-muted-foreground border border-border/50 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-500 shadow-sm tabular-nums text-[10px]">
-            {rank}
+          <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center font-black text-muted-foreground border border-border/50 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-500 shadow-sm tabular-nums text-xs">
+            #{rank}
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             <div className="relative group/avatar">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-primary/20 to-indigo-400/20 p-[1.5px] shrink-0 border border-border/30 group-hover:border-primary/40 transition-all duration-500 overflow-hidden shadow-lg">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary/20 to-indigo-400/20 p-[2px] shrink-0 border border-border/30 group-hover:border-primary/40 transition-all duration-500 overflow-hidden shadow-xl">
                 <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
               </div>
             </div>
-            <div className="space-y-0.5 min-w-0 flex-1">
-              <h3 className="text-lg font-black tracking-tighter flex items-center gap-2.5 truncate max-w-[180px] md:max-w-xs">
-                <span className="truncate">{user.username}</span>
-                {user.badges?.length > 0 && (
-                  <Badge variant="default" className="shadow-md shadow-primary/10 text-[7px] px-1.5 py-0 h-4">
-                    {user.badges[0].icon || "🏆"} {user.badges[0].name}
-                  </Badge>
-                )}
+            <div className="space-y-1.5 min-w-0 flex-1">
+              <h3 className="text-xl font-black tracking-tighter flex items-center gap-2.5 truncate max-w-[200px] md:max-w-xs">
+                <span className="truncate uppercase text-gradient">@{user.username}</span>
+                <div className="flex items-center gap-1.5 ml-2">
+                  {user.verifiedContributionsCount > 0 && (
+                    <Verified size={16} fill="currentColor" className="text-green-500 fill-green-500/10" title="Verified Contributor" />
+                  )}
+                  {user.overallRating > 8 && (
+                    <Star size={16} fill="currentColor" className="text-amber-500 fill-amber-500/10" title="High Quality" />
+                  )}
+                  {user.currentStreak > 5 && (
+                    <Flame size={16} fill="currentColor" className="text-orange-500 fill-orange-500/10" title="Consistent" />
+                  )}
+                </div>
               </h3>
               <div className="flex items-center gap-3">
-                <Badge variant="default" className="border-none bg-primary/10 gap-1.5 px-2 py-0 h-4 text-[7px]">
-                  <Zap size={8} className="fill-primary" />
+                <Badge variant="default" className="border-none bg-primary/10 text-primary gap-1.5 px-2.5 py-0.5 h-5 text-[8px] font-black uppercase tracking-widest">
+                  <Zap size={10} className="fill-primary" />
                   LVL {user.level}
                 </Badge>
                 <div className="w-1 h-1 rounded-full bg-border" />
-                <div className="text-[8px] font-black uppercase text-muted-foreground tracking-[0.1em]">
-                  {user.xp} XP_AGGREGATE
+                <div className="text-[9px] font-black uppercase text-muted-foreground tracking-widest opacity-60">
+                  {user.xp} XP_SYNC
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-8 justify-between md:justify-end">
-          {period === 'all_time' && (
-            <div className="hidden lg:flex items-center gap-6 border-r border-border/30 pr-8 py-0.5">
-              <Metric label="Collab" value={user.collaborationScore} />
-              <Metric label="Inno" value={user.innovationScore} />
-              <Metric label="Cons" value={user.consistencyScore} />
-              <Metric label="Perf" value={user.perfectionScore} />
-            </div>
-          )}
+        <div className="flex items-center gap-10 justify-between md:justify-end w-full md:w-auto">
+          <div className="hidden md:flex items-center gap-8 border-r border-border/30 pr-10">
+             <Metric label="Rating" value={`${user.overallRating || '0.0'}/10`} color="text-amber-500" icon={Star} />
+             <Metric label="Streak" value={`${user.currentStreak || 0}d`} color="text-orange-500" icon={Flame} />
+             <Metric label="PRs" value={user.contributionStats?.mergedPrsCount || 0} color="text-indigo-500" icon={GitPullRequest} />
+             <Metric label="Issues" value={user.contributionStats?.issuesCount || 0} color="text-emerald-500" icon={CheckCircle2} />
+          </div>
           
-          <div className="text-right min-w-[80px] space-y-0.5">
-            <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">Reputation</p>
-            <p className="text-2xl font-black text-foreground tracking-tighter group-hover:text-primary transition-colors tabular-nums leading-none">{user.reputationScore}</p>
+          <div className="text-right min-w-[100px] space-y-0.5">
+            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40">Verified</p>
+            <p className="text-3xl font-black text-foreground tracking-tighter group-hover:text-primary transition-colors tabular-nums leading-none">{user.verifiedContributionsCount || 0}</p>
           </div>
           
           <Link to={`/profile/${user.username}`}>
-            <Button variant="secondary" size="icon" className="w-8 h-8 group-hover:bg-primary group-hover:text-white group-hover:shadow-primary/20">
-              <ChevronRight size={16} />
+            <Button variant="secondary" size="icon" className="w-10 h-10 rounded-xl bg-muted/50 border border-border/50 hover:bg-primary hover:text-white hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all duration-500">
+              <ChevronRight size={20} />
             </Button>
           </Link>
         </div>
@@ -144,14 +156,18 @@ const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) 
            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary">{user.xp} XP_SYNC</span>
          </Badge>
          
-         <div className="grid grid-cols-2 gap-8 w-full pt-6 border-t border-border/30">
+         <div className="grid grid-cols-3 gap-4 w-full pt-6 border-t border-border/30">
             <div className="text-center space-y-0.5">
-              <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.25em] opacity-60 leading-none">Reputation</p>
-              <p className="text-xl font-black text-foreground tabular-nums leading-none">{user.reputationScore}</p>
+              <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60 leading-none">Rating</p>
+              <p className="text-lg font-black text-amber-500 tabular-nums leading-none">{user.overallRating || '0.0'}</p>
             </div>
             <div className="text-center space-y-0.5">
-              <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.25em] opacity-60 leading-none">Badges</p>
-              <p className="text-xl font-black text-foreground tabular-nums leading-none">{user.badges?.length || 0}</p>
+              <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60 leading-none">Streak</p>
+              <p className="text-lg font-black text-orange-500 tabular-nums leading-none">{user.currentStreak || 0}d</p>
+            </div>
+            <div className="text-center space-y-0.5">
+              <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60 leading-none">Verified</p>
+              <p className="text-lg font-black text-primary tabular-nums leading-none">{user.verifiedContributionsCount || 0}</p>
             </div>
          </div>
       </div>
@@ -322,4 +338,3 @@ const Leaderboard = () => {
 };
 
 export default Leaderboard;
-

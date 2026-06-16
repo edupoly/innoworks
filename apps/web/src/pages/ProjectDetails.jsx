@@ -59,10 +59,12 @@ import RepoPicker from "../components/RepoPicker";
 import BranchPicker from "../components/BranchPicker";
 import ProjectAssets from "../components/project/ProjectAssets";
 import ProjectIssues from "../components/project/ProjectIssues";
+import EvaluationForm from "../components/project/EvaluationForm";
 import { setCredentials } from "../store/slices/authSlice";
 import { useMe } from "../hooks/useAuth";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
+import VerifiedBadge from "../components/ui/VerifiedBadge";
 
 const ProjectDetails = () => {
   const queryClient = useQueryClient();
@@ -111,6 +113,9 @@ const ProjectDetails = () => {
   const [testSuccess, setTestSuccess] = useState(false);
   const [testError, setTestError] = useState("");
   const [submittingTest, setSubmittingTest] = useState(false);
+
+  // Evaluation states
+  const [evaluatingSubmission, setEvaluatingSubmission] = useState(null);
 
   const lastActive = useMemo(() => {
     if (!intelligence?.commitAnalytics?.recentCommits?.length) return "Inactive";
@@ -337,9 +342,10 @@ const ProjectDetails = () => {
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative flex-1 min-w-0">
                   <h1 
-                    className={`text-lg font-black tracking-tighter text-gradient leading-none truncate ${isTitleExpanded ? 'whitespace-normal overflow-visible' : 'truncate'}`}
+                    className={`text-lg font-black tracking-tighter text-gradient leading-none truncate ${isTitleExpanded ? 'whitespace-normal overflow-visible' : 'truncate'} flex items-center gap-2`}
                   >
                     {project?.title}
+                    {project?.isVerified && <VerifiedBadge size="md" />}
                   </h1>
                   {project?.title?.length > 40 && (
                     <button 
@@ -678,6 +684,17 @@ const ProjectDetails = () => {
                                  {isRejecting ? 'TERMINATING...' : 'Reject Link'}
                                </motion.button>
                              </div>
+                           )}
+
+                           {sub.status === 'MERGED' && (
+                             <motion.button
+                               whileHover={{ scale: 1.02 }}
+                               whileTap={{ scale: 0.98 }}
+                               onClick={() => setEvaluatingSubmission(sub)}
+                               className="px-8 py-3 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-primary hover:text-white transition-all shadow-sm"
+                             >
+                               <Star size={14} className="fill-current" /> Performance Review
+                             </motion.button>
                            )}
                          </div>
                        </div>
@@ -1425,6 +1442,33 @@ const ProjectDetails = () => {
       </AnimatePresence>
 
       <AnimatePresence>
+        {evaluatingSubmission && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEvaluatingSubmission(null)} className="absolute inset-0 bg-background/90 backdrop-blur-2xl" />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl"
+            >
+               <div className="absolute top-8 right-8 z-50">
+                  <button onClick={() => setEvaluatingSubmission(null)} className="p-3 bg-secondary/80 text-muted-foreground hover:text-foreground rounded-2xl border border-border/50 transition-all shadow-sm">
+                    <X size={24} />
+                  </button>
+               </div>
+               <EvaluationForm 
+                contributor={evaluatingSubmission.user} 
+                project={project} 
+                submissionId={evaluatingSubmission._id} 
+                onSuccess={() => {
+                  setEvaluatingSubmission(null);
+                  alert("Contributor evaluation published to the grid.");
+                }}
+               />
+            </motion.div>
+          </div>
+        )}
+
         {isEditing && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditing(false)} className="absolute inset-0 bg-background/90 backdrop-blur-2xl" />

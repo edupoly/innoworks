@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { useGetWikiPagesQuery } from "../../store/api/wikiApiSlice";
 import { useGetProjectQuery } from "../../store/api/projectsApiSlice";
 import { useSelector } from "react-redux";
+import VerifiedBadge from "../../components/ui/VerifiedBadge";
 
 const WikiHome = () => {
   const { projectId } = useParams();
@@ -94,7 +95,10 @@ const WikiHome = () => {
                 >
                   <Link to={`/projects/${projectId}/wiki/${page.slug}`} className="block h-full flex flex-col justify-between">
                     <div>
-                      <h3 className="text-xl font-black mb-4 tracking-tight group-hover:text-primary transition-colors">{page.title}</h3>
+                      <div className="flex items-center gap-2 mb-4">
+                        <h3 className="text-xl font-black mb-4 tracking-tight group-hover:text-primary transition-colors">{page.title}</h3>
+                        {page.isVerified && <VerifiedBadge size="sm" />}
+                      </div>
                       <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-8">
                         <span className="flex items-center gap-1.5"><User size={12} /> {page.author?.username}</span>
                         <span className="w-1 h-1 rounded-full bg-border"></span>

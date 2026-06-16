@@ -25,7 +25,7 @@ export const getTopUsers = async (limit = 25) => {
 
   // Fetch user details from MongoDB in one go
   const users = await User.find({ _id: { $in: topUserIds } })
-    .select('username avatarUrl xp level reputationScore badges collaborationScore innovationScore consistencyScore communicationScore perfectionScore adaptabilityScore');
+    .select('username avatarUrl xp level badges overallRating currentStreak verifiedContributionsCount contributionStats communicationScore adaptabilityScore');
 
   // Sort them back in the order of Redis rankings
   return topUserIds.map(id => users.find(u => u._id.toString() === id)).filter(Boolean);

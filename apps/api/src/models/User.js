@@ -48,6 +48,22 @@ const userSchema = new mongoose.Schema({
   communicationScore: { type: Number, default: 0 },
   perfectionScore: { type: Number, default: 0 },
   adaptabilityScore: { type: Number, default: 0 },
+  // Contributor Consistency Engine fields
+  currentStreak: { type: Number, default: 0 },
+  longestStreak: { type: Number, default: 0 },
+  monthlyConsistency: { type: Number, default: 0 },
+  lastActivityDate: { type: Date },
+  graceDaysUsed: { type: Number, default: 0 },
+  streakResetDate: { type: Date },
+  // Contributor Evaluation & Rating Engine fields
+  overallRating: { type: Number, default: 0 },
+  categoryRatings: {
+    codeQuality: { type: Number, default: 0 },
+    refactoring: { type: Number, default: 0 },
+    performance: { type: Number, default: 0 },
+    collaboration: { type: Number, default: 0 }
+  },
+  verifiedContributionsCount: { type: Number, default: 0 },
   skills: { type: [String], default: [] },
   acceptedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: [] }],
   badges: { type: [badgeSchema], default: [] },

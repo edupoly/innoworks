@@ -4,6 +4,7 @@ import { Project } from '../models/Project.js';
 import { sendNotification } from './notifications.js';
 import { broadcast, emitToUser } from './socket.js';
 import { updateUserRank } from './leaderboard.js';
+import { recordActivity } from './consistency.js';
 
 // Scoring config
 export const XP_VALUES = {
@@ -39,6 +40,17 @@ export const awardXP = async (userId, xpAmount, actionReason) => {
     const previousLevel = user.level;
     user.xp += xpAmount;
 
+    // Record activity for consistency engine
+    const consistencyActionMap = {
+      'PR_MERGED': 'PR_MERGED',
+      'ISSUE_SOLVED': 'ISSUE_RESOLVED',
+      'PR_APPROVED': 'REVIEW_ADDED',
+      'TESTING_REVIEW': 'REVIEW_ADDED'
+    };
+    if (consistencyActionMap[actionReason]) {
+      await recordActivity(userId, consistencyActionMap[actionReason]);
+    }
+
     // Increment reputation and engineering scores based on action
     if (actionReason === 'PR_MERGED') {
       user.reputationScore += REPUTATION_WEIGHTS.MERGED_PR;
@@ -48,6 +60,7 @@ export const awardXP = async (userId, xpAmount, actionReason) => {
       user.innovationScore += 5;
       user.adaptabilityScore += 4;
       user.contributionStats.mergedPrsCount += 1;
+      user.verifiedContributionsCount += 1;
     } else if (actionReason === 'PR_APPROVED') {
       user.reputationScore += REPUTATION_WEIGHTS.APPROVED_PR;
       user.collaborationScore += 8;
@@ -66,6 +79,7 @@ export const awardXP = async (userId, xpAmount, actionReason) => {
       user.adaptabilityScore += 12;
       user.consistencyScore += 6;
       user.contributionStats.issuesCount += 1;
+      user.verifiedContributionsCount += 1;
     } else if (actionReason === 'PROJECT_POSTED') {
       user.reputationScore += REPUTATION_WEIGHTS.POSTED_PROJECT;
       user.innovationScore += 25;

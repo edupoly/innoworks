@@ -66,6 +66,6 @@ export const apiSlice = createApi({
   refetchOnFocus: true,
   refetchOnReconnect: true,
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['User', 'Project', 'Submission', 'Notification', 'Leaderboard', 'Repos', 'AdminUsers', 'AuditLogs', 'Wiki', 'WikiPage', 'Issue', 'Docker', 'ApprovalRequest'],
+  tagTypes: ['User', 'Project', 'Submission', 'Notification', 'Leaderboard', 'Repos', 'AdminUsers', 'AuditLogs', 'Wiki', 'WikiPage', 'Issue', 'Docker', 'ApprovalRequest', 'Evaluation', 'Moderation'],
   endpoints: () => ({}),
 });

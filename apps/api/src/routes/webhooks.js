@@ -5,7 +5,9 @@ import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { Review } from '../models/Review.js';
 import { Issue } from '../models/Issue.js';
+import { Evaluation } from '../models/Evaluation.js';
 import { awardXP, XP_VALUES } from '../lib/gamification.js';
+import { recordActivity } from '../lib/consistency.js';
 import { sendNotification } from '../lib/notifications.js';
 import { clearCache } from '../middleware/cache.js';
 
@@ -113,6 +115,11 @@ if (githubApp) {
 
       // Notify Owner or Assigned users
       if (action === "opened") {
+        const creator = await User.findOne({ username: payload.issue.user.login });
+        if (creator) {
+          await recordActivity(creator._id, 'ISSUE_CREATED');
+        }
+
         await sendNotification(
           project.owner,
           'ISSUE_CREATED',
@@ -291,6 +298,18 @@ if (githubApp) {
 
         // Award Merged XP! (200 XP)
         await awardXP(submission.user._id, XP_VALUES.PR_MERGED, 'PR_MERGED');
+
+        // Create Pending Evaluation for Project Owner
+        await Evaluation.create({
+          contributor: submission.user._id,
+          evaluator: project.owner,
+          project: project._id,
+          submission: submission._id,
+          type: 'GITHUB_MERGE',
+          categories: { codeQuality: 1, refactoring: 1, performance: 1, collaboration: 1 },
+          overallScore: 0,
+          isPending: true
+        });
         
         // Clear caches on merge
         clearCache(`/users/profile/${submission.user.username}`);

@@ -7,6 +7,7 @@ import { Submission } from '../models/Submission.js';
 import { authenticate } from '../middleware/auth.js';
 import { evaluateBadges } from '../lib/gamification.js';
 import { getRedisConnection } from '../lib/redis.js';
+import { recordLogin } from '../lib/consistency.js';
 
 const router = Router();
 
@@ -35,6 +36,9 @@ router.get("/me", authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select("-githubAccessToken");
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Record login for streaks
+    await recordLogin(user._id);
 
     // Automatically evaluate and award badges on each session sync
     await evaluateBadges(user);

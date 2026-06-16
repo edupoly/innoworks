@@ -38,6 +38,7 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
+import VerifiedBadge from "../components/ui/VerifiedBadge";
 
 const container = {
   hidden: { opacity: 0 },
@@ -124,9 +125,12 @@ const MissionCard = ({ project, submittedProjectIds }) => {
       {/* Title Section */}
       <div className="mb-4 relative z-10">
         <div className="flex items-start justify-between gap-2 group/title">
-          <h3 className={`text-lg font-bold tracking-tight text-slate-900 group-hover:text-primary transition-colors leading-snug ${!isTitleExpanded ? 'line-clamp-2' : ''}`}>
-            {project.title}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className={`text-lg font-bold tracking-tight text-slate-900 group-hover:text-primary transition-colors leading-snug ${!isTitleExpanded ? 'line-clamp-2' : ''}`}>
+              {project.title}
+            </h3>
+            {project.isVerified && <VerifiedBadge size="sm" />}
+          </div>
           {(project.title?.length > 35) && (
             <button 
               onClick={(e) => { e.preventDefault(); setIsTitleExpanded(!isTitleExpanded); }}

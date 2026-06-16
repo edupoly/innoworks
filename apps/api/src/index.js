@@ -16,6 +16,7 @@ import adminRoutes from './routes/admin.js';
 import wikiRoutes from './routes/wiki.js';
 import issueRoutes from './routes/issues.js';
 import dockerRoutes from './routes/docker.js';
+import evaluationsRoutes from './routes/evaluations.js';
 import "./workers/testWorker.js";
 import connectDB from "./lib/mongodb.js";
 import mongoose from "mongoose";
@@ -132,6 +133,7 @@ app.use("/admin", adminRoutes);
 app.use("/wiki", wikiRoutes);
 app.use("/issues", issueRoutes);
 app.use("/docker", dockerRoutes);
+app.use("/evaluations", evaluationsRoutes);
 
 const PORT = process.env.PORT || 4000;
 

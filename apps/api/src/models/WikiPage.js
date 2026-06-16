@@ -22,9 +22,14 @@ const wikiPageSchema = new mongoose.Schema({
     url: String,
     thumbnail: String
   }],
-  currentVersion: { type: Number, default: 1 }
+  currentVersion: { type: Number, default: 1 },
+  isVerified: { type: Boolean, default: false },
+  verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  verifiedAt: { type: Date },
+  verificationReason: { type: String },
 }, { timestamps: true });
 
+wikiPageSchema.index({ isVerified: -1 });
 wikiPageSchema.index({ project: 1, slug: 1 }, { unique: true });
 wikiPageSchema.index({ status: 1 });
 

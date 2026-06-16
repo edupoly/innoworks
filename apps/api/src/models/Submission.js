@@ -29,7 +29,11 @@ const submissionSchema = new mongoose.Schema({
     type: [String], // Array of action reasons: ['PR_APPROVED', 'PR_MERGED', 'TESTING_REVIEW']
     default: []
   },
-  timeline: [timelineEventSchema]
+  timeline: [timelineEventSchema],
+  isVerified: { type: Boolean, default: false },
+  verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  verifiedAt: { type: Date },
+  verificationReason: { type: String },
 }, { 
   timestamps: true,
   toJSON: { virtuals: true },
@@ -43,6 +47,7 @@ submissionSchema.virtual('reviews', {
   foreignField: 'submission'
 });
 
+submissionSchema.index({ isVerified: -1 });
 submissionSchema.index({ project: 1, user: 1 }, { unique: true });
 submissionSchema.index({ status: 1 });
 submissionSchema.index({ prNumber: 1 });

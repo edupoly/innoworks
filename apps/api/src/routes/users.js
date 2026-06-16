@@ -27,22 +27,31 @@ router.get("/leaderboard", cacheMiddleware(10), async (req, res) => {
 
     // Fallback to MongoDB for other periods or if Redis is empty
     let users = [];
+    const selectFields = 'username avatarUrl xp level badges overallRating currentStreak verifiedContributionsCount contributionStats categoryRatings communicationScore adaptabilityScore';
+    const sortCondition = { 
+      verifiedContributionsCount: -1, 
+      overallRating: -1, 
+      currentStreak: -1, 
+      "contributionStats.mergedPrsCount": -1, 
+      "contributionStats.issuesCount": -1 
+    };
+
     if (period === 'weekly') {
       users = await User.find()
-        .sort({ reputationScore: -1 })
+        .sort(sortCondition)
         .limit(20)
-        .select('username avatarUrl xp level reputationScore badges');
+        .select(selectFields);
     } else if (period === 'monthly') {
       users = await User.find()
-        .sort({ xp: -1, reputationScore: -1 })
+        .sort(sortCondition)
         .limit(20)
-        .select('username avatarUrl xp level reputationScore badges');
+        .select(selectFields);
     } else {
       // Default: All Time
       users = await User.find()
-        .sort({ xp: -1 })
+        .sort(sortCondition)
         .limit(25)
-        .select('username avatarUrl xp level reputationScore badges collaborationScore innovationScore consistencyScore communicationScore perfectionScore adaptabilityScore');
+        .select(selectFields);
     }
 
     res.json(users);

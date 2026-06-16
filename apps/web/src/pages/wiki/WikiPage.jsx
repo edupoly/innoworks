@@ -11,6 +11,7 @@ import { useGetWikiPageQuery } from "../../store/api/wikiApiSlice";
 import { useSelector } from "react-redux";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import VerifiedBadge from "../../components/ui/VerifiedBadge";
 
 const WikiPage = () => {
   const { projectId, slug } = useParams();
@@ -69,7 +70,10 @@ const WikiPage = () => {
 
       <article className="bg-card border border-border/50 rounded-[3rem] p-10 md:p-16 shadow-sm relative overflow-hidden">
         <header className="mb-12 border-b border-border/30 pb-12">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-8 leading-tight">{page.title}</h1>
+          <div className="flex items-center gap-3 mb-8">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">{page.title}</h1>
+            {page.isVerified && <VerifiedBadge size="lg" />}
+          </div>
           <div className="flex flex-wrap items-center gap-6 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-muted overflow-hidden border border-border/50">

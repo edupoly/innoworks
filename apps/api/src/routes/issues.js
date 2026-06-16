@@ -83,7 +83,7 @@ router.get("/:projectId", authenticate, async (req, res) => {
     const issues = await Issue.find({ project: projectId })
       .populate('author', 'username avatarUrl')
       .populate('assignees', 'username avatarUrl')
-      .sort({ createdAt: -1 });
+      .sort({ isVerified: -1, createdAt: -1 });
     res.json(issues);
   } catch (error) {
     console.error("❌ Fetch Issues Error:", error.message);
