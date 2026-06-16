@@ -4,7 +4,7 @@ import { User } from '../models/User.js';
 import { Submission } from '../models/Submission.js';
 import { AuditLog } from '../models/AuditLog.js';
 import { authenticate, verifyProjectOwnership } from '../middleware/auth.js';
-import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue, parseRepoUrl, createGithubBranch } from '../lib/github.js';
+import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue, parseRepoUrl, createGithubBranch, getGithubFile } from '../lib/github.js';
 import { detectTechStack } from '../lib/techDetection.js';
 import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';

@@ -108,7 +108,9 @@ export const detectTechStack = async (accessToken, owner, repo) => {
         if (subFiles.some(f => f.name.toLowerCase() === 'package.json')) {
           packageFiles.push(`${dir}/package.json`);
         }
-      } catch (e) {}
+      } catch (e) {
+        // Ignore directory parsing errors
+      }
     }
 
     for (const pkgPath of packageFiles) {
@@ -141,7 +143,9 @@ export const detectTechStack = async (accessToken, owner, repo) => {
           if (lowerContent.includes('pandas') || lowerContent.includes('numpy')) techStack.add('Data Science');
           if (lowerContent.includes('tensorflow') || lowerContent.includes('torch')) techStack.add('AI/ML');
         }
-      } catch (e) {}
+      } catch (e) {
+        // Ignore parsing errors for Python files
+      }
     }
 
     // 5. Get languages from GitHub API
@@ -163,7 +167,9 @@ export const detectTechStack = async (accessToken, owner, repo) => {
           techStack.add(lang);
         }
       });
-    } catch (e) {}
+    } catch (e) {
+      // Ignore API errors
+    }
 
     return Array.from(techStack);
   } catch (error) {
@@ -175,7 +181,7 @@ export const detectTechStack = async (accessToken, owner, repo) => {
 const analyzeDependencies = (deps, techStack) => {
   const depNames = Object.keys(deps).map(d => d.toLowerCase());
   
-  for (const [category, techs] of Object.entries(TECH_MAP)) {
+  for (const [, techs] of Object.entries(TECH_MAP)) {
     for (const [techName, markers] of Object.entries(techs)) {
       if (markers.some(marker => depNames.some(d => d.includes(marker)))) {
         // Use proper naming from mapping

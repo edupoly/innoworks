@@ -61,6 +61,53 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
+export const optionalAuthenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  if (!authHeader) {
+    return next();
+  }
+
+  const parts = authHeader.split(" ");
+  if (parts.length !== 2 || parts[0] !== "Bearer") {
+    return next();
+  }
+
+  const token = parts[1];
+
+  try {
+    const redis = getRedisConnection();
+    if (redis) {
+      const isBlocklisted = await redis.get(`blocklist:${token}`);
+      if (isBlocklisted) return next();
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (!decoded.userId) return next();
+
+    if (redis) {
+      const isUserBlocklisted = await redis.get(`blocklist_user:${decoded.userId}`);
+      if (isUserBlocklisted) return next();
+    }
+
+    let rawRole = decoded.role || 'Developer';
+    let normalizedRole = 'Developer';
+    
+    if (rawRole.toUpperCase() === 'ADMIN') normalizedRole = 'Admin';
+    else if (rawRole.toUpperCase() === 'PROJECT_OWNER' || rawRole.toUpperCase() === 'PROJECT OWNER') normalizedRole = 'Project Owner';
+    else if (rawRole.toUpperCase() === 'TEAM') normalizedRole = 'Team';
+    
+    req.user = {
+      ...decoded,
+      role: normalizedRole,
+      permissions: decoded.permissions || []
+    };
+    next();
+  } catch (error) {
+    // If token is invalid or expired, we just proceed as unauthenticated
+    next();
+  }
+};
+
 export const verifyProjectOwnership = (ProjectModel) => async (req, res, next) => {
   try {
     const projectId = req.params.projectId || req.params.id || req.body.projectId;

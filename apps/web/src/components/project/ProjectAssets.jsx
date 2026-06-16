@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   Box, 
   FileCode2, 
@@ -308,7 +308,7 @@ const ProjectAssets = ({ projectId }) => {
                     </div>
                     
                     <div className="prose prose-invert prose-sm max-w-none font-mono text-slate-400">
-                       <p className="text-slate-500 italic mb-6">// Analyzing GitHub Documentation State...</p>
+                       <p className="text-slate-500 italic mb-6">{"// Analyzing GitHub Documentation State..."}</p>
                        <h2 className="text-white text-lg font-black tracking-tight mb-4 uppercase">Project Intelligence</h2>
                        <p className="leading-relaxed mb-6">High-fidelity synchronization grid detected. Documentation is automatically archived and indexed for engineering efficiency.</p>
                        

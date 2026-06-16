@@ -4,7 +4,7 @@ import { WikiVersion } from '../models/WikiVersion.js';
 import { ApprovalRequest } from '../models/ApprovalRequest.js';
 import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, optionalAuthenticate } from '../middleware/auth.js';
 import { authorize, logAudit } from '../middleware/rbac.js';
 import { getGithubFile, createOrUpdateGithubFile, parseRepoUrl } from '../lib/github.js';
 import slugify from 'slugify';
@@ -18,71 +18,77 @@ const getSlug = (text) => slugify(text, { lower: true, strict: true });
  * GET /projects/:projectId/wiki
  * List all published wiki pages for a project (Syncs with GitHub first if possible)
  */
-router.get("/:projectId", authenticate, async (req, res) => {
+router.get("/:projectId", optionalAuthenticate, async (req, res) => {
   try {
     const { projectId } = req.params;
     
-    // Try to sync with GitHub
-    try {
-      const project = await Project.findById(projectId);
-      const user = await User.findById(req.user.userId);
-      
-      if (project && user && user.githubAccessToken && project.repoUrl) {
-        const { owner, repo } = parseRepoUrl(project.repoUrl);
+    // Try to sync with GitHub if authenticated
+    if (req.user) {
+      try {
+        const project = await Project.findById(projectId);
+        const user = await User.findById(req.user.userId);
         
-        // Try 'wiki' folder then 'docs' folder
-        let wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'wiki').catch(() => null);
-        if (!Array.isArray(wikiFolder)) {
-          wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'docs').catch(() => null);
-        }
-        
-        if (Array.isArray(wikiFolder)) {
-          for (const file of wikiFolder) {
-            if (file.name.endsWith('.md')) {
-              const slug = file.name.replace('.md', '');
-              
-              // Fetch file content
-              const fileData = await getGithubFile(user.githubAccessToken, owner, repo, file.path);
-              if (!fileData || !fileData.content) continue;
-              
-              const decodedContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
-              const existingPage = await WikiPage.findOne({ project: projectId, slug });
-              
-              if (!existingPage) {
-                // Create local page
-                const title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                await WikiPage.create({
-                  title,
-                  slug,
-                  content: decodedContent,
-                  project: projectId,
-                  author: user._id,
-                  status: 'Published'
-                });
-              } else if (existingPage.content !== decodedContent && existingPage.status === 'Published') {
-                // Update local page if content changed and it's already published
-                existingPage.content = decodedContent;
-                existingPage.updatedAt = Date.now();
-                await existingPage.save();
+        if (project && user && user.githubAccessToken && project.repoUrl) {
+          const { owner, repo } = parseRepoUrl(project.repoUrl);
+          
+          // Try 'wiki' folder then 'docs' folder
+          let wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'wiki').catch(() => null);
+          if (!Array.isArray(wikiFolder)) {
+            wikiFolder = await getGithubFile(user.githubAccessToken, owner, repo, 'docs').catch(() => null);
+          }
+          
+          if (Array.isArray(wikiFolder)) {
+            for (const file of wikiFolder) {
+              if (file.name.endsWith('.md')) {
+                const slug = file.name.replace('.md', '');
                 
-                // Also create a version for history
-                await WikiVersion.create({
-                  pageId: existingPage._id,
-                  content: decodedContent,
-                  updatedBy: user._id,
-                  versionNumber: existingPage.currentVersion + 1,
-                  changeSummary: 'Synced from GitHub'
-                });
+                // Fetch file content
+                const fileData = await getGithubFile(user.githubAccessToken, owner, repo, file.path);
+                if (!fileData || !fileData.content) continue;
                 
-                existingPage.currentVersion += 1;
-                await existingPage.save();
+                const decodedContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
+                const existingPage = await WikiPage.findOne({ project: projectId, slug });
+                
+                if (!existingPage) {
+                  // Create local page
+                  const title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                  const newPage = await WikiPage.create({
+                    title,
+                    slug,
+                    content: decodedContent,
+                    project: projectId,
+                    author: user._id,
+                    status: 'Published'
+                  });
+
+                  // Add to project
+                  project.wikiPages.push(newPage._id);
+                  await project.save();
+                } else if (existingPage.content !== decodedContent && existingPage.status === 'Published') {
+                  // Update local page if content changed and it's already published
+                  existingPage.content = decodedContent;
+                  existingPage.updatedAt = Date.now();
+                  await existingPage.save();
+                  
+                  // Also create a version for history
+                  await WikiVersion.create({
+                    pageId: existingPage._id,
+                    content: decodedContent,
+                    updatedBy: user._id,
+                    versionNumber: (existingPage.currentVersion || 1) + 1,
+                    changeSummary: 'Synced from GitHub'
+                  });
+                  
+                  existingPage.currentVersion = (existingPage.currentVersion || 1) + 1;
+                  await existingPage.save();
+                }
               }
             }
           }
         }
+      } catch (syncError) {
+        console.error("⚠️ Failed to sync wiki from GitHub:", syncError.message);
       }
-    } catch (syncError) {
-      console.error("⚠️ Failed to sync wiki from GitHub:", syncError.message);
     }
 
     const pages = await WikiPage.find({ project: projectId, status: 'Published' })
@@ -165,18 +171,13 @@ router.post("/:projectId", authenticate, authorize('Team'), async (req, res) => 
  */
 router.put("/:projectId/:pageId", authenticate, authorize('Team'), async (req, res) => {
   try {
-    const { pageId } = req.params;
+    const { pageId, projectId } = req.params;
     const { content, changeSummary } = req.body;
 
     const page = await WikiPage.findById(pageId);
     if (!page) return res.status(404).json({ message: "Wiki page not found" });
 
-    // In a real app, we'd calculate a diff here
-    
-    const newVersionNumber = page.currentVersion + 1;
-
-    // If it's already Published, updating it might set it back to Draft or Pending depending on workflow
-    // For now, let's keep status as is if it's already Published, otherwise it's a Draft update
+    const newVersionNumber = (page.currentVersion || 1) + 1;
     
     await WikiVersion.create({
       pageId: page._id,
@@ -189,6 +190,40 @@ router.put("/:projectId/:pageId", authenticate, authorize('Team'), async (req, r
     page.content = content;
     page.currentVersion = newVersionNumber;
     await page.save();
+
+    // Replicate to GitHub if already published
+    if (page.status === 'Published') {
+      try {
+        const project = await Project.findById(projectId);
+        const user = await User.findById(req.user.userId);
+        if (user && user.githubAccessToken && project && project.repoUrl) {
+          const { owner, repo } = parseRepoUrl(project.repoUrl);
+          const path = `wiki/${page.slug}.md`;
+          let sha = null;
+          
+          try {
+            const existingFile = await getGithubFile(user.githubAccessToken, owner, repo, path);
+            if (existingFile && existingFile.sha) {
+              sha = existingFile.sha;
+            }
+          } catch (e) {
+            // File might not exist yet, ignore
+          }
+
+          await createOrUpdateGithubFile(
+            user.githubAccessToken,
+            owner,
+            repo,
+            path,
+            `docs: Update wiki page ${page.title}`,
+            content,
+            sha
+          );
+        }
+      } catch (ghError) {
+        console.error("⚠️ Failed to replicate wiki update to GitHub:", ghError.message);
+      }
+    }
 
     await logAudit(req, 'UPDATE_WIKI_PAGE', 'WikiPage', page._id, { version: newVersionNumber });
 
