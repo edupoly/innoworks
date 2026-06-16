@@ -53,20 +53,45 @@ api.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
     // Handle deduplicated requests
     if (error.isDeduplicated) {
       return Promise.resolve({ data: error.data, config: error.config, status: 200 });
     }
 
-    if (error.response?.status === 401) {
+    // If 401 and not already retrying
+    if (error.response?.status === 401 && !originalRequest._retry) {
       const isAuthPath = window.location.pathname === '/' || window.location.pathname.includes('/auth/callback');
-      if (!isAuthPath) {
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (!isAuthPath && refreshToken) {
+        originalRequest._retry = true;
+        try {
+          // Attempt to refresh token using a separate axios instance to avoid interceptors
+          const refreshResponse = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+          const { token } = refreshResponse.data;
+          
+          if (token) {
+            localStorage.setItem('token', token);
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          }
+        } catch (refreshError) {
+          console.error("Failed to refresh token:", refreshError.message);
+          // Refresh failed, clear tokens and redirect
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/';
+        }
+      } else if (!isAuthPath) {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         window.location.href = '/';
       }
     }
+
     return Promise.reject(error);
   }
 );

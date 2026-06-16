@@ -29,6 +29,7 @@ export const useMe = () => {
     if (token) {
       if (isSuccess && data) {
         if (!isAuthenticated || authUser?._id !== data?._id) {
+          console.log("useMe: session restored successfully for", data.username);
           dispatch(setCredentials({ user: data, token: token || localStorage.getItem("token") }));
           initiateSocket(data._id);
         } else {
@@ -40,20 +41,28 @@ export const useMe = () => {
            console.warn("useMe: Network error during session restoration. Retrying may be required.");
            dispatch(setLoading(false));
         } else {
-           console.error("useMe: session restoration error:", error);
+           console.error("useMe: session restoration error status:", error.status);
+           
+           // If we get a 401, it means the token is invalid and refresh failed (since baseQueryWithReauth handles refresh)
            if (error.status === 401) {
+             console.warn("useMe: Session unrecoverable. Clearing credentials.");
              localStorage.removeItem("token");
              localStorage.removeItem("refreshToken");
              dispatch(logout());
            } else {
+             // For other errors (500, etc.), just stop loading but don't force logout
              dispatch(setLoading(false));
            }
         }
-      } else if (!isLoading && !isFetching) {
+      } else if (!isLoading && !isFetching && !data) {
+        // No longer loading but no data and no success/error yet (edge case)
         dispatch(setLoading(false));
       }
+    } else {
+      // No token, ensure we're not stuck in loading
+      if (loading) dispatch(setLoading(false));
     }
-  }, [token, isSuccess, isError, isLoading, isFetching, data, error, dispatch, isAuthenticated, authUser?._id]);
+  }, [token, isSuccess, isError, isLoading, isFetching, data, error, dispatch, isAuthenticated, authUser?._id, loading]);
 
   return {
     data,
