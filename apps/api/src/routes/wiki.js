@@ -37,13 +37,15 @@ router.get("/:projectId", authenticate, async (req, res) => {
           for (const file of wikiFolder) {
             if (file.name.endsWith('.md')) {
               const slug = file.name.replace('.md', '');
+              
+              // Fetch file content
+              const fileData = await getGithubFile(user.githubAccessToken, owner, repo, file.path);
+              if (!fileData || !fileData.content) continue;
+              
+              const decodedContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
               const existingPage = await WikiPage.findOne({ project: projectId, slug });
               
               if (!existingPage) {
-                // Fetch file content
-                const fileContent = await getGithubFile(user.githubAccessToken, owner, repo, file.path);
-                const decodedContent = Buffer.from(fileContent.content, 'base64').toString('utf-8');
-                
                 // Create local page
                 const title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                 await WikiPage.create({
@@ -51,9 +53,26 @@ router.get("/:projectId", authenticate, async (req, res) => {
                   slug,
                   content: decodedContent,
                   project: projectId,
-                  author: user._id, // Assume current user is author for imported pages
-                  status: 'Published' // Mark as published if it's coming from main repo
+                  author: user._id,
+                  status: 'Published'
                 });
+              } else if (existingPage.content !== decodedContent && existingPage.status === 'Published') {
+                // Update local page if content changed and it's already published
+                existingPage.content = decodedContent;
+                existingPage.updatedAt = Date.now();
+                await existingPage.save();
+                
+                // Also create a version for history
+                await WikiVersion.create({
+                  pageId: existingPage._id,
+                  content: decodedContent,
+                  updatedBy: user._id,
+                  versionNumber: existingPage.currentVersion + 1,
+                  changeSummary: 'Synced from GitHub'
+                });
+                
+                existingPage.currentVersion += 1;
+                await existingPage.save();
               }
             }
           }

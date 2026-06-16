@@ -44,6 +44,7 @@ const projectSchema = new mongoose.Schema({
 
 projectSchema.index({ status: 1 });
 projectSchema.index({ owner: 1 });
+projectSchema.index({ repoUrl: 1 });
 projectSchema.index({ createdAt: -1 });
 
 // Cascading delete middleware

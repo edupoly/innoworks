@@ -8,10 +8,17 @@ export const initSocket = (httpServer, options) => {
   io.on("connection", (socket) => {
     // console.log("🔌 New socket connection:", socket.id);
 
+    // Automatically join room if userId was set by middleware
+    if (socket.userId) {
+      socket.join(socket.userId.toString());
+      // console.log(`👤 User automatically joined room: ${socket.userId}`);
+    }
+
     socket.on("join", (userId) => {
+      // Still allow explicit join if needed (e.g., if userId changed)
       if (userId) {
         socket.join(userId.toString());
-        // console.log(`👤 User joined room: ${userId}`);
+        // console.log(`👤 User manually joined room: ${userId}`);
       }
     });
 

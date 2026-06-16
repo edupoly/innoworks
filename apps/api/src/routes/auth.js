@@ -182,12 +182,40 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "refresh_secret";
 const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL || "https://innoworks-api.up.railway.app/auth/github/callback";
 
 router.get("/github", (req, res) => {
+  // Use a simple state parameter for CSRF protection
+  const state = Math.random().toString(36).substring(7);
+  // In a real app, we'd store this in a session or signed cookie
+  
   const url =
     `https://github.com/login/oauth/authorize?` +
     `client_id=${GITHUB_CLIENT_ID}` +
     `&redirect_uri=${encodeURIComponent(GITHUB_CALLBACK_URL)}` +
-    `&scope=user,repo`;
+    `&scope=user,repo` +
+    `&state=${state}`;
   res.redirect(url);
+});
+
+router.post("/refresh", async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(401).json({ message: "Refresh token required" });
+
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const newToken = jwt.sign({ 
+      userId: user.id, 
+      role: user.role,
+      permissions: user.permissions 
+    }, JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    res.json({ token: newToken });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid refresh token" });
+  }
 });
 
 router.get("/github/callback", async (req, res) => {

@@ -28,6 +28,11 @@ const issueSchema = new mongoose.Schema({
   milestone: { type: String },
   githubIssueNumber: { type: Number },
   githubIssueUrl: { type: String },
+  githubAuthor: {
+    username: String,
+    avatarUrl: String
+  },
+  githubState: { type: String }, // OPEN, CLOSED
   template: { 
     type: String, 
     enum: ['Bug', 'Feature', 'Docs', 'Security', 'General'],
@@ -51,6 +56,7 @@ const issueSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 issueSchema.index({ project: 1, status: 1 });
+issueSchema.index({ project: 1, githubIssueNumber: 1 });
 issueSchema.index({ author: 1 });
 
 export const Issue = mongoose.model('Issue', issueSchema);

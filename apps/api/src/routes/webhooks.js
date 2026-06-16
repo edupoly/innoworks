@@ -4,6 +4,7 @@ import { Submission } from '../models/Submission.js';
 import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { Review } from '../models/Review.js';
+import { Issue } from '../models/Issue.js';
 import { awardXP, XP_VALUES } from '../lib/gamification.js';
 import { sendNotification } from '../lib/notifications.js';
 import { clearCache } from '../middleware/cache.js';
@@ -49,13 +50,27 @@ if (githubApp) {
     console.log(`📡 GitHub Push Webhook: repo=${repoUrl}, ref=${payload.ref}`);
 
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(`^${escapeRegex(repoUrl)}/?$`, 'i') } });
       if (!project) return;
 
       // Update basic repository counts
       project.stars = payload.repository.stargazers_count || project.stars;
       project.forks = payload.repository.forks_count || project.forks;
       await project.save();
+
+      // Check if any commits modified the wiki/ folder
+      const wikiModified = payload.commits.some(commit => 
+        (commit.added || []).some(f => f.startsWith('wiki/')) ||
+        (commit.modified || []).some(f => f.startsWith('wiki/')) ||
+        (commit.removed || []).some(f => f.startsWith('wiki/'))
+      );
+
+      if (wikiModified) {
+        console.log(`📡 Wiki folder modification detected in push to ${project.title}`);
+        // We can't easily sync here without a user token, but we can clear cache 
+        // and let the next GET request trigger the sync in wiki.js
+        clearCache(`/projects/${project._id}/wiki`);
+      }
 
       // Clear caches
       clearCache(`/projects/${project._id}`);
@@ -216,35 +231,43 @@ if (githubApp) {
 
       if (!submission) return;
 
-      // Update PR metadata
       submission.prNumber = prNumber;
       submission.prUrl = prUrl;
 
-      if (action === "opened" || action === "reopened") {
+      if (action === "opened" || action === "reopened" || action === "synchronize") {
         submission.status = "UNDER_REVIEW";
         submission.timeline.push({
           action: "SUBMITTED",
-          description: `Pull request #${prNumber} opened on GitHub. Review queued.`,
+          description: action === "synchronize" 
+            ? `New commits pushed to PR #${prNumber}. Review and tests re-queued.`
+            : `Pull request #${prNumber} opened on GitHub. Review queued.`,
           actor: submission.user._id
         });
         await submission.save();
 
-        // Increment user PR count
+        // Increment user PR count only on initial open
         if (action === "opened") {
           await User.findByIdAndUpdate(submission.user._id, { $inc: { "contributionStats.prsCount": 1 } });
         }
 
+        // Trigger testing if it's a code change
+        // In a real system, we'd add it back to BullMQ queue here
+        // For now, clear caches and notify owner
+        clearCache(`/projects/${project._id}`);
+
         await sendNotification(
           project.owner,
           'PR_CREATED',
-          `📬 New PR #${prNumber} raised for your challenge "${project.title}" by @${submission.user.username}.`,
+          action === "synchronize"
+            ? `🔄 PR #${prNumber} for "${project.title}" was updated with new commits by @${submission.user.username}.`
+            : `📬 New PR #${prNumber} raised for your challenge "${project.title}" by @${submission.user.username}.`,
           `/projects/${project._id}`
         );
       } 
       
       else if (action === "closed" && isMerged) {
-        if (submission.status === "MERGED") {
-          console.log(`📡 PR #${prNumber} already marked as MERGED. Skipping XP.`);
+        if (submission.xpAwarded.includes('PR_MERGED')) {
+          console.log(`📡 PR #${prNumber} already awarded PR_MERGED XP. Skipping.`);
           return;
         }
 
@@ -254,6 +277,8 @@ if (githubApp) {
           description: `Pull Request #${prNumber} merged successfully into default branch.`,
           actor: submission.user._id
         });
+        
+        submission.xpAwarded.push('PR_MERGED');
         await submission.save();
 
         // Add contributor to project contributors array if not present
@@ -356,6 +381,13 @@ if (githubApp) {
         description: `Review submitted by @${reviewerUsername}: "${state.replace('_', ' ')}".`,
         actor: reviewerId
       });
+
+      // Award XP to the developer if approved (only once)
+      if (state === "approved" && !submission.xpAwarded.includes('PR_APPROVED')) {
+        await awardXP(submission.user._id, XP_VALUES.PR_APPROVED, 'PR_APPROVED');
+        submission.xpAwarded.push('PR_APPROVED');
+      }
+
       await submission.save();
 
       // Create Local Review Report (using upsert/id)
@@ -461,13 +493,80 @@ if (githubApp) {
   githubApp.webhooks.on("fork", async ({ payload }) => {
     const repoUrl = payload.repository.html_url;
     try {
-      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(escapeRegex(repoUrl), 'i') } });
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(`^${escapeRegex(repoUrl)}/?$`, 'i') } });
       if (!project) return;
 
       project.forks = payload.repository.forks_count;
       await project.save();
     } catch (err) {
       console.error("❌ Webhook Fork error:", err.message);
+    }
+  });
+
+  // 10. Wiki Event Handler (Official GitHub Wiki)
+  githubApp.webhooks.on("gollum", async ({ payload }) => {
+    const repoUrl = payload.repository.html_url;
+    console.log(`📡 GitHub Wiki (Gollum) Webhook: repo=${repoUrl}`);
+
+    try {
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(`^${escapeRegex(repoUrl)}/?$`, 'i') } });
+      if (!project) return;
+
+      // Clear wiki caches
+      clearCache(`/projects/${project._id}/wiki`);
+      
+      payload.pages.forEach(page => {
+        sendNotification(
+          project.owner,
+          'COMMENT_ADDED',
+          `📖 Wiki page "${page.title}" was ${page.action} on GitHub.`,
+          `/projects/${project._id}/wiki/${page.page_name}`
+        );
+      });
+    } catch (err) {
+      console.error("❌ Webhook Gollum error:", err.message);
+    }
+  });
+
+  // 11. Issues Event Handler
+  githubApp.webhooks.on("issues", async ({ payload }) => {
+    const action = payload.action;
+    const issueNumber = payload.issue.number;
+    const repoUrl = payload.repository.html_url;
+
+    try {
+      const project = await Project.findOne({ repoUrl: { $regex: new RegExp(`^${escapeRegex(repoUrl)}/?$`, 'i') } });
+      if (!project) return;
+
+      if (action === "opened") {
+        await Issue.create({
+          title: payload.issue.title,
+          description: payload.issue.body || '',
+          project: project._id,
+          githubIssueNumber: issueNumber,
+          githubIssueUrl: payload.issue.html_url,
+          githubAuthor: {
+            username: payload.issue.user.login,
+            avatarUrl: payload.issue.user.avatar_url
+          },
+          githubState: 'OPEN',
+          status: 'Open',
+          author: project.owner // Default to project owner if created externally
+        });
+      } else if (action === "closed" || action === "reopened") {
+        await Issue.findOneAndUpdate(
+          { project: project._id, githubIssueNumber: issueNumber },
+          { 
+            githubState: action === 'closed' ? 'CLOSED' : 'OPEN',
+            status: action === 'closed' ? 'Closed' : 'Open'
+          }
+        );
+      }
+      
+      // Clear issue caches
+      clearCache(`/issues/${project._id}`);
+    } catch (err) {
+      console.error("❌ Webhook Issues error:", err.message);
     }
   });
 }

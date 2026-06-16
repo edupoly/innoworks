@@ -18,11 +18,17 @@ export const authApiSlice = apiSlice.injectEndpoints({
             // Invalidate the repos cache to trigger a refetch
             dispatch(authApiSlice.util.invalidateTags(['Repos']));
           });
+
+          socket.on('branchCreated', (data) => {
+            console.log("🚀 Mission branch created:", data.branch);
+            dispatch(authApiSlice.util.invalidateTags(['Repos']));
+          });
         } catch (err) {
           console.error("Repos socket sync error:", err);
         }
         await cacheEntryRemoved;
         socket.off('reposUpdated');
+        socket.off('branchCreated');
       }
     }),
     getRepoBranches: builder.query({

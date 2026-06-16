@@ -1,6 +1,7 @@
 import { Worker } from "bullmq";
 import { Submission } from '../models/Submission.js';
 import { getRedisConnection } from '../lib/redis.js';
+import { parseRepoUrl } from '../lib/github.js';
 import { exec } from 'child_process';
 import util from 'util';
 import path from 'path';
@@ -27,23 +28,31 @@ export const testWorker = new Worker(
 
     let tempDir = null;
     try {
-      const submission = await Submission.findById(submissionId).populate('project');
+      const submission = await Submission.findById(submissionId).populate('project').populate('user');
       if (!submission) throw new Error("Submission not found");
 
       await Submission.findByIdAndUpdate(submissionId, { status: "TESTING" });
 
-      const forkUrl = sanitizeShell(submission.forkUrl);
+      const forkUrl = submission.forkUrl;
       const branchName = sanitizeShell(submission.branchName);
+      const accessToken = submission.user?.githubAccessToken;
+      
+      const { owner, repo } = parseRepoUrl(forkUrl);
+      
+      // Use token in clone URL if available for private repo support
+      const cloneUrl = accessToken 
+        ? `https://x-access-token:${accessToken}@github.com/${owner}/${repo}.git`
+        : forkUrl;
       
       tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'innoworks-test-'));
       
-      console.log(`Cloning ${forkUrl} branch ${branchName} into ${tempDir}`);
+      console.log(`Cloning ${owner}/${repo} branch ${branchName} into ${tempDir}`);
       
       let testOutput = "";
       let success = false;
       
       try {
-        await execAsync(`git clone --depth 1 -b ${branchName} ${forkUrl} .`, { cwd: tempDir, timeout: 30000 });
+        await execAsync(`git clone --depth 1 -b ${branchName} ${cloneUrl} .`, { cwd: tempDir, timeout: 30000 });
         testOutput += "Clone successful.\n";
         
         // Check if package.json exists

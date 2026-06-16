@@ -63,6 +63,27 @@ export const createPullRequest = async (accessToken, owner, repo, title, body, h
     return response.data;
   } catch (error) {
     const errorData = error.response?.data;
+    
+    // If PR already exists, fetch it instead of failing
+    if (error.response?.status === 422 && errorData?.errors?.some(e => e.message?.includes("A pull request already exists"))) {
+      console.log(`ℹ_ PR already exists for ${head} -> ${base}. Fetching existing PR.`);
+      try {
+        const { data: prs } = await axios.get(
+          `https://api.github.com/repos/${owner}/${repo}/pulls`,
+          {
+            params: { head, base, state: 'open' },
+            headers: {
+              Authorization: `token ${accessToken}`,
+              Accept: "application/vnd.github.v3+json",
+            },
+          }
+        );
+        if (prs && prs.length > 0) return prs[0];
+      } catch (fetchError) {
+        console.warn("⚠️ Failed to fetch existing PR:", fetchError.message);
+      }
+    }
+
     console.error("❌ GitHub PR Error:", errorData || error.message);
     
     let errorMessage = errorData?.message || "Failed to create Pull Request";
@@ -186,6 +207,47 @@ export const createIssue = async (accessToken, owner, repo, title, body, labels)
   } catch (error) {
     console.error("❌ GitHub Create Issue Error:", error.response?.data || error.message);
     throw new Error(error.response?.data?.message || "Failed to create issue");
+  }
+};
+
+/**
+ * Create a branch in a GitHub repository
+ */
+export const createGithubBranch = async (accessToken, owner, repo, baseBranch, newBranch) => {
+  try {
+    // 1. Get the SHA of the base branch
+    const baseRef = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${baseBranch}`,
+      {
+        headers: {
+          Authorization: `token ${accessToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+    const sha = baseRef.data.object.sha;
+
+    // 2. Create the new ref
+    const response = await axios.post(
+      `https://api.github.com/repos/${owner}/${repo}/git/refs`,
+      {
+        ref: `refs/heads/${newBranch}`,
+        sha,
+      },
+      {
+        headers: {
+          Authorization: `token ${accessToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 422 && error.response?.data?.message?.includes("already exists")) {
+      return { message: "Branch already exists" };
+    }
+    console.error("❌ GitHub Create Branch Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to create branch on GitHub");
   }
 };
 

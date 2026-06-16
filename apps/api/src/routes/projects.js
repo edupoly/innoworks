@@ -3,7 +3,8 @@ import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { Submission } from '../models/Submission.js';
 import { authenticate, verifyProjectOwnership } from '../middleware/auth.js';
-import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue, parseRepoUrl } from '../lib/github.js';
+import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue, parseRepoUrl, createGithubBranch } from '../lib/github.js';
+import { detectTechStack } from '../lib/techDetection.js';
 import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';
 import { evaluateBadges, awardXP, XP_VALUES } from '../lib/gamification.js';
@@ -78,7 +79,10 @@ router.get("/:id/intelligence", authenticate, validateObjectId, async (req, res)
     }
 
     const { owner, repo } = parseRepoUrl(project.repoUrl);
-    const intelligence = await fetchGraphQLRepositoryIntelligence(user.githubAccessToken, owner, repo);
+    const [intelligence, detectedTech] = await Promise.all([
+      fetchGraphQLRepositoryIntelligence(user.githubAccessToken, owner, repo),
+      detectTechStack(user.githubAccessToken, owner, repo)
+    ]);
 
     // Sync stats back to Project document for freshness in the marketplace
     if (intelligence && intelligence.statistics) {
@@ -86,8 +90,17 @@ router.get("/:id/intelligence", authenticate, validateObjectId, async (req, res)
       project.forks = intelligence.statistics.forks;
       project.openIssuesCount = intelligence.statistics.openIssues;
       project.contributorsCount = intelligence.statistics.totalContributors;
-      await project.save();
     }
+
+    // Refresh tech stack if it's currently empty or has changed
+    if (detectedTech && detectedTech.length > 0) {
+      // Merge unique tags
+      const currentStack = new Set(project.techStack || []);
+      detectedTech.forEach(t => currentStack.add(t));
+      project.techStack = Array.from(currentStack);
+    }
+    
+    await project.save();
 
     res.json(intelligence);
   } catch (error) {
@@ -289,17 +302,24 @@ router.post("/", authenticate, async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Fetch initial GitHub stats
+    // Fetch initial GitHub stats and detect tech stack
     let stars = 0, forks = 0, openIssuesCount = 0;
+    let autoTechStack = [];
     try {
       const { owner, repo } = parseRepoUrl(repoUrl);
       const headers = user.githubAccessToken ? { Authorization: `token ${user.githubAccessToken}` } : {};
-      const repoDetails = await axios.get(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+      
+      const [repoDetails, detectedTech] = await Promise.all([
+        axios.get(`https://api.github.com/repos/${owner}/${repo}`, { headers }),
+        user.githubAccessToken ? detectTechStack(user.githubAccessToken, owner, repo) : Promise.resolve([])
+      ]);
+
       stars = repoDetails.data.stargazers_count || 0;
       forks = repoDetails.data.forks_count || 0;
       openIssuesCount = repoDetails.data.open_issues_count || 0;
+      autoTechStack = detectedTech;
     } catch (apiError) {
-      console.warn("⚠️ Failed to sync repo stats on creation:", apiError.message);
+      console.warn("⚠️ Failed to sync repo stats/tech on creation:", apiError.message);
     }
 
     // Role management: If user is a Developer, upgrade them to Project Owner
@@ -316,7 +336,7 @@ router.post("/", authenticate, async (req, res) => {
       difficulty,
       bounty: bounty || 100,
       requiredSkills: requiredSkills || [],
-      techStack: techStack || [],
+      techStack: techStack && techStack.length > 0 ? techStack : autoTechStack,
       owner: userId,
       stars,
       forks,
@@ -405,11 +425,38 @@ router.post("/:id/accept", authenticate, validateObjectId, async (req, res) => {
     try {
       const { owner, repo } = parseRepoUrl(project.repoUrl);
       if (user.githubAccessToken) {
+        console.log(`🚀 Initiating fork and branch creation for ${user.username} on ${repo}`);
         await forkRepository(user.githubAccessToken, owner, repo);
+        
+        // Asynchronous branch creation with retry (forking takes time)
+        const missionBranch = `mission-${project.title.toLowerCase().replace(/\s+/g, '-')}-${Date.now().toString().slice(-4)}`;
+        
+        // We don't await the full retry loop to keep response fast, but we start it
+        const createBranchWithRetry = async (retries = 5, delay = 3000) => {
+          for (let i = 0; i < retries; i++) {
+            try {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              await createGithubBranch(user.githubAccessToken, user.username, repo, project.branchName || 'main', missionBranch);
+              console.log(`✅ Branch ${missionBranch} created successfully for ${user.username}`);
+              
+              emitToUser(user._id, 'branchCreated', { 
+                message: `Branch "${missionBranch}" created successfully on your fork.`,
+                branch: missionBranch,
+                repo: `${user.username}/${repo}`
+              });
+              return;
+            } catch (err) {
+              console.warn(`⚠️ Branch creation attempt ${i + 1} failed: ${err.message}`);
+            }
+          }
+          console.error(`❌ Failed to create branch after ${retries} attempts`);
+        };
+
+        createBranchWithRetry();
         
         // Notify the client to refresh repos list
         emitToUser(user._id, 'reposUpdated', { 
-          message: 'Fork initiated',
+          message: 'Fork initiated and mission branch queue started',
           repo: `${user.username}/${repo}`
         });
       }

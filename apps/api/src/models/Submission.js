@@ -25,6 +25,10 @@ const submissionSchema = new mongoose.Schema({
     default: 'PENDING' 
   },
   testOutput: { type: String },
+  xpAwarded: {
+    type: [String], // Array of action reasons: ['PR_APPROVED', 'PR_MERGED', 'TESTING_REVIEW']
+    default: []
+  },
   timeline: [timelineEventSchema]
 }, { 
   timestamps: true,
@@ -41,6 +45,8 @@ submissionSchema.virtual('reviews', {
 
 submissionSchema.index({ project: 1, user: 1 }, { unique: true });
 submissionSchema.index({ status: 1 });
+submissionSchema.index({ prNumber: 1 });
+submissionSchema.index({ prUrl: 1 });
 submissionSchema.index({ user: 1, project: 1 });
 
 // Cascading delete middleware

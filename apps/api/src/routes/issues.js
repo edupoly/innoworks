@@ -33,6 +33,10 @@ router.get("/:projectId", authenticate, async (req, res) => {
                   state
                   createdAt
                   url
+                  author {
+                    login
+                    avatarUrl
+                  }
                 }
               }
             }
@@ -45,7 +49,8 @@ router.get("/:projectId", authenticate, async (req, res) => {
         for (const ghIssue of githubIssues) {
           const existingIssue = await Issue.findOne({ project: projectId, githubIssueNumber: ghIssue.number });
           if (existingIssue) {
-            existingIssue.state = ghIssue.state.toUpperCase();
+            existingIssue.githubState = ghIssue.state;
+            existingIssue.status = ghIssue.state === 'OPEN' ? 'Open' : 'Closed';
             await existingIssue.save();
           } else {
             await Issue.create({
@@ -54,8 +59,13 @@ router.get("/:projectId", authenticate, async (req, res) => {
               project: projectId,
               githubIssueNumber: ghIssue.number,
               githubIssueUrl: ghIssue.url,
-              state: ghIssue.state.toUpperCase(),
-              author: req.user.userId, // Default to user who initiated sync for now
+              githubAuthor: {
+                username: ghIssue.author?.login,
+                avatarUrl: ghIssue.author?.avatarUrl
+              },
+              githubState: ghIssue.state,
+              status: ghIssue.state === 'OPEN' ? 'Open' : 'Closed',
+              author: req.user.userId, // User who initiated sync
               timeline: [{
                 action: 'SYNCED_FROM_GITHUB',
                 actor: req.user.userId,

@@ -389,8 +389,10 @@ router.post("/:id/reviews", authenticate, async (req, res) => {
     await submission.save();
 
     // Award XP to the developer if approved
-    if (outcome === 'APPROVED') {
+    if (outcome === 'APPROVED' && !submission.xpAwarded.includes('PR_APPROVED')) {
       await awardXP(submission.user, XP_VALUES.PR_APPROVED, 'PR_APPROVED');
+      submission.xpAwarded.push('PR_APPROVED');
+      await submission.save();
     }
 
     // Award XP to reviewer for testing contribution! (30 XP)
@@ -480,7 +482,11 @@ router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
     await submission.save();
 
     // Award XP to contributor (200 XP for merged contribution)
-    await awardXP(submission.user, XP_VALUES.PR_MERGED, 'PR_MERGED');
+    if (!submission.xpAwarded.includes('PR_MERGED')) {
+      await awardXP(submission.user, XP_VALUES.PR_MERGED, 'PR_MERGED');
+      submission.xpAwarded.push('PR_MERGED');
+      await submission.save();
+    }
 
     // Notify developer
     await sendNotification(
