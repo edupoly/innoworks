@@ -312,7 +312,7 @@ const Navbar = () => {
                       </div>
                       <div className="hidden sm:block">
                         <p className="text-[9px] font-black tracking-tight text-foreground uppercase truncate max-w-[70px]">{user.username}</p>
-                        <Badge variant="default" className="py-0 px-1 h-auto text-[6px] border-none bg-primary/20">LVL {user.level || 1}</Badge>
+                        <Badge variant="default" className="py-0 px-1 h-auto text-[6px] border-none bg-primary/20">RANK #{user.platformRank || 1}</Badge>
                       </div>
                     </Link>
                   )}

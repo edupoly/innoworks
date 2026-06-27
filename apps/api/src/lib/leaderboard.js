@@ -28,14 +28,16 @@ export const getTopUsers = async (limit = 25) => {
     .select('username avatarUrl contributionScore engineeringReputation repositoryHealth codeQuality issuesResolved prSuccessRate deploymentSuccess reviewAccuracy taskCompletionRate platformRank overallRating currentStreak verifiedContributionsCount contributionStats communicationScore adaptabilityScore');
 
   // Sort them back in the order of Redis rankings and set platformRank dynamically
-  return topUserIds.map((id, index) => {
-    const user = users.find(u => u._id.toString() === id);
-    if (user) {
-      user.platformRank = index + 1;
-      user.save().catch(e => console.error("Failed to save user rank:", e.message));
-    }
-    return user;
-  }).filter(Boolean);
+  const sortedUsers = topUserIds.map((id) => {
+    return users.find(u => u._id.toString() === id);
+  }).filter(u => u && u.username && u.username !== 'undefined');
+
+  sortedUsers.forEach((user, index) => {
+    user.platformRank = index + 1;
+    user.save().catch(e => console.error("Failed to save user rank:", e.message));
+  });
+
+  return sortedUsers;
 };
 
 /**
