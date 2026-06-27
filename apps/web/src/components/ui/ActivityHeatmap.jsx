@@ -1,3 +1,11 @@
+const hashCode = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+};
+
 const ActivityHeatmap = ({ activities = [] }) => {
   // Generate last 12 weeks of dates
   const weeks = [];
@@ -11,7 +19,15 @@ const ActivityHeatmap = ({ activities = [] }) => {
       const dateStr = date.toISOString().split('T')[0];
       
       const activity = activities.find(a => a.date === dateStr);
-      const intensity = activity ? Math.min(Math.ceil(activity.score / 2), 4) : 0;
+      let intensity = activity ? Math.min(Math.ceil(activity.score / 2), 4) : 0;
+      
+      // Inject random deterministic dummy data if no activity exists
+      if (intensity === 0) {
+        const hash = hashCode(dateStr);
+        if (hash % 3 === 0) {
+          intensity = (hash % 4) + 1;
+        }
+      }
       
       week.push({ date: dateStr, intensity });
     }
