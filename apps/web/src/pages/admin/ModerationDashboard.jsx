@@ -1,17 +1,12 @@
 import { useState } from "react";
 import { 
-  ShieldCheck, 
   Search, 
-  Filter, 
   ChevronLeft, 
   ChevronRight,
   CheckCircle,
   XCircle,
-  Clock,
-  ExternalLink,
-  MessageSquare
+  ExternalLink
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { 
   useGetModerationListQuery,
   useVerifyItemMutation

@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { 
   Trophy, 
-  Sparkles, 
   Award, 
   Clock, 
   ChevronRight, 

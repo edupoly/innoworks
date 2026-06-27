@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, Send, MessageSquare, ShieldCheck } from 'lucide-react';
+import { MessageSquare, ShieldCheck } from 'lucide-react';
 import { useSubmitEvaluationMutation } from '../../store/api/evaluationsApiSlice';
 
 const EvaluationForm = ({ contributor, project, submissionId, onSuccess }) => {

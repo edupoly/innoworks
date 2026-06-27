@@ -3,7 +3,6 @@ import { Evaluation } from '../models/Evaluation.js';
 import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { authenticate } from '../middleware/auth.js';
-import { authorize } from '../middleware/rbac.js';
 import { calculateOverallScore, updateUserRatings } from '../lib/evaluation.js';
 import { sendNotification } from '../lib/notifications.js';
 import { clearCache } from '../middleware/cache.js';

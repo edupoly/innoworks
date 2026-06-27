@@ -28,14 +28,14 @@ const Metric = memo(({ label, value, color, icon: Icon }) => (
   <div className="text-center min-w-[70px] group-hover:scale-105 transition-transform flex flex-col items-center gap-1">
     <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-1 opacity-50">{label}</p>
     <div className="flex items-center gap-1.5">
-       {Icon && <Icon size={12} className={`${color} opacity-70`} fill="currentColor" className={`${color} fill-current opacity-20`} />}
+       {Icon && <Icon size={12} className={`${color} opacity-70`} fill="currentColor" />}
        <p className={`text-xs font-black tracking-tighter ${color || 'text-foreground'}`}>{value}</p>
     </div>
   </div>
 ));
 Metric.displayName = "Metric";
 
-const LeaderboardRow = memo(({ user, rank, period }) => {
+const LeaderboardRow = memo(({ user, rank }) => {
   if (!user || !user.username) return null;
 
   return (

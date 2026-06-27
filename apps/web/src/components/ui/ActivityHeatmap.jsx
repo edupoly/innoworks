@@ -1,5 +1,3 @@
-import React from 'react';
-
 const ActivityHeatmap = ({ activities = [] }) => {
   // Generate last 12 weeks of dates
   const weeks = [];

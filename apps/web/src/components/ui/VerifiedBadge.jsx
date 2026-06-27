@@ -1,5 +1,3 @@
-import React from 'react';
-
 const VerifiedBadge = ({ size = 'md', text = 'Verified' }) => {
   const sizeClasses = {
     sm: 'w-4 h-4 text-[10px]',

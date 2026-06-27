@@ -6,11 +6,8 @@ import {
   Activity, 
   CheckCircle2, 
   ChevronLeft,
-  Target,
   Fingerprint,
-  Cpu,
   ShieldCheck,
-  Sparkles,
   Flame,
   Star,
   Verified
@@ -26,6 +23,10 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const { data: profile, isLoading, error } = useGetUserProfileQuery(username, {
+    skip: !username,
+  });
+
+  const { data: evaluations } = useGetUserEvaluationsQuery(username, {
     skip: !username,
   });
 
