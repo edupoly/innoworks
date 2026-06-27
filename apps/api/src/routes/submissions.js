@@ -7,7 +7,7 @@ import { authenticate } from '../middleware/auth.js';
 import { testQueue } from '../lib/queue.js';
 import { createPullRequest, createPullRequestReview, mergePullRequest, parseRepoUrl } from '../lib/github.js';
 import { validateObjectId, validateSubmission } from '../middleware/validate.js';
-import { awardXP, XP_VALUES } from '../lib/gamification.js';
+import { awardContributionScore, METRIC_VALUES } from '../lib/gamification.js';
 import { sendNotification } from '../lib/notifications.js';
 import { clearCache } from '../middleware/cache.js';
 import axios from 'axios';
@@ -232,7 +232,7 @@ router.get("/:id", validateObjectId, async (req, res) => {
   try {
     const submission = await Submission.findById(req.params.id)
       .populate('project')
-      .populate('user', 'username avatarUrl role bio skills xp level reputationScore badges')
+      .populate('user', 'username avatarUrl role bio skills contributionScore engineeringReputation repositoryHealth codeQuality issuesResolved prSuccessRate deploymentSuccess reviewAccuracy taskCompletionRate platformRank')
       .populate({
         path: 'timeline.actor',
         select: 'username avatarUrl'
@@ -388,15 +388,15 @@ router.post("/:id/reviews", authenticate, async (req, res) => {
     });
     await submission.save();
 
-    // Award XP to the developer if approved
-    if (outcome === 'APPROVED' && !submission.xpAwarded.includes('PR_APPROVED')) {
-      await awardXP(submission.user, XP_VALUES.PR_APPROVED, 'PR_APPROVED');
-      submission.xpAwarded.push('PR_APPROVED');
+    // Award Score to the developer if approved
+    if (outcome === 'APPROVED' && !submission.rewardsAwarded.includes('PR_APPROVED')) {
+      await awardContributionScore(submission.user, METRIC_VALUES.PR_APPROVED, 'PR_APPROVED');
+      submission.rewardsAwarded.push('PR_APPROVED');
       await submission.save();
     }
 
-    // Award XP to reviewer for testing contribution! (30 XP)
-    await awardXP(reviewerId, XP_VALUES.TESTING_REVIEW, 'TESTING_REVIEW');
+    // Award Score to reviewer for testing contribution!
+    await awardContributionScore(reviewerId, METRIC_VALUES.TESTING_REVIEW, 'TESTING_REVIEW');
 
     // Notify developer
     await sendNotification(
@@ -481,10 +481,10 @@ router.post("/:id/merge", authenticate, validateObjectId, async (req, res) => {
     });
     await submission.save();
 
-    // Award XP to contributor (200 XP for merged contribution)
-    if (!submission.xpAwarded.includes('PR_MERGED')) {
-      await awardXP(submission.user, XP_VALUES.PR_MERGED, 'PR_MERGED');
-      submission.xpAwarded.push('PR_MERGED');
+    // Award Score to contributor (200 Score for merged contribution)
+    if (!submission.rewardsAwarded.includes('PR_MERGED')) {
+      await awardContributionScore(submission.user, METRIC_VALUES.PR_MERGED, 'PR_MERGED');
+      submission.rewardsAwarded.push('PR_MERGED');
       await submission.save();
     }
 

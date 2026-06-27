@@ -361,7 +361,7 @@ const ProjectDetails = () => {
                     {project?.difficulty === 'Hard' ? 'Elite' : project?.difficulty}
                   </Badge>
                   <Badge variant="default" className="bg-amber-500/10 text-amber-500 border-amber-500/20 px-1.5 py-0 gap-1 border-none text-[7px] h-4">
-                    <Trophy size={8} className="fill-amber-500/20" /> {project?.bounty} XP
+                    <Trophy size={8} className="fill-amber-500/20" /> {project?.bounty} Score
                   </Badge>
                 </div>
               </div>
@@ -542,7 +542,7 @@ const ProjectDetails = () => {
                     {[
                       { label: "State", value: project?.status, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
                       { label: "Matrix", value: (project?.techStack?.length > 0 ? project.techStack.join(", ") : (project?.requiredSkills?.length > 0 ? project.requiredSkills.join(", ") : "Analyzing Technical Core...")), color: "text-primary", bg: "bg-primary/10 border-primary/20" },
-                      { label: "Award", value: `${project?.bounty} Verified XP`, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" }
+                      { label: "Award", value: `${project?.bounty} Verified Score`, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" }
                     ].map((l, i) => (
                       <div key={i} className="space-y-1">
                         <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.1em] ml-1 opacity-60">{l.label}</span>
@@ -1496,7 +1496,7 @@ const ProjectDetails = () => {
                   <input type="text" value={editTitle} onChange={(e)=>setEditTitle(e.target.value)} className="w-full px-8 py-5 bg-background/50 border border-border/50 rounded-[1.5rem] font-bold text-sm focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner" placeholder="Protocol Title" />
                 </div>
                 <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Verified Bounty (XP)</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground ml-2">Verified Bounty (Score)</label>
                   <div className="relative group">
                     <input type="number" value={editBounty} onChange={(e)=>setEditBounty(Number(e.target.value))} className="w-full px-8 py-5 bg-background/50 border border-border/50 rounded-[1.5rem] font-black text-sm focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-inner group-hover:border-primary/30" placeholder="0" />
                     <Trophy size={18} className="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground group-hover:text-amber-500 transition-colors" />

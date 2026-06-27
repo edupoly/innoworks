@@ -25,7 +25,7 @@ export const usersApiSlice = apiSlice.injectEndpoints({
                 // Surgically update only the fields that changed
                 Object.assign(draft[userIndex], update);
                 // Sort the draft after update
-                draft.sort((a, b) => (b.xp || 0) - (a.xp || 0));
+                draft.sort((a, b) => (b.contributionScore || 0) - (a.contributionScore || 0));
               }
             });
           };

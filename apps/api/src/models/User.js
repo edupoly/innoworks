@@ -1,12 +1,5 @@
 import mongoose from 'mongoose';
 
-const badgeSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  description: { type: String },
-  icon: { type: String, default: '🏆' },
-  awardedAt: { type: Date, default: Date.now }
-});
-
 const userSchema = new mongoose.Schema({
   githubId: { type: String, required: true, unique: true },
   githubAccessToken: { type: String },
@@ -39,9 +32,19 @@ const userSchema = new mongoose.Schema({
     default: 'Active'
   },
   permissions: { type: [String], default: [] },
-  xp: { type: Number, default: 0 },
-  level: { type: Number, default: 1 },
-  reputationScore: { type: Number, default: 0 },
+  
+  // Professional Metrics replacing XP System
+  contributionScore: { type: Number, default: 0 },
+  engineeringReputation: { type: Number, default: 0 },
+  repositoryHealth: { type: Number, default: 100 },
+  codeQuality: { type: Number, default: 80 },
+  issuesResolved: { type: Number, default: 0 },
+  prSuccessRate: { type: Number, default: 0 },
+  deploymentSuccess: { type: Number, default: 100 },
+  reviewAccuracy: { type: Number, default: 100 },
+  taskCompletionRate: { type: Number, default: 100 },
+  platformRank: { type: Number, default: 0 },
+
   collaborationScore: { type: Number, default: 0 },
   innovationScore: { type: Number, default: 0 },
   consistencyScore: { type: Number, default: 0 },
@@ -69,12 +72,11 @@ const userSchema = new mongoose.Schema({
   verifiedContributionsCount: { type: Number, default: 0 },
   skills: { type: [String], default: [] },
   acceptedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: [] }],
-  badges: { type: [badgeSchema], default: [] },
 }, { timestamps: true });
 
 // Indices for performance
-userSchema.index({ xp: -1 });
-userSchema.index({ reputationScore: -1 });
+userSchema.index({ contributionScore: -1 });
+userSchema.index({ engineeringReputation: -1 });
 
 // Cascading delete middleware
 userSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function() {
@@ -96,7 +98,7 @@ userSchema.pre(['deleteOne', 'findOneAndDelete', 'deleteMany'], async function()
   }
 });
 
-// Pre-save hook to cap scores at 100 and normalize role
+// Pre-save hook to cap scores at 100, calculate professional metrics and normalize role
 userSchema.pre('save', async function() {
   const scores = [
     'collaborationScore', 'innovationScore', 'consistencyScore', 
@@ -121,9 +123,14 @@ userSchema.pre('save', async function() {
     }
   }
 
-  // Dynamically calculate level based on XP (every 500 XP is a level)
-  this.level = Math.floor(this.xp / 500) + 1;
+  // Calculate metrics
+  this.issuesResolved = this.contributionStats?.issuesCount || 0;
+  
+  const prsCount = this.contributionStats?.prsCount || 0;
+  const mergedCount = this.contributionStats?.mergedPrsCount || 0;
+  this.prSuccessRate = prsCount > 0 ? Math.round((mergedCount / prsCount) * 100) : 0;
+  
+  this.codeQuality = this.categoryRatings?.codeQuality ? (this.categoryRatings.codeQuality * 10) : 80;
 });
 
 export const User = mongoose.model('User', userSchema);
-

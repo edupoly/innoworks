@@ -25,10 +25,17 @@ export const getTopUsers = async (limit = 25) => {
 
   // Fetch user details from MongoDB in one go
   const users = await User.find({ _id: { $in: topUserIds } })
-    .select('username avatarUrl xp level badges overallRating currentStreak verifiedContributionsCount contributionStats communicationScore adaptabilityScore');
+    .select('username avatarUrl contributionScore engineeringReputation repositoryHealth codeQuality issuesResolved prSuccessRate deploymentSuccess reviewAccuracy taskCompletionRate platformRank overallRating currentStreak verifiedContributionsCount contributionStats communicationScore adaptabilityScore');
 
-  // Sort them back in the order of Redis rankings
-  return topUserIds.map(id => users.find(u => u._id.toString() === id)).filter(Boolean);
+  // Sort them back in the order of Redis rankings and set platformRank dynamically
+  return topUserIds.map((id, index) => {
+    const user = users.find(u => u._id.toString() === id);
+    if (user) {
+      user.platformRank = index + 1;
+      user.save().catch(e => console.error("Failed to save user rank:", e.message));
+    }
+    return user;
+  }).filter(Boolean);
 };
 
 /**
@@ -49,12 +56,12 @@ export const rebuildLeaderboard = async () => {
   const redis = getRedisConnection();
   if (!redis) return;
 
-  const users = await User.find().select('_id xp');
+  const users = await User.find().select('_id contributionScore');
   const pipeline = redis.pipeline();
   pipeline.del(LEADERBOARD_KEY);
   
   users.forEach(user => {
-    pipeline.zadd(LEADERBOARD_KEY, user.xp || 0, user._id.toString());
+    pipeline.zadd(LEADERBOARD_KEY, user.contributionScore || 0, user._id.toString());
   });
   
   await pipeline.exec();

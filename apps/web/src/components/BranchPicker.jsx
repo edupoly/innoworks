@@ -35,7 +35,7 @@ const BranchPicker = memo(({ owner, repo, onSelect, selectedBranch }) => {
       {error && (
         <div className="p-4 bg-destructive/5 border border-destructive/20 text-destructive rounded-2xl flex items-center gap-3 text-xs font-bold">
           <AlertCircle size={16} />
-          {error}
+          {error?.data?.message || error?.error || "Failed to sync branches"}
         </div>
       )}
 

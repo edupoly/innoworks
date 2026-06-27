@@ -118,7 +118,7 @@ const Home = () => {
           transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="text-muted-foreground text-lg md:text-xl max-w-2xl mb-16 font-medium leading-relaxed tracking-tight"
         >
-          The elite ecosystem for high-velocity developers. Solve production-grade challenges, earn verified XP, and build a reputation that speaks for itself.
+          The elite ecosystem for high-velocity developers. Solve production-grade challenges, earn verified reputation, and build a track record that speaks for itself.
         </motion.p>
 
         <motion.div 
@@ -178,7 +178,7 @@ const Home = () => {
               { step: "01", title: "Select Project", desc: "Choose from production-grade challenges curated by elite engineers." },
               { step: "02", title: "Fork & Execute", desc: "Build your solution in your own environment with full Git integration." },
               { step: "03", title: "Peer Review", desc: "Submit for automated testing and expert peer verification." },
-              { step: "04", title: "Earn XP", desc: "Acquire verified reputation and climb the global engineering leaderboard." }
+              { step: "04", title: "Earn Score", desc: "Acquire verified reputation and climb the global engineering leaderboard." }
             ].map((p, i) => (
               <div key={i} className="space-y-4">
                 <div className="text-4xl font-black text-primary/20 tracking-tighter">{p.step}</div>
@@ -219,7 +219,7 @@ const Home = () => {
               </div>
               <h3 className="text-3xl font-black mb-4 tracking-tight">Verified Engineering Reputation</h3>
               <p className="text-primary-foreground/90 text-lg font-medium leading-relaxed">
-                Every line of code is measured. Accumulate verified XP that translates directly into professional engineering credibility.
+                Every line of code is measured. Accumulate verified reputation that translates directly into professional engineering credibility.
               </p>
             </motion.div>
 
@@ -247,7 +247,7 @@ const Home = () => {
               </div>
               <h3 className="text-2xl font-black mb-2 tracking-tight">Global Leaderboards</h3>
               <p className="text-muted-foreground text-sm font-medium leading-relaxed">
-                Compete with the top 1% of student engineers worldwide. Rise through the ranks and unlock exclusive projects.
+                Compete with the top 1% of student student engineers worldwide. Rise through the ranks and unlock exclusive projects.
               </p>
             </motion.div>
           </div>
@@ -259,7 +259,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-6 relative">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-16 text-center">
             {[
-              { label: "XP Distributed", value: "2.8M+" },
+              { label: "Score Distributed", value: "2.8M+" },
               { label: "Projects Active", value: "850+" },
               { label: "Peer Reviews", value: "15.2K" },
               { label: "Top Percentile", value: "0.01%" }

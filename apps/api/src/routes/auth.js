@@ -5,7 +5,6 @@ import { User } from '../models/User.js';
 import { Project } from '../models/Project.js';
 import { Submission } from '../models/Submission.js';
 import { authenticate } from '../middleware/auth.js';
-import { evaluateBadges } from '../lib/gamification.js';
 import { getRedisConnection } from '../lib/redis.js';
 import { recordLogin } from '../lib/consistency.js';
 import { getUserRank } from '../lib/leaderboard.js';
@@ -41,8 +40,7 @@ router.get("/me", authenticate, async (req, res) => {
     // Record login for streaks
     await recordLogin(user._id);
 
-    // Automatically evaluate and award badges on each session sync
-    await evaluateBadges(user);
+
 
     // Fetch related data in parallel
     const [submissions, ownedProjects, populatedAccepted, globalRank] = await Promise.all([

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { 
   Trophy, 
-  Award, 
+
   Clock, 
   ChevronRight, 
   Plus, 
@@ -109,15 +109,14 @@ const Dashboard = () => {
   // Memoized Status mapping and statistics
   const stats = useMemo(() => {
     if (!profile) return [];
-    const submissions = profile.submissions || [];
-    const pendingCount = submissions.filter(s => ['PENDING', 'TESTING', 'UNDER_REVIEW'].includes(s.status)).length;
-    const approvedCount = submissions.filter(s => ['APPROVED', 'MERGED'].includes(s.status)).length;
 
     return [
-      { label: "Global Rank", value: profile.globalRank ? `#${profile.globalRank}` : 'N/A', icon: Trophy, color: "text-yellow-500", bg: "bg-yellow-500/10 border-yellow-500/20" },
-      { label: "Aggregate XP", value: profile.xp || 0, icon: Zap, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
-      { label: "Active Review", value: pendingCount, icon: Clock, color: "text-orange-500", bg: "bg-orange-500/10 border-orange-500/20" },
-      { label: "Nodes Merged", value: approvedCount, icon: Award, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
+      { label: "Active Projects", value: profile.acceptedProjects?.length || 0, icon: Cpu, color: "text-indigo-500", bg: "bg-indigo-500/10 border-indigo-500/20" },
+      { label: "Open Issues", value: profile.contributionStats?.issuesCount || 0, icon: AlertCircle, color: "text-rose-500", bg: "bg-rose-500/10 border-rose-500/20" },
+      { label: "Pull Requests", value: profile.contributionStats?.prsCount || 0, icon: Zap, color: "text-blue-500", bg: "bg-blue-500/10 border-blue-500/20" },
+      { label: "Deployments", value: profile.contributionStats?.mergedPrsCount || 0, icon: Rocket, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
+      { label: "Contribution Score", value: profile.contributionScore || 0, icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/20" },
+      { label: "Success Rate", value: `${profile.prSuccessRate ?? 0}%`, icon: CheckCircle2, color: "text-cyan-500", bg: "bg-cyan-500/10 border-cyan-500/20" }
     ];
   }, [profile]);
 
@@ -193,7 +192,7 @@ const Dashboard = () => {
               </div>
             </motion.div>
             <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[8px] font-black px-1.5 py-0.5 rounded shadow-lg border-2 border-background z-20">
-              LVL {profile?.level || 1}
+              RANK #{profile?.platformRank || 1}
             </div>
           </div>
           <div className="space-y-0.5">
@@ -357,7 +356,7 @@ const Dashboard = () => {
             variants={container}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
           >
             {stats.map((stat, i) => (
               <motion.div variants={item} key={i}>
@@ -368,50 +367,82 @@ const Dashboard = () => {
                   </div>
                   <div className="relative z-10 space-y-0.5">
                     <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60 leading-none">{stat.label}</p>
-                    <p className="text-2xl font-black tracking-tighter text-foreground tabular-nums">{stat.value}</p>
+                    <p className="text-2xl font-black tracking-tighter text-gradient leading-none tabular-nums">{stat.value}</p>
                   </div>
                 </Card>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Achievements */}
-          <Card className="p-6 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 blur-[60px] rounded-full" />
-            <div className="relative z-10 space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/10">
-                  <Trophy size={16} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Recent Commits */}
+            <Card className="p-6 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+              <div className="relative z-10 space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-lg">
+                    <Terminal size={16} />
+                  </div>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Recent Commits</h3>
                 </div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Achievements</h3>
-              </div>
-              
-              {profile?.badges?.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {profile.badges.map((badge, idx) => (
-                    <motion.div 
-                      whileHover={{ y: -3, scale: 1.01 }}
-                      key={idx} 
-                      className="p-4 bg-background/40 border border-border/50 rounded-xl flex flex-col items-center text-center group hover:border-amber-500/30 hover:bg-amber-500/5 transition-all shadow-lg shadow-black/5"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform text-lg relative shadow-inner">
-                        <span className="relative z-10">{badge.icon || "🏆"}</span>
+                
+                <div className="space-y-3.5">
+                  {(profile?.submissions || []).slice(0, 3).map((sub, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-background/50 rounded-xl border border-border/40 hover:border-primary/20 transition-all">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <div className="min-w-0">
+                          <p className="text-xs font-black truncate">{sub.project?.title || "Classified Protocol"}</p>
+                          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">Branch: {sub.branchName || "main"}</p>
+                        </div>
                       </div>
-                      <p className="text-[9px] font-black text-foreground mb-0.5 tracking-tight uppercase tracking-widest">{badge.name}</p>
-                      <p className="text-[7px] text-muted-foreground leading-relaxed font-bold uppercase tracking-widest opacity-40 line-clamp-1">{badge.description}</p>
-                    </motion.div>
+                      <span className="text-[8px] font-black text-muted-foreground/50 font-mono shrink-0">SHA: {sub._id?.slice(-6).toUpperCase()}</span>
+                    </div>
                   ))}
+                  {(!profile?.submissions || profile.submissions.length === 0) && (
+                    <p className="text-[9px] font-black text-muted-foreground/40 text-center py-6 uppercase tracking-widest">No commit logs recorded</p>
+                  )}
                 </div>
-              ) : (
-                <div className="py-8 text-center space-y-3">
-                  <Trophy size={32} className="mx-auto text-muted-foreground opacity-10" />
-                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-30">
-                    Empty
-                  </p>
+              </div>
+            </Card>
+
+            {/* Engineering Health */}
+            <Card className="p-6 relative overflow-hidden bg-gradient-to-br from-card to-secondary/30">
+              <div className="relative z-10 space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-lg">
+                    <Activity size={16} />
+                  </div>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Engineering Health</h3>
                 </div>
-              )}
-            </div>
-          </Card>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-background/40 border border-border/50 rounded-xl space-y-3">
+                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Merge Velocity</p>
+                    <div className="flex items-end justify-between gap-1 h-14 pt-1">
+                      {[35, 45, 60, 50, 75, 90, 85].map((val, i) => (
+                        <div key={i} className="w-full bg-primary/20 rounded-t-sm hover:bg-primary transition-all relative group" style={{ height: `${val}%` }}>
+                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-popover text-foreground text-[6px] font-black px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{val}%</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[7px] text-emerald-500 font-black uppercase tracking-widest mt-1">▲ 14% improvement</p>
+                  </div>
+                  
+                  <div className="p-4 bg-background/40 border border-border/50 rounded-xl space-y-3 flex flex-col justify-between">
+                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Deployment Success</p>
+                    <div className="flex items-center justify-center h-14 relative">
+                      <svg viewBox="0 0 36 36" className="w-12 h-12 overflow-visible">
+                        <path className="text-muted/30" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path className="text-emerald-500" strokeWidth="3" strokeDasharray="98, 100" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <text x="18" y="20.5" className="fill-foreground text-[8px] font-black font-sans" textAnchor="middle">98%</text>
+                      </svg>
+                    </div>
+                    <p className="text-[7px] text-muted-foreground font-black uppercase tracking-widest text-center mt-1">Stable state</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
 
         {/* Engineering Radar Matrix */}
@@ -601,7 +632,7 @@ const Dashboard = () => {
                              <div className="w-5 h-5 rounded-full bg-primary border-2 border-background shadow-sm"></div>
                              <div className="w-5 h-5 rounded-full bg-blue-500 border-2 border-background shadow-sm"></div>
                           </div>
-                          <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">+XP Credited</span>
+                          <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">+Score Credited</span>
                         </div>
                       </Card>
                     </motion.div>

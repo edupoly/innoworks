@@ -8,7 +8,7 @@ import { forkRepository, fetchGraphQLRepositoryIntelligence, closeIssue, parseRe
 import { detectTechStack } from '../lib/techDetection.js';
 import { validateObjectId, validateProject } from '../middleware/validate.js';
 import { sendNotification } from '../lib/notifications.js';
-import { evaluateBadges, awardXP, XP_VALUES } from '../lib/gamification.js';
+import { awardContributionScore, METRIC_VALUES } from '../lib/gamification.js';
 import { cacheMiddleware, clearCache } from '../middleware/cache.js';
 import { emitToUser } from '../lib/socket.js';
 import axios from 'axios';
@@ -389,9 +389,8 @@ router.post("/", authenticate, async (req, res) => {
       openIssuesCount
     });
 
-    // Award Platform Pioneer badge and XP if it's their first project
-    await awardXP(userId, XP_VALUES.PROJECT_POSTED, 'PROJECT_POSTED');
-    await evaluateBadges(user);
+    // Award score points if it's their first project
+    await awardContributionScore(userId, METRIC_VALUES.PROJECT_POSTED, 'PROJECT_POSTED');
 
     // Clear marketplace cache
     clearCache('/projects');

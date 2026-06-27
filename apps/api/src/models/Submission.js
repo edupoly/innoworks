@@ -25,7 +25,7 @@ const submissionSchema = new mongoose.Schema({
     default: 'PENDING' 
   },
   testOutput: { type: String },
-  xpAwarded: {
+  rewardsAwarded: {
     type: [String], // Array of action reasons: ['PR_APPROVED', 'PR_MERGED', 'TESTING_REVIEW']
     default: []
   },

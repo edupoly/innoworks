@@ -6,7 +6,7 @@ import { User } from '../models/User.js';
 import { Review } from '../models/Review.js';
 import { Issue } from '../models/Issue.js';
 import { Evaluation } from '../models/Evaluation.js';
-import { awardXP, XP_VALUES } from '../lib/gamification.js';
+import { awardContributionScore, METRIC_VALUES } from '../lib/gamification.js';
 import { recordActivity } from '../lib/consistency.js';
 import { sendNotification } from '../lib/notifications.js';
 import { clearCache } from '../middleware/cache.js';
@@ -273,8 +273,8 @@ if (githubApp) {
       } 
       
       else if (action === "closed" && isMerged) {
-        if (submission.xpAwarded.includes('PR_MERGED')) {
-          console.log(`📡 PR #${prNumber} already awarded PR_MERGED XP. Skipping.`);
+        if (submission.rewardsAwarded.includes('PR_MERGED')) {
+          console.log(`📡 PR #${prNumber} already awarded PR_MERGED score. Skipping.`);
           return;
         }
 
@@ -285,7 +285,7 @@ if (githubApp) {
           actor: submission.user._id
         });
         
-        submission.xpAwarded.push('PR_MERGED');
+        submission.rewardsAwarded.push('PR_MERGED');
         await submission.save();
 
         // Add contributor to project contributors array if not present
@@ -296,8 +296,8 @@ if (githubApp) {
           await project.save();
         }
 
-        // Award Merged XP! (200 XP)
-        await awardXP(submission.user._id, XP_VALUES.PR_MERGED, 'PR_MERGED');
+        // Award Merged Score!
+        await awardContributionScore(submission.user._id, METRIC_VALUES.PR_MERGED, 'PR_MERGED');
 
         // Create Pending Evaluation for Project Owner
         await Evaluation.create({
@@ -319,7 +319,7 @@ if (githubApp) {
         await sendNotification(
           submission.user._id,
           'PR_MERGED',
-          `🏆 Great job! Your solution for "${project.title}" was merged on GitHub! (+200 XP)`,
+          `🏆 Great job! Your solution for "${project.title}" was merged on GitHub! (+200 Score points)`,
           `/dashboard`
         );
       } 
@@ -401,10 +401,10 @@ if (githubApp) {
         actor: reviewerId
       });
 
-      // Award XP to the developer if approved (only once)
-      if (state === "approved" && !submission.xpAwarded.includes('PR_APPROVED')) {
-        await awardXP(submission.user._id, XP_VALUES.PR_APPROVED, 'PR_APPROVED');
-        submission.xpAwarded.push('PR_APPROVED');
+      // Award Score to the developer if approved (only once)
+      if (state === "approved" && !submission.rewardsAwarded.includes('PR_APPROVED')) {
+        await awardContributionScore(submission.user._id, METRIC_VALUES.PR_APPROVED, 'PR_APPROVED');
+        submission.rewardsAwarded.push('PR_APPROVED');
       }
 
       await submission.save();
@@ -418,9 +418,9 @@ if (githubApp) {
         githubReviewId: payload.review.id
       });
 
-      // Award XP to reviewer (30 XP)
+      // Award Score to reviewer
       if (reviewer) {
-        await awardXP(reviewer._id, XP_VALUES.TESTING_REVIEW, 'TESTING_REVIEW');
+        await awardContributionScore(reviewer._id, METRIC_VALUES.TESTING_REVIEW, 'TESTING_REVIEW');
         clearCache(`/users/profile/${reviewer.username}`);
         clearCache('/users/leaderboard');
       }

@@ -267,12 +267,12 @@ const AdminDashboard = () => {
                           <td className="px-8 py-6">
                             <div className="flex items-center gap-6">
                               <div>
-                                <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">XP Level</p>
-                                <p className="text-xs font-black text-foreground">LVL {user.level} <span className="text-[10px] text-muted-foreground/50 ml-1">({user.xp} XP)</span></p>
+                                <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Platform Rank</p>
+                                <p className="text-xs font-black text-foreground">RANK #{user.platformRank || 1} <span className="text-[10px] text-muted-foreground/50 ml-1">({user.contributionScore || 0} SCORE)</span></p>
                               </div>
                               <div>
                                 <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Reputation</p>
-                                <p className="text-xs font-black text-indigo-500">{user.reputationScore}</p>
+                                <p className="text-xs font-black text-indigo-500">{user.engineeringReputation || 0}</p>
                               </div>
                             </div>
                           </td>
@@ -360,7 +360,7 @@ const AdminDashboard = () => {
                         <tr key={proj._id} className="hover:bg-muted/10 transition-colors group">
                           <td className="px-8 py-6">
                             <p className="font-black text-sm tracking-tight text-foreground">{proj.title}</p>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 tracking-wider mt-1">{proj.bounty} XP Bounty</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 tracking-wider mt-1">{proj.bounty} Score Bounty</p>
                           </td>
                           <td className="px-8 py-6">
                             <div className="flex items-center gap-3">

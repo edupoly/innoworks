@@ -12,7 +12,7 @@ import {
   Star,
   Verified
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { EngineeringRadarChart } from "../components/EngineeringRadarChart";
 import { useGetUserProfileQuery } from "../store/api/usersApiSlice";
 import ActivityHeatmap from "../components/ui/ActivityHeatmap";
@@ -64,7 +64,7 @@ const Profile = () => {
     { label: "Rating", value: profile.overallRating ? `${profile.overallRating}/10` : 'N/A', color: "text-amber-500", bg: "bg-amber-500/10", icon: Star },
     { label: "Current Streak", value: `${profile.currentStreak || 0} Days`, color: "text-orange-500", bg: "bg-orange-500/10", icon: Flame },
     { label: "Verified", value: profile.verifiedContributionsCount || 0, color: "text-green-500", bg: "bg-green-500/10", icon: Verified },
-    { label: "Aggregate XP", value: profile.xp, color: "text-indigo-500", bg: "bg-indigo-500/10", icon: Trophy }
+    { label: "Contribution Score", value: profile.contributionScore || 0, color: "text-indigo-500", bg: "bg-indigo-500/10", icon: Trophy }
   ];
 
   return (
@@ -102,7 +102,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground text-[9px] font-black px-3 py-1 rounded-lg border-2 border-background shadow-lg z-20">
-                  LVL {profile.level}
+                  RANK #{profile.platformRank || 1}
                 </div>
               </div>
 
@@ -271,44 +271,38 @@ const Profile = () => {
               </motion.div>
             </section>
 
-            {/* Achievement Node Registry */}
+            {/* Professional Metrics Node Registry */}
             <section className="space-y-6">
               <div className="flex items-center justify-between ml-2">
                 <div className="flex items-center gap-3">
                   <div className="w-1 h-1 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" />
                   <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/60">
-                    Achievements
+                    Professional_Metrics
                   </h3>
                 </div>
-                <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2.5 py-0.5 rounded-lg border border-amber-500/20">{profile.badges?.length || 0} SECURED</span>
               </div>
               
-              <AnimatePresence mode="wait">
-                {profile.badges?.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {profile.badges.map((badge, i) => (
-                      <motion.div 
-                        key={i} 
-                        whileHover={{ y: -3, scale: 1.01 }}
-                        className="bg-card rounded-2xl p-5 flex items-center gap-4 group hover:border-primary/30 hover:bg-amber-500/[0.01] border border-border/40 shadow-sm"
-                      >
-                        <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 text-2xl shadow-xl shadow-black/5 group-hover:scale-105 transition-transform duration-500">
-                          {badge.icon || <Trophy size={20} className="fill-amber-500/20" />}
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-black uppercase tracking-tight text-foreground tracking-tighter">{badge.name}</p>
-                          <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest opacity-60 leading-relaxed line-clamp-2">{badge.description}</p>
-                        </div>
-                      </motion.div>
-                    ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { name: "Repository Health", value: `${profile.repositoryHealth ?? 100}%`, description: "System stability and build reliability indicators." },
+                  { name: "Code Quality Rating", value: `${profile.codeQuality ?? 0}/100`, description: "Aesthetic score based on structural checks." },
+                  { name: "PR Success Rate", value: `${profile.prSuccessRate ?? 0}%`, description: "Ratio of merged pull requests relative to submissions." },
+                  { name: "Deployment Success Rate", value: `${profile.deploymentSuccess ?? 100}%`, description: "Rate of zero-fault deployment processes." },
+                  { name: "Review Accuracy", value: `${profile.reviewAccuracy ?? 100}%`, description: "Peer code inspection accuracy." },
+                  { name: "Task Completion Rate", value: `${profile.taskCompletionRate ?? 100}%`, description: "Completion of allocated challenge requirements." },
+                ].map((metric, i) => (
+                  <div 
+                    key={i} 
+                    className="bg-card rounded-2xl p-5 hover:border-primary/30 border border-border/40 shadow-sm transition-all"
+                  >
+                    <div className="flex justify-between items-center mb-1.5">
+                      <p className="text-xs font-black uppercase tracking-tight text-foreground">{metric.name}</p>
+                      <span className="text-sm font-black text-primary">{metric.value}</span>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest opacity-60 leading-relaxed">{metric.description}</p>
                   </div>
-                ) : (
-                  <div className="p-16 text-center bg-card rounded-2xl border-2 border-dashed border-border/50 space-y-3">
-                    <Trophy size={40} className="mx-auto text-muted-foreground opacity-10" />
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">No identity milestones secured.</p>
-                  </div>
-                )}
-              </AnimatePresence>
+                ))}
+              </div>
             </section>
 
             {/* Solution Portfolio Timeline */}

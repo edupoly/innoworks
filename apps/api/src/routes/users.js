@@ -27,7 +27,7 @@ router.get("/leaderboard", cacheMiddleware(10), async (req, res) => {
 
     // Fallback to MongoDB for other periods or if Redis is empty
     let users = [];
-    const selectFields = 'username avatarUrl xp level badges overallRating currentStreak verifiedContributionsCount contributionStats categoryRatings communicationScore adaptabilityScore';
+    const selectFields = 'username avatarUrl contributionScore engineeringReputation repositoryHealth codeQuality issuesResolved prSuccessRate deploymentSuccess reviewAccuracy taskCompletionRate platformRank overallRating currentStreak verifiedContributionsCount contributionStats categoryRatings communicationScore adaptabilityScore';
     const sortCondition = { 
       verifiedContributionsCount: -1, 
       overallRating: -1, 

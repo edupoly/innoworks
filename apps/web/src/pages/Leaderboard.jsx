@@ -72,11 +72,11 @@ const LeaderboardRow = memo(({ user, rank }) => {
               <div className="flex items-center gap-3">
                 <Badge variant="default" className="border-none bg-primary/10 text-primary gap-1.5 px-2.5 py-0.5 h-5 text-[8px] font-black uppercase tracking-widest">
                   <Zap size={10} className="fill-primary" />
-                  LVL {user.level}
+                  SCORE {user.contributionScore || 0}
                 </Badge>
                 <div className="w-1 h-1 rounded-full bg-border" />
                 <div className="text-[9px] font-black uppercase text-muted-foreground tracking-widest opacity-60">
-                  {user.xp} XP_SYNC
+                  {user.contributionScore || 0} SCORE_SYNC
                 </div>
               </div>
             </div>
@@ -141,7 +141,7 @@ const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) 
           )}
         </div>
         <div className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground border-2 border-background px-3 py-1 rounded-xl shadow-lg z-20">
-          <span className="text-[9px] font-black tracking-widest uppercase">LVL {user.level}</span>
+          <span className="text-[9px] font-black tracking-widest uppercase">SCORE {user.contributionScore || 0}</span>
         </div>
       </div>
 
@@ -153,7 +153,7 @@ const PodiumCard = memo(({ user, rank, color, bgColor, borderColor, featured }) 
       <div className="flex flex-col items-center gap-4">
          <Badge variant="default" className="px-5 py-2 bg-primary/10 rounded-xl border border-primary/20 flex items-center gap-2.5 shadow-sm border-none">
            <Trophy size={12} className="text-amber-500 fill-amber-500/20" />
-           <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary">{user.xp} XP_SYNC</span>
+           <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary">{user.contributionScore || 0} SCORE_SYNC</span>
          </Badge>
          
          <div className="grid grid-cols-3 gap-4 w-full pt-6 border-t border-border/30">

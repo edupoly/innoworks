@@ -60,7 +60,7 @@ const RepoPicker = memo(({ onSelect, selectedRepo }) => {
             </div>
             <div className="space-y-2">
               <h4 className="text-sm font-black uppercase tracking-[0.2em]">Repository Sync Failed</h4>
-              <p className="text-xs font-medium text-muted-foreground">{error}</p>
+              <p className="text-xs font-medium text-muted-foreground">{error?.data?.message || error?.error || "Failed to sync repositories"}</p>
             </div>
             <button type="button" onClick={() => refetch()} className="text-[10px] font-black uppercase tracking-[0.25em] text-primary hover:underline">Retry Sync</button>
           </div>

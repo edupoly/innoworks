@@ -156,7 +156,7 @@ const CreateProject = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-2">Bounty (XP)</label>
+                  <label className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/60 ml-2">Bounty (Score)</label>
                   <div className="relative group">
                     <input
                       type="number"

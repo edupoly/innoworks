@@ -81,8 +81,8 @@ export const testWorker = new Worker(
           testOutput,
         });
 
-        // NOTE: XP awarding moved to Merge workflow (webhooks or manual merge)
-        // to prevent premature or duplicate XP grants.
+        // NOTE: Score points awarding moved to Merge workflow (webhooks or manual merge)
+        // to prevent premature or duplicate grants.
         console.log(`✅ Tests passed for submission ${submissionId}. Awaiting review/merge.`);
 
       } else {
